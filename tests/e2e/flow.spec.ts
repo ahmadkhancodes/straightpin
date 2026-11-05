@@ -48,7 +48,7 @@ test("magic link sign-in, org, billing state, api key, cron guard", async ({ pag
 
 test("public pages render with metadata and no horizontal overflow at 375px", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
-  for (const path of ["/", "/pricing", "/compare/directroles", "/how-we-check", "/docs", "/legal/privacy", "/sign-in"]) {
+  for (const path of ["/", "/pricing", "/compare/directroles", "/how-we-check", "/docs", "/legal/privacy", "/sign-in", "/quiz", "/matches?field=support&country=US&remote=any&payFloor=0&level=any&schedule=any"]) {
     const res = await page.goto(path);
     expect(res?.status(), path).toBe(200);
     await expect(page.locator("title")).not.toBeEmpty();

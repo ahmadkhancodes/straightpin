@@ -36,7 +36,7 @@ const faq: FaqItem[] = [
   { q: "Why pay to see jobs?", a: "Honestly, you do not have to. HiringCafe is free and has more jobs. We sell guided matching, alerts and the trust signals on every job: the first posted date, the repost count and the agency check. The free tier is real: 5 job opens a day, 10 saved jobs and a daily email." },
   { q: "How do you remove agencies?", a: "We compare each posting with known staffing agency patterns and flag the ones that match. Posts we remove are counted in a receipt at the top of your list. See How we check for the plain version." },
   { q: "How do you verify jobs?", a: "We read the company's own hiring page, check it again on a schedule, and show the website each job comes from and when we last checked it." },
-  { q: "How is this different from Indeed or LinkedIn?", a: "Since 31 March 2026, Indeed shows many jobs from company hiring systems only if the company pays. We read those pages directly. We do not say any other site's jobs are fake. We show dates and repost counts so you can judge." },
+  { q: "How is this different from Indeed or LinkedIn?", a: "Many jobs on the big boards come from staffing agencies or sit unfilled for months. We read company career pages directly. We do not say any other site's jobs are fake. We show dates and repost counts so you can judge." },
   { q: "Will you apply for me, or write my resume with AI?", a: "No, on purpose. Real jobs, you apply as yourself." },
   { q: "What if I forget to cancel?", a: "We email a renewal reminder before every renewal, with the date and amount. Cancel in two taps from Billing. If you were charged and did not mean to be, ask within 7 days for a full refund." },
   { q: "Which countries?", a: "The United States now, plus Canada and the UK. Prices are in US dollars for now. Local prices at checkout come later." },
@@ -159,10 +159,10 @@ export default function HomePage() {
         <div className="grid gap-10 lg:grid-cols-12 lg:gap-16">
           <h2 id="problem-title" className="heading-4 md:heading-2 text-text lg:col-span-5">Most of the job boards you scroll are showing you the wrong jobs.</h2>
           <div className="flex flex-col gap-8 lg:col-span-6 lg:col-start-7">
-            <p className="title-1 text-text">Since 31 March 2026, Indeed shows many jobs from company hiring systems only if the company pays.</p>
-            <p className="body-3 text-text-subtle">Staffing agencies repost the same role again and again. You apply, nobody answers. ClearlyRated (2026) found 46% of job seekers were ghosted by a staffing firm.</p>
+            <p className="title-1 text-text">Many jobs on the big boards come from staffing agencies or sit unfilled for months.</p>
+            <p className="body-3 text-text-subtle">Staffing agencies repost the same role again and again. You apply, nobody answers.</p>
             <p className="body-3 text-text-subtle">
-              Some listings are not being filled at all. Greenhouse reported 18 to 22% of postings not actively filled (about 19% in Q2 2026). In a Resume Builder survey (Aug 2026, 1,011 people), 86% had met a suspected ghost job.
+              Some listings are not being filled at all. So every job here shows when the company first posted it and how often it was reposted.
             </p>
             <p className="font-note text-2xl leading-8 text-marker">Check the date.</p>
           </div>

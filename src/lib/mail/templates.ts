@@ -55,3 +55,37 @@ export function noticeEmail(opts: { title: string; body: string; actionUrl?: str
 ${opts.actionUrl ? button(opts.actionUrl, opts.actionLabel ?? "Open") : ""}`);
   return { subject: opts.title, text, html };
 }
+
+export interface DigestJob { title: string; company: string; place: string; line: string; url: string }
+
+/** Daily digest and instant alert: a short list of jobs with direct links, a receipt line and a one click unsubscribe. */
+export function digestEmail(opts: { kind: "digest" | "alerts"; total: number; jobs: DigestJob[]; moreUrl: string; unsubscribeUrl: string; receipt?: string }) {
+  const n = opts.total;
+  const subject = opts.kind === "digest"
+    ? `${n} new ${n === 1 ? "job" : "jobs"} for you today`
+    : `${n} new ${n === 1 ? "match" : "matches"} straight from company pages`;
+  const more = n > opts.jobs.length ? `${n - opts.jobs.length} more are waiting in your matches.` : "";
+  const text = [
+    subject,
+    "",
+    ...opts.jobs.map((j) => `${j.title}\n${j.company} · ${j.place}\n${j.line}\n${j.url}\n`),
+    more,
+    `See all: ${opts.moreUrl}`,
+    opts.receipt ?? "",
+    "",
+    `Unsubscribe in one click: ${opts.unsubscribeUrl}`,
+  ].filter((l, i, a) => l !== "" || a[i - 1] !== "").join("\n");
+  const items = opts.jobs
+    .map((j) => `<li style="margin:0 0 16px"><a href="${esc(j.url)}" style="font-weight:600;color:#181818">${esc(j.title)}</a><br><span style="font-size:14px;color:#404040">${esc(j.company)} · ${esc(j.place)}</span><br><span style="font-size:13px;color:#767676">${esc(j.line)}</span></li>`)
+    .join("");
+  const html = layout(
+    subject,
+    `<h1 style="margin:0 0 16px;font-size:20px">${esc(subject)}</h1>
+<ul style="margin:0;padding:0 0 0 20px">${items}</ul>
+${more ? `<p style="margin:0;font-size:14px;color:#404040">${esc(more)}</p>` : ""}
+${button(opts.moreUrl, "See all my matches")}
+${opts.receipt ? `<p style="margin:0;font-size:12px;color:#767676">${esc(opts.receipt)}</p>` : ""}
+<p style="margin:16px 0 0;font-size:12px"><a href="${esc(opts.unsubscribeUrl)}" style="color:#767676">Unsubscribe in one click</a></p>`,
+  );
+  return { subject, text, html };
+}

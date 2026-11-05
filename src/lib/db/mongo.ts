@@ -1,4 +1,6 @@
 import { MongoClient, type Collection, type Db as MongoDatabase, type Document } from "mongodb";
+import { mongoFilter } from "@/lib/jobs/query";
+import type { EmployerDoc, JobDoc, SavedJob, SearchProfile, SourceRun } from "@/lib/jobs/types";
 import { uuidv7 } from "@/lib/ids";
 import { DELIVERY_TTL_DAYS, type AuditEntry, type BillingAccount, type Db, type Entitlement, type Suppression, type WebhookDelivery, type WebhookEndpoint } from "./types";
 
@@ -30,6 +32,14 @@ export function createMongoDb(uri: string, dbName: string, app: string): Db {
     const { _id: _i, ...rest } = d as Record<string, unknown>;
     return rest as T;
   };
+
+  /** Strip storage fields (_id, app) from a doc. */
+  const clean = <T>(d: Record<string, unknown> | null): T | null => {
+    if (!d) return null;
+    const { _id: _i, app: _a, ...rest } = d;
+    return rest as T;
+  };
+  const cleanAll = <T>(ds: Record<string, unknown>[]): T[] => ds.map((d) => clean<T>(d)!);
 
   return {
     app,
@@ -182,14 +192,152 @@ export function createMongoDb(uri: string, dbName: string, app: string): Db {
     async setConfig(k, v) {
       await (await col<{ _id: string; value: string; app: string }>("config")).updateOne({ _id: `${app}:${k}` }, { $set: { value: v, app } }, { upsert: true });
     },
+    async upsertEmployer(e, now, seed = false) {
+      const id = e.ats === "jsonld" ? `jsonld:${e.slug}` : `${e.ats}:${e.slug}`;
+      const r = await (await col<Document>("employers")).updateOne(
+        { _id: id as never },
+        { $setOnInsert: { ...e, id, app, status: "active", failCount: 0, lastCrawledAt: null, nextCrawlAt: now, suppressed: false, seed } },
+        { upsert: true },
+      );
+      return r.upsertedCount > 0;
+    },
+    async getEmployer(id) {
+      return clean<EmployerDoc>(await (await col<Document>("employers")).findOne({ _id: id as never, app }));
+    },
+    async listEmployers() {
+      return cleanAll<EmployerDoc>(await (await col<Document>("employers")).find({ app }).sort({ _id: 1 }).toArray());
+    },
+    async dueEmployers(now, limit) {
+      return cleanAll<EmployerDoc>(
+        await (await col<Document>("employers")).find({ app, status: "active", suppressed: false, nextCrawlAt: { $lte: now } }).sort({ nextCrawlAt: 1, _id: 1 }).limit(limit).toArray(),
+      );
+    },
+    async patchEmployer(id, patch) {
+      await (await col<Document>("employers")).updateOne({ _id: id as never, app }, { $set: patch });
+    },
+    async tryLease(key, owner, now, ttlMs) {
+      try {
+        // One atomic claim: free, expired, or already ours. A concurrent insert race surfaces as E11000 = not acquired.
+        const r = await (await col<Document>("crawl_leases")).findOneAndUpdate(
+          { _id: `${app}:${key}` as never, $or: [{ until: { $lte: now } }, { owner }] },
+          { $set: { owner, until: new Date(now.getTime() + ttlMs), app, expireAt: new Date(now.getTime() + ttlMs + 864e5) } },
+          { upsert: true, returnDocument: "after" },
+        );
+        return r?.owner === owner;
+      } catch (e) {
+        if ((e as { code?: number }).code === 11000) return false;
+        throw e;
+      }
+    },
+    async releaseLease(key, owner) {
+      await (await col<Document>("crawl_leases")).deleteOne({ _id: `${app}:${key}` as never, owner });
+    },
+    async upsertJobs(list, now) {
+      if (!list.length) return { inserted: 0, updated: 0 };
+      const ops = list.map((u) => {
+        const { id, firstPublishedAt, ...rest } = u;
+        const set: Record<string, unknown> = { ...rest, firstPublishedAt, app, lastSeenAt: now, closedAt: null, missCount: 0 };
+        const onInsert: Record<string, unknown> = { firstSeenAt: now };
+        if (firstPublishedAt) set.postedAt = firstPublishedAt;
+        else onInsert.postedAt = now;
+        return { updateOne: { filter: { _id: id as never }, update: { $set: set, $setOnInsert: onInsert }, upsert: true } };
+      });
+      const r = await (await col<Document>("jobs")).bulkWrite(ops, { ordered: false });
+      return { inserted: r.upsertedCount, updated: list.length - r.upsertedCount };
+    },
+    async closeMissing(employerId, seen, now, threshold = 2) {
+      const c = await col<Document>("jobs");
+      const base = { app, employerId, closedAt: null, externalId: { $nin: seen } };
+      await c.updateMany(base, { $inc: { missCount: 1 } });
+      const r = await c.updateMany({ ...base, missCount: { $gte: threshold } }, { $set: { closedAt: now } });
+      return r.modifiedCount;
+    },
+    async closeByExternalIds(employerId, ids, now) {
+      const r = await (await col<Document>("jobs")).updateMany({ app, employerId, closedAt: null, externalId: { $in: ids } }, { $set: { closedAt: now } });
+      return r.modifiedCount;
+    },
+    async jobsByDedupeKeys(keys) {
+      if (!keys.length) return [];
+      const docs = await (await col<Document>("jobs")).find({ app, dedupeKey: { $in: keys } }, { projection: { dedupeKey: 1, firstSeenAt: 1 } }).toArray();
+      return docs.map((d) => ({ id: String(d._id), dedupeKey: d.dedupeKey as string, firstSeenAt: d.firstSeenAt as Date }));
+    },
+    async getJob(id) {
+      const d = await (await col<Document>("jobs")).findOne({ _id: id as never, app });
+      return d ? ({ ...clean<JobDoc>(d)!, id } as JobDoc) : null;
+    },
+    async getJobs(ids) {
+      if (!ids.length) return [];
+      const docs = await (await col<Document>("jobs")).find({ _id: { $in: ids as never[] }, app }).toArray();
+      return docs.map((d) => ({ ...clean<JobDoc>(d)!, id: String(d._id) }) as JobDoc);
+    },
+    async queryJobs(q) {
+      const docs = await (await col<Document>("jobs"))
+        .find(mongoFilter(q, app))
+        .sort({ postedAt: -1, _id: 1 })
+        .skip(q.skip ?? 0)
+        .limit(Math.min(q.limit ?? 20, 100))
+        .toArray();
+      return docs.map((d) => ({ ...clean<JobDoc>(d)!, id: String(d._id) }) as JobDoc);
+    },
+    async countJobs(q) {
+      return (await col<Document>("jobs")).countDocuments(mongoFilter(q, app));
+    },
+    async countAgencyHidden(q) {
+      return (await col<Document>("jobs")).countDocuments({ ...mongoFilter({ ...q, includeAgency: true }, app), agencyFlag: "yes" });
+    },
+    async recordSourceRun(r) {
+      await (await col<Document>("source_runs")).insertOne({ _id: r.id as never, ...r, app, expireAt: new Date(r.finishedAt.getTime() + 30 * 864e5) });
+    },
+    async listSourceRuns(limit) {
+      return cleanAll<SourceRun & { expireAt?: Date }>(await (await col<Document>("source_runs")).find({ app }).sort({ startedAt: -1 }).limit(limit).toArray()) as SourceRun[];
+    },
+    async recordOpen(orgId, day, jobId) {
+      try {
+        await (await col<Document>("job_opens")).insertOne({ _id: `${app}:${orgId}|${day}|${jobId}` as never, app, orgId, day, jobId, expireAt: new Date(Date.now() + 3 * 864e5) });
+        return true;
+      } catch (e) {
+        if ((e as { code?: number }).code === 11000) return false;
+        throw e;
+      }
+    },
+    async hasOpened(orgId, day, jobId) {
+      return !!(await (await col<Document>("job_opens")).findOne({ _id: `${app}:${orgId}|${day}|${jobId}` as never }, { projection: { _id: 1 } }));
+    },
+    async saveJob(orgId, jobId, now) {
+      const r = await (await col<Document>("saved_jobs")).updateOne(
+        { _id: `${app}:${orgId}|${jobId}` as never },
+        { $setOnInsert: { app, orgId, jobId, savedAt: now } },
+        { upsert: true },
+      );
+      return r.upsertedCount > 0;
+    },
+    async unsaveJob(orgId, jobId) {
+      return (await (await col<Document>("saved_jobs")).deleteOne({ _id: `${app}:${orgId}|${jobId}` as never })).deletedCount > 0;
+    },
+    async listSaved(orgId) {
+      return cleanAll<SavedJob>(await (await col<Document>("saved_jobs")).find({ app, orgId }).sort({ savedAt: -1 }).toArray());
+    },
+    async getProfile(orgId) {
+      return clean<SearchProfile>(await (await col<Document>("search_profiles")).findOne({ _id: `${app}:${orgId}` as never }));
+    },
+    async saveProfile(p) {
+      await (await col<Document>("search_profiles")).replaceOne({ _id: `${app}:${p.orgId}` as never }, { ...p, app }, { upsert: true });
+    },
+    async listProfiles({ digest, alerts }) {
+      const f: Record<string, unknown> = { app };
+      if (digest !== undefined) f.digest = digest;
+      if (alerts !== undefined) f.alerts = alerts;
+      return cleanAll<SearchProfile>(await (await col<Document>("search_profiles")).find(f).toArray());
+    },
     async exportOrgData(orgId) {
+      const [profile, savedJobs] = await Promise.all([this.getProfile(orgId), this.listSaved(orgId)]);
       const [billingAccount, entitlement, endpoints, auditLog] = await Promise.all([
         this.getBillingAccount(orgId),
         this.getEntitlement(orgId),
         this.listWebhookEndpoints(orgId),
         this.listAudit(orgId, { limit: 200 }),
       ]);
-      return { billingAccount, entitlement, webhookEndpoints: endpoints.map(({ secret: _s, ...rest }) => rest), auditLog };
+      return { profile, savedJobs, billingAccount, entitlement, webhookEndpoints: endpoints.map(({ secret: _s, ...rest }) => rest), auditLog };
     },
     async deleteOrgData(orgId) {
       const d = await db();
@@ -198,6 +346,9 @@ export function createMongoDb(uri: string, dbName: string, app: string): Db {
       await d.collection("usage").deleteMany({ app, orgId });
       await d.collection("webhook_endpoints").deleteMany({ app, orgId });
       await d.collection("webhook_deliveries").deleteMany({ app, orgId });
+      await d.collection("search_profiles").deleteOne({ _id: `${app}:${orgId}` as never });
+      await d.collection("saved_jobs").deleteMany({ app, orgId });
+      await d.collection("job_opens").deleteMany({ app, orgId });
     },
   };
 }
@@ -215,6 +366,21 @@ export async function ensureIndexes(uri: string, dbName: string) {
   await d.collection("webhook_deliveries").createIndex({ app: 1, status: 1, nextAttemptAt: 1 });
   await d.collection("webhook_deliveries").createIndex({ expireAt: 1 }, { expireAfterSeconds: 0 });
   await d.collection("suppressions").createIndex({ app: 1, email: 1 });
+  // M2 job database. Quiz counts and the matches list are served from these (ARCHITECTURE section 3).
+  await d.collection("employers").createIndex({ app: 1, status: 1, suppressed: 1, nextCrawlAt: 1 });
+  await d.collection("employers").createIndex({ app: 1, ats: 1, slug: 1 }, { unique: true });
+  await d.collection("jobs").createIndex({ app: 1, closedAt: 1, field: 1, country: 1, agencyFlag: 1, postedAt: -1 });
+  await d.collection("jobs").createIndex({ app: 1, employerId: 1, externalId: 1 }, { unique: true });
+  await d.collection("jobs").createIndex({ app: 1, employerId: 1, closedAt: 1 });
+  await d.collection("jobs").createIndex({ app: 1, dedupeKey: 1 });
+  await d.collection("jobs").createIndex({ app: 1, firstSeenAt: -1 });
+  await d.collection("crawl_leases").createIndex({ expireAt: 1 }, { expireAfterSeconds: 0 });
+  await d.collection("source_runs").createIndex({ app: 1, startedAt: -1 });
+  await d.collection("source_runs").createIndex({ expireAt: 1 }, { expireAfterSeconds: 0 });
+  await d.collection("job_opens").createIndex({ expireAt: 1 }, { expireAfterSeconds: 0 });
+  await d.collection("saved_jobs").createIndex({ app: 1, orgId: 1, savedAt: -1 });
+  await d.collection("search_profiles").createIndex({ app: 1, digest: 1 });
+  await d.collection("search_profiles").createIndex({ app: 1, alerts: 1 });
   // Better Auth collections
   await d.collection("user").createIndex({ email: 1 }, { unique: true });
   await d.collection("session").createIndex({ token: 1 }, { unique: true });
