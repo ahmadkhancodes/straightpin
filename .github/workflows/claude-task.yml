@@ -1,0 +1,104 @@
+name: claude-task
+# Runs a Claude coding task on the Anthropic API credit (Agent SDK), not on a claude.ai plan.
+# Start it by adding the label "claude-task" to an issue (issue title + body = the task),
+# optionally with the labels "model:opus" / "model:haiku" and "budget:N" (USD, max 20), or run it manually.
+on:
+  issues:
+    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      task: { description: "Task for Claude", required: true }
+      model: { description: "haiku | sonnet | opus", default: "sonnet" }
+      budget: { description: "Max USD for this task (empty = model default)", default: "" }
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  actions: read
+
+concurrency:
+  group: claude-task
+  cancel-in-progress: false
+
+jobs:
+  run:
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'claude-task'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ISSUE: ${{ github.event.issue.number }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install app dependencies
+        run: |
+          if [ -f package-lock.json ]; then npm ci --no-audit --no-fund || npm ci --no-audit --no-fund --legacy-peer-deps || npm install --no-audit --no-fund --legacy-peer-deps; fi
+      - name: Install the Agent SDK
+        run: npm install --prefix "$RUNNER_TEMP/runner" --no-audit --no-fund @anthropic-ai/claude-agent-sdk@0.3.318
+      - name: Pick task and model
+        id: pick
+        env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          LABELS: ${{ toJson(github.event.issue.labels.*.name) }}
+          IN_TASK: ${{ inputs.task }}
+          IN_MODEL: ${{ inputs.model }}
+          IN_BUDGET: ${{ inputs.budget }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          if [ -n "$ISSUE" ]; then
+            printf '%s\n\n%s\n' "$ISSUE_TITLE" "$ISSUE_BODY" > "$RUNNER_TEMP/task.txt"
+            MODEL=sonnet
+            if echo "$LABELS" | grep -q '"model:opus"'; then MODEL=opus; fi
+            if echo "$LABELS" | grep -q '"model:haiku"'; then MODEL=haiku; fi
+            BUDGET="$(echo "$LABELS" | grep -o '"budget:[0-9.]*"' | head -n1 | tr -dc '0-9.')"
+            BRANCH="claude/issue-$ISSUE"
+          else
+            printf '%s\n' "$IN_TASK" > "$RUNNER_TEMP/task.txt"
+            MODEL="$IN_MODEL"
+            BUDGET="$IN_BUDGET"
+            BRANCH="claude/task-$RUN_ID"
+          fi
+          {
+            echo "model=$MODEL"
+            echo "budget=$BUDGET"
+            echo "branch=$BRANCH"
+          } >> "$GITHUB_OUTPUT"
+      - name: Run Claude
+        continue-on-error: true
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          MODEL_TIER: ${{ steps.pick.outputs.model }}
+          BUDGET_USD: ${{ steps.pick.outputs.budget }}
+        run: |
+          cp .github/claude/run.mjs "$RUNNER_TEMP/runner/run.mjs"
+          TASK="$(cat "$RUNNER_TEMP/task.txt")" node "$RUNNER_TEMP/runner/run.mjs"
+      - name: Open a pull request with the changes
+        id: pr
+        env:
+          BRANCH: ${{ steps.pick.outputs.branch }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          git config user.name "claude-task[bot]"
+          git config user.email "claude-task@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add -A
+          if git diff --cached --quiet; then echo "url=" >> "$GITHUB_OUTPUT"; exit 0; fi
+          REF="${ISSUE:+#$ISSUE}"; REF="${REF:-run $RUN_ID}"
+          git commit -q -m "claude-task: $REF"
+          git push -q -f origin "$BRANCH"
+          [ -f /tmp/claude-result.json ] || echo '{"model":"?","cost":0,"status":"no_result","summary":""}' > /tmp/claude-result.json
+          node -e 'const r=require("/tmp/claude-result.json");const i=process.env.ISSUE;console.log(`${r.summary}\n\n---\nModel ${r.model} · estimated cost $${(r.cost||0).toFixed(4)} · ${r.status}${i?`\n\nCloses #${i}`:""}`)' > /tmp/pr-body.md
+          URL="$(gh pr view "$BRANCH" --json url -q .url 2>/dev/null || gh pr create --head "$BRANCH" --title "claude-task: $REF" --body-file /tmp/pr-body.md 2>/dev/null || echo "branch $BRANCH (no PR yet: Actions may not open PRs here)")"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+      - name: Report on the issue
+        if: always() && env.ISSUE != ''
+        env:
+          URL: ${{ steps.pr.outputs.url }}
+        run: |
+          [ -f /tmp/claude-result.json ] || echo '{"model":"?","cost":0,"status":"failed_before_run","summary":""}' > /tmp/claude-result.json
+          node -e 'const r=require("/tmp/claude-result.json");console.log(`Model ${r.model} · estimated cost $${(r.cost||0).toFixed(4)} · ${r.status}\n\nPR: ${process.env.URL||"no changes"}\n\n${r.summary}`)' > /tmp/comment.md
+          gh issue comment "$ISSUE" --body-file /tmp/comment.md
