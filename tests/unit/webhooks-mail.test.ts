@@ -7,7 +7,7 @@ import { consoleTransport, outbox, resendTransport } from "@/lib/mail/transports
 import { magicLinkEmail } from "@/lib/mail/templates";
 
 let db: Db;
-beforeEach(() => { db = createMemoryDb("postslot"); });
+beforeEach(() => { db = createMemoryDb("straightpin"); });
 
 describe("outbound webhooks", () => {
   it("signs with HMAC-SHA256 over `t.body` and verifies within tolerance", async () => {

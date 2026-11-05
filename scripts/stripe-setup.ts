@@ -63,9 +63,9 @@ async function main() {
         product: productId,
         currency: product.currency,
         unit_amount: pr.usd,
-        nickname: `${product.name} ${plan.name} ${pr.interval === "year" ? "annual" : "monthly"}`,
+        nickname: `${product.name} ${plan.name} ${pr.interval}`,
         lookup_key: pr.lookupKey,
-        recurring: { interval: pr.interval },
+        ...(pr.interval === "once" ? {} : { recurring: { interval: pr.interval } }),
         tax_behavior: "exclusive",
         metadata: { app: APP, plan: plan.id, interval: pr.interval },
       });

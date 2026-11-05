@@ -12,7 +12,7 @@ import { enforceRateLimit, RULES } from "@/lib/security/ratelimit";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const Body = z.object({ plan: z.enum(["starter", "pro", "agency"]), interval: z.enum(["month", "year"]) });
+const Body = z.object({ plan: z.enum(["weekly", "monthly", "lifetime", "plus"]), interval: z.enum(["week", "month", "year", "once"]) });
 
 export const POST = withApi(async (req) => {
   const ctx = await requireOrg();

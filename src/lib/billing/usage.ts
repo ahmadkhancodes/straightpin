@@ -2,8 +2,9 @@ import type { MeterId } from "@/config/product";
 import type { Db } from "@/lib/db/types";
 import { effectivePlan, limitFor } from "./entitlement";
 
-// Metering hooks (MAU, mailboxes, devices, submissions...). Period = calendar month UTC.
+// Metering: opens reset every UTC day, saves are a running total ("all"). periodOf stays the monthly helper.
 export const periodOf = (d = new Date()) => `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+export const periodFor = (m: MeterId, d = new Date()) => (m === "opens" ? d.toISOString().slice(0, 10) : "all");
 
 export interface UsageState {
   meter: MeterId;
@@ -22,7 +23,7 @@ export function usageState(meter: MeterId, used: number, limit: number): UsageSt
 /** Count one unit and report whether it is within the plan (soft cap: caller decides to hold, never drop). */
 export async function meter(db: Db, orgId: string, m: MeterId, by = 1, now = new Date()): Promise<UsageState & { within: boolean }> {
   const ent = await db.getEntitlement(orgId);
-  const used = await db.incUsage(orgId, m, periodOf(now), by);
+  const used = await db.incUsage(orgId, m, periodFor(m, now), by);
   const limit = limitFor(ent, m, now.getTime());
   return { ...usageState(m, used, limit), within: used <= limit };
 }
@@ -30,5 +31,5 @@ export async function meter(db: Db, orgId: string, m: MeterId, by = 1, now = new
 export async function currentUsage(db: Db, orgId: string, meters: MeterId[], now = new Date()): Promise<UsageState[]> {
   const ent = await db.getEntitlement(orgId);
   const plan = effectivePlan(ent, now.getTime());
-  return Promise.all(meters.map(async (m) => usageState(m, await db.getUsage(orgId, m, periodOf(now)), plan.limits[m])));
+  return Promise.all(meters.map(async (m) => usageState(m, await db.getUsage(orgId, m, periodFor(m, now)), plan.limits[m])));
 }

@@ -97,7 +97,7 @@ export function WebhooksClient({ canManage, events }: { canManage: boolean; even
         <Panel title="Add an endpoint" description="Verify each request with the signing secret in the signature header.">
           <form onSubmit={create} noValidate className="flex flex-col gap-4">
             <Field label="Endpoint URL" htmlFor="wh-url" error={formError}>
-              <Input id="wh-url" type="url" inputMode="url" placeholder="https://example.com/hooks/postslot" value={url} onChange={(e) => setUrl(e.target.value)} aria-invalid={formError ? true : undefined} aria-describedby={formError ? "wh-url-error" : undefined} />
+              <Input id="wh-url" type="url" inputMode="url" placeholder="https://example.com/hooks/straightpin" value={url} onChange={(e) => setUrl(e.target.value)} aria-invalid={formError ? true : undefined} aria-describedby={formError ? "wh-url-error" : undefined} />
             </Field>
             <fieldset className="flex flex-col gap-2">
               <legend className="title-4 pb-2 text-text">Events</legend>

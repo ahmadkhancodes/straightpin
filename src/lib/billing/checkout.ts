@@ -38,8 +38,28 @@ export async function createCheckoutSession(
   const def = planById(plan);
   if (!def || def.prices.length === 0) throw new HttpError(400, "bad_plan");
   const price = await findPrice(stripe, db.app, plan, interval);
-  if (!price || !price.recurring) throw new HttpError(400, "unknown_price");
+  if (!price || (interval === "once" ? !!price.recurring : !price.recurring)) throw new HttpError(400, "unknown_price");
   const customer = await ensureCustomer(stripe, db, s);
+  if (interval === "once") {
+    // Lifetime: one-time payment; the payment_intent.succeeded webhook grants it (metadata.mode = "lifetime").
+    const ent0 = await db.getEntitlement(s.orgId);
+    if (ent0?.status === "lifetime") throw new HttpError(409, "already_subscribed");
+    const meta1 = { app: db.app, plan, interval, mode: "lifetime", lookup_key: price.lookup_key ?? "", org_id: s.orgId, user_id: s.userId };
+    const one = await stripe.checkout.sessions.create({
+      mode: "payment",
+      customer: customer.id,
+      client_reference_id: s.orgId,
+      line_items: [{ price: price.id, quantity: 1 }],
+      billing_address_collection: "auto",
+      customer_update: { address: "auto", name: "auto" },
+      payment_intent_data: { metadata: meta1 },
+      metadata: meta1,
+      success_url: `${urls.success}${urls.success.includes("?") ? "&" : "?"}session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: urls.cancel,
+    });
+    if (!one.url) throw new HttpError(500, "no_checkout_url");
+    return { url: one.url };
+  }
   const past = (await stripe.subscriptions.list({ customer: customer.id, status: "all", limit: 20 })).data.filter(
     (x) => x.metadata?.app === db.app,
   );

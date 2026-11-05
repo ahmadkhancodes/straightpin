@@ -25,7 +25,7 @@ const tone: Record<Status, "success" | "warning" | "danger"> = { Delivered: "suc
 export function SubmissionInbox() {
   return (
     <figure className="m-0">
-      <figcaption className="sr-only">Example of the Postslot submissions inbox with a delivery receipt for each submission</figcaption>
+      <figcaption className="sr-only">Example of the Straightpin submissions inbox with a delivery receipt for each submission</figcaption>
       <div className="max-h-96 overflow-hidden rounded-lg border border-border bg-surface md:max-h-none">
         <div className="flex items-center justify-between gap-4 border-b border-border bg-surface-raised px-4 py-3">
           <div className="flex min-w-0 flex-col">

@@ -16,7 +16,7 @@ export function dbContract(name: string, make: () => Promise<Db>) {
 
     it("entitlements round trip", async () => {
       const db = await make();
-      const e = { ...NONE(1), isPaid: true, status: "active" as const, plan: "pro" as const };
+      const e = { ...NONE(1), isPaid: true, status: "active" as const, plan: "monthly" as const };
       await db.setEntitlement("org_e", e);
       expect(await db.getEntitlement("org_e")).toEqual(e);
     });

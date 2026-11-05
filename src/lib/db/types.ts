@@ -12,7 +12,7 @@ export interface Entitlement {
   isPaid: boolean;
   status: EntitlementStatus;
   plan: PlanId;
-  interval: "month" | "year" | null;
+  interval: "week" | "month" | "year" | "once" | null;
   /** ms epoch; checked at read time so a missed webhook cannot leave a plan on forever. */
   expiresAt: number | null;
   trialStartedAt: number | null;

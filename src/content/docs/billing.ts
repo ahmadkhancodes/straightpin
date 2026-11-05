@@ -1,4 +1,4 @@
-import { product as p } from "@/config/product";
+import { intervalText, product as p } from "@/config/product";
 import type { DocPage } from "./types";
 
 const money = (usd: number) => `$${(usd / 100).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
@@ -12,7 +12,7 @@ export const billing: DocPage = {
       heading: "Plans",
       body: p.plans.map((pl) => {
         const prices = pl.prices.length
-          ? pl.prices.map((x) => `${money(x.usd)} per ${x.interval}`).join(" or ")
+          ? pl.prices.map((x) => `${money(x.usd)} ${intervalText(x.interval)}`).join(" or ")
           : "free";
         return `${pl.name} (${prices}): ${pl.highlights.join(", ")}.`;
       }),

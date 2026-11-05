@@ -3,9 +3,16 @@
  * KIT_COPY.md step 2: a new product edits this file (and the tokens in globals.css) and nothing else in src/lib.
  */
 
-export type PlanId = "free" | "starter" | "pro" | "agency";
-export type Interval = "month" | "year";
-export type MeterId = "submissions" | "seats" | "recipients" | "integrations" | "storage_mb";
+export type PlanId = "free" | "weekly" | "monthly" | "lifetime" | "plus";
+/** "once" = one-time payment (Lifetime). */
+export type Interval = "week" | "month" | "year" | "once";
+/** Meters: opens are counted per UTC day, saves are a running total. */
+export type MeterId = "opens" | "saves";
+/** Stand-in for "no limit" that survives JSON (Infinity does not). */
+export const UNLIMITED = 1_000_000;
+
+/** Short text for a price: "per week", "per month", "per year", "one time". */
+export const intervalText = (i: Interval): string => (i === "once" ? "one time" : `per ${i}`);
 
 export interface PlanPrice {
   interval: Interval;
@@ -26,31 +33,31 @@ export interface Plan {
   highlights: string[];
   cta: string;
   featured?: boolean;
-  /** Days of trial. 0 = no trial (Postslot: the Free plan is the trial). */
+  /** Days of trial. 0 = no trial (Straightpin: the Free plan is the trial). */
   trialDays: number;
 }
 
-const slug = "postslot";
+const slug = "straightpin";
 const price = (plan: PlanId, interval: Interval, usd: number): PlanPrice => ({
   interval,
   usd,
-  lookupKey: `${slug}_${plan}_${interval === "month" ? "monthly" : "annual"}`,
+  lookupKey: `${slug}_${plan}_${interval}`,
 });
 
 export const product = {
   slug,
-  name: "Postslot",
-  fullName: "Postslot by BufferSol",
+  name: "Straightpin",
+  fullName: "Straightpin by BufferSol",
   company: "BufferSol Technologies",
   companyUrl: "https://buffersoltech.com",
-  host: "postslot.buffersoltech.com",
-  url: process.env.NEXT_PUBLIC_APP_URL ?? "https://postslot.buffersoltech.com",
+  host: "straightpin.buffersoltech.com",
+  url: process.env.NEXT_PUBLIC_APP_URL ?? "https://straightpin.buffersoltech.com",
   supportEmail: "support@buffersoltech.com",
   legalEmail: "legal@buffersoltech.com",
-  mailFrom: "Postslot by BufferSol <no-reply@postslot.buffersoltech.com>",
+  mailFrom: "Straightpin <hello@straightpin.buffersoltech.com>",
   description:
-    "A form endpoint for static, Jamstack and AI-built sites. Every submission gets a delivery receipt, spam never counts toward your quota and over-limit submissions are held, never dropped.",
-  tagline: "Form submissions that arrive, with a receipt to prove it",
+    "Jobs straight from company careers pages. Staffing agencies removed, the real first posted date and repost count on every job, and a direct Apply at company link. Half the price of the leader.",
+  tagline: "Jobs straight from company careers pages. Half the price.",
   /** Legal entity details used by the legal templates. */
   legal: {
     entity: "BufferSol Technologies",
@@ -65,48 +72,62 @@ export const product = {
     { name: "Email delivery provider", purpose: "Transactional email until our own mail servers are live", location: "United States" },
   ],
   currency: "usd" as const,
-  /** Default billing interval shown first in the pricing toggle. */
-  defaultInterval: "year" as Interval,
+  /** Monthly is pre-selected (docs/brief.md). */
+  defaultInterval: "month" as Interval,
+  /** Refund window in days, all plans (docs/brief.md). */
+  refundDays: 7,
+  /** Lifetime is capped at the first buyers, then reviewed. */
+  lifetimeCap: 1000,
   plans: [
     {
       id: "free",
       name: "Free",
-      tagline: "For one site and a first form",
+      tagline: "Browse everything, no card",
       prices: [],
-      limits: { submissions: 250, seats: 1, recipients: 1, integrations: 0, storage_mb: 0 },
-      highlights: ["250 submissions a month, spam never counts", "Unlimited forms and domains", "1 verified recipient", "90 day history"],
+      limits: { opens: 5, saves: 10 },
+      highlights: ["Browse all titles and companies", "5 job opens a day", "10 saved jobs", "Daily email digest"],
       cta: "Start free",
       trialDays: 0,
     },
     {
-      id: "starter",
-      name: "Starter",
-      tagline: "For freelancers with a few client sites",
-      prices: [price("starter", "year", 2400)],
-      limits: { submissions: 5000, seats: 1, recipients: 3, integrations: 1, storage_mb: 0 },
-      highlights: ["5,000 submissions a month", "3 recipients", "Webhooks and 1 integration", "6 month history"],
-      cta: "Choose Starter",
+      id: "weekly",
+      name: "Weekly",
+      tagline: "Pay by the week, cancel any time",
+      prices: [price("weekly", "week", 499)],
+      limits: { opens: UNLIMITED, saves: UNLIMITED },
+      highlights: ["Unlimited opens", "Instant alerts", "Unlimited saves", "Ghost and repost signals"],
+      cta: "Choose Weekly",
       trialDays: 0,
     },
     {
-      id: "pro",
-      name: "Pro",
-      tagline: "For developers who need proof of delivery",
-      prices: [price("pro", "month", 749), price("pro", "year", 7400)],
-      limits: { submissions: 10000, seats: 3, recipients: 5, integrations: 5, storage_mb: 5120 },
-      highlights: ["10,000 submissions a month", "Custom sending domain", "90 day delivery log", "Autoresponder and file uploads", "3 seats"],
-      cta: "Choose Pro",
+      id: "monthly",
+      name: "Monthly",
+      tagline: "Everything in Weekly, plus tracking",
+      prices: [price("monthly", "month", 1099)],
+      limits: { opens: UNLIMITED, saves: UNLIMITED },
+      highlights: ["Everything in Weekly", "Application tracker", "Follow companies"],
+      cta: "Choose Monthly",
       featured: true,
       trialDays: 0,
     },
     {
-      id: "agency",
-      name: "Agency",
-      tagline: "For studios running many client sites",
-      prices: [price("agency", "month", 1949), price("agency", "year", 19900)],
-      limits: { submissions: 20000, seats: 10, recipients: 10, integrations: 10, storage_mb: 10240 },
-      highlights: ["20,000 submissions a month", "Client workspaces", "White label emails", "10 seats", "Priority support"],
-      cta: "Choose Agency",
+      id: "lifetime",
+      name: "Lifetime",
+      tagline: "One payment, core plan forever",
+      prices: [price("lifetime", "once", 2399)],
+      limits: { opens: UNLIMITED, saves: UNLIMITED },
+      highlights: ["Core plan forever, no Plus features", "First 1,000 buyers, then reviewed", "One time payment"],
+      cta: "Get Lifetime",
+      trialDays: 0,
+    },
+    {
+      id: "plus",
+      name: "Plus",
+      tagline: "For a serious search",
+      prices: [price("plus", "month", 1999), price("plus", "year", 9899)],
+      limits: { opens: UNLIMITED, saves: UNLIMITED },
+      highlights: ["Everything in Monthly", "In browser resume match check", "Cover letter outline template", "Priority alerts, followed companies re-checked every 15 minutes"],
+      cta: "Choose Plus",
       trialDays: 0,
     },
   ] satisfies Plan[],

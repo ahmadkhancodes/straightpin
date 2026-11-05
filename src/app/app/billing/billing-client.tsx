@@ -7,7 +7,7 @@ import { formatDate } from "@/components/app/api";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/cn";
 import { Badge, Notice } from "@/components/ui/states";
-import { planById, product, type Interval, type Plan, type PlanId } from "@/config/product";
+import { intervalText, planById, product, type Interval, type Plan, type PlanId } from "@/config/product";
 import type { UsageState } from "@/lib/billing/usage";
 
 interface Props {
@@ -102,7 +102,7 @@ export function BillingClient(p: Props) {
           title={`Continue with ${pre.name}`}
           action={<Button onClick={() => checkout(pre)} loading={busy === pre.id}>Continue to checkout</Button>}
         >
-          You picked {pre.name} billed {p.preselect?.interval === "month" ? "monthly" : "yearly"} on the pricing page.
+          You picked {pre.name} billed {p.preselect?.interval ? intervalText(p.preselect.interval) : ""} on the pricing page.
         </Notice>
       ) : null}
 
@@ -169,9 +169,9 @@ export function BillingClient(p: Props) {
                 <p className="body-6 text-text-subtle">{pl.tagline}</p>
                 <p className="text-text">
                   <span className="heading-5 tabular-nums">{price ? money(price.usd) : "$0"}</span>
-                  <span className="caption-2 text-text-subtle"> {price ? `per ${price.interval}` : "forever"}</span>
+                  <span className="caption-2 text-text-subtle"> {price ? intervalText(price.interval) : "forever"}</span>
                 </p>
-                {price && price.interval !== interval ? <p className="caption-2 text-text-muted">Billed {price.interval === "year" ? "yearly" : "monthly"} only.</p> : null}
+                {price && price.interval !== interval ? <p className="caption-2 text-text-muted">Billed {price.interval === "year" ? "yearly" : price.interval === "month" ? "monthly" : price.interval === "week" ? "weekly" : "once"} only.</p> : null}
                 <ul className="flex flex-1 flex-col gap-1">
                   {pl.highlights.map((h) => <li key={h} className="body-6 text-text-subtle">{h}</li>)}
                 </ul>

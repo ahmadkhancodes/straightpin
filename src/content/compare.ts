@@ -15,7 +15,7 @@ export interface CompareEntry {
 }
 
 const dollars = (cents: number) => `$${cents / 100}`;
-const proYear = planById("pro")?.prices.find((p) => p.interval === "year")?.usd ?? 0;
+const proYear = planById("plus")?.prices.find((p) => p.interval === "year")?.usd ?? 0;
 
 /** Compare-page template data: add an entry and /compare/<slug> exists. Facts only; mark the rest {{verify}}. */
 export const comparisons: CompareEntry[] = [

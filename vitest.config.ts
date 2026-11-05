@@ -5,7 +5,7 @@ export default defineConfig({
   resolve: { alias: { "@": path.resolve(__dirname, "src") } },
   test: {
     environment: "node",
-    include: ["tests/unit/**/*.test.ts"],
-    env: { NODE_ENV: "test", DB_DRIVER: "memory", APP_NAME: "postslot", MAIL_PROVIDER: "console" },
+    include: ["tests/unit/**/*.test.ts", "src/**/*.test.ts", "ml/**/*.test.ts"],
+    env: { NODE_ENV: "test", DB_DRIVER: "memory", APP_NAME: "straightpin", MAIL_PROVIDER: "console" },
   },
 });

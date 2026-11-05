@@ -1,9 +1,9 @@
-name = "postslot-cron"
+name = "straightpin-cron"
 main = "worker.ts"
 compatibility_date = "2026-10-01"
 
 [vars]
-APP_URL = "https://postslot.buffersoltech.com"
+APP_URL = "https://straightpin.buffersoltech.com"
 JOBS = "webhook-retries"
 
 [triggers]

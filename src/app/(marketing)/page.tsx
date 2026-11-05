@@ -62,7 +62,7 @@ function HeldFragment() {
 }
 
 const steps: Step[] = [
-  { title: "Point your form at your endpoint", body: "Set the form action to your Postslot URL. It accepts a normal HTML form POST, so it works on static and AI-built sites.", visual: <CodeBlock /> },
+  { title: "Point your form at your endpoint", body: "Set the form action to your Straightpin URL. It accepts a normal HTML form POST, so it works on static and AI-built sites.", visual: <CodeBlock /> },
   { title: "Every submission is emailed", body: "Each one is sent to your verified recipient the moment it arrives, with the fields laid out as the visitor filled them in.", visual: <SubmissionInbox /> },
   { title: "Open the receipt when someone asks", body: "Each submission has a delivery receipt: received, delivered or held, with the time. Answer the client in one look.", visual: <ReceiptFragment /> },
 ];
@@ -71,18 +71,18 @@ const features: Feature[] = [
   { title: "A delivery receipt for every submission", body: "See whether it was delivered, held or blocked as spam, and when.", span: 4, visual: <div className="p-4"><ReceiptFragment /></div> },
   { title: "Spam never counts", body: "Blocked spam stays out of your quota on every plan, Free included.", span: 2 },
   { title: "Held, not dropped", body: "Go over your limit and new submissions wait for you instead of vanishing.", span: 2, visual: <div className="p-4"><HeldFragment /></div> },
-  { title: "Unlimited forms and domains", body: `The ${freePlan.name} plan already covers every form on every domain, with ${freePlan.limits.submissions} submissions a month.`, span: 4 },
+  { title: "Unlimited forms and domains", body: `The ${freePlan.name} plan already covers every form on every domain, with ${freePlan.limits.opens} submissions a month.`, span: 4 },
   { title: "Your own sending domain", body: "On Pro, notification emails come from your domain, not ours.", span: 3 },
   { title: "Autoresponder and file uploads", body: "Reply to the visitor automatically and accept files on the same form. Webhooks and integrations start on Starter.", span: 3 },
 ];
 
 const faq: FaqItem[] = [
   { q: `What is ${product.name}?`, a: "A form endpoint for static, Jamstack and AI-built sites. It receives HTML form POSTs, emails them to you and records a delivery receipt for each submission." },
-  { q: "How do I connect a form?", a: "Set your form's action to your Postslot endpoint and keep method POST. No JavaScript is needed." },
+  { q: "How do I connect a form?", a: "Set your form's action to your Straightpin endpoint and keep method POST. No JavaScript is needed." },
   { q: "What is a delivery receipt?", a: "A record on each submission showing when it was received and whether it was delivered, held or blocked as spam." },
   { q: "Does spam count toward my quota?", a: "No. Spam never counts toward your submission quota on any plan." },
   { q: "What happens if I go over my limit?", a: "Over-limit submissions are held, not dropped. You can release them once you have more room." },
-  { q: "Is there a free plan?", a: `Yes. Free includes ${freePlan.limits.submissions} submissions a month, unlimited forms and domains, 1 verified recipient and a 90 day history. No credit card needed.` },
+  { q: "Is there a free plan?", a: `Yes. Free includes ${freePlan.limits.opens} submissions a month, unlimited forms and domains, 1 verified recipient and a 90 day history. No credit card needed.` },
   { q: "Can I send from my own domain?", a: "Yes, a custom sending domain is included on Pro." },
   { q: "Can I cancel anytime?", a: "Yes. Cancel a paid plan from your account whenever you like." },
 ];
@@ -95,7 +95,7 @@ export default function HomePage() {
         subtitle={product.description}
         primaryCta={{ href: "/sign-in", label: "Start free" }}
         secondaryCta={{ href: "/pricing", label: "See pricing" }}
-        proof={`${freePlan.limits.submissions} submissions a month on Free. Spam never counts.`}
+        proof={`${freePlan.limits.opens} submissions a month on Free. Spam never counts.`}
         visual={<SubmissionInbox />}
       />
       <Problem

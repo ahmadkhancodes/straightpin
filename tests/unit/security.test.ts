@@ -41,7 +41,7 @@ describe("CSRF origin check", () => {
 
 describe("rate limiter", () => {
   it("blocks after the limit inside the window, then recovers", async () => {
-    const db = createMemoryDb("postslot");
+    const db = createMemoryDb("straightpin");
     const rule = { limit: 3, windowMs: 60_000 };
     for (let i = 0; i < 3; i++) expect((await rateLimit("k", rule, db, 1000 + i)).ok).toBe(true);
     expect((await rateLimit("k", rule, db, 1010)).ok).toBe(false);
@@ -58,7 +58,7 @@ describe("abuse helpers", () => {
     expect(normEmail("nope")).toBeNull();
   });
   it("ALTCHA: a solved challenge verifies once; replays and garbage fail", async () => {
-    const db = createMemoryDb("postslot");
+    const db = createMemoryDb("straightpin");
     const challenge = await newChallenge();
     const solution = await solveChallenge({ challenge, deriveKey } as never);
     expect(solution).toBeTruthy();
