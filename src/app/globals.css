@@ -124,6 +124,8 @@
   --color-brand-tint: var(--brand-tint);
   --color-highlight: var(--highlight);
   --color-marker: var(--marker);
+  --color-on-highlight: #14201e; /* ink on the highlighter, both modes (DESIGN.md) */
+  --duration-tear: 160ms; /* tear off tab, transform only (DESIGN.md section 8) */
 
   /* Spacing restricted to the playbook scale: 0 2 4 8 12 16 24 32 40 48 64 80 96 (+ layout widths). */
   --spacing-*: initial;
@@ -178,12 +180,8 @@
 @utility caption-5 { font-size: 0.75rem; line-height: 1rem; font-weight: 400; }
 
 /* The only gradient allowed (playbook §6): hero heading text, left to right. */
-@utility hero-gradient-text {
-  background-image: linear-gradient(to right, var(--hero-from), var(--hero-to));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
+@utility tear-open { transform: translateX(6px); }
+@utility lift-on-hover { &:hover { box-shadow: 0 1px 0 var(--border), 0 6px 16px color-mix(in srgb, var(--text) 10%, transparent); } }
 
 @utility focus-ring {
   outline: 2px solid var(--focus);

@@ -48,7 +48,7 @@ test("magic link sign-in, org, billing state, api key, cron guard", async ({ pag
 
 test("public pages render with metadata and no horizontal overflow at 375px", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
-  for (const path of ["/", "/pricing", "/docs", "/legal/privacy", "/sign-in"]) {
+  for (const path of ["/", "/pricing", "/compare/directroles", "/how-we-check", "/docs", "/legal/privacy", "/sign-in"]) {
     const res = await page.goto(path);
     expect(res?.status(), path).toBe(200);
     await expect(page.locator("title")).not.toBeEmpty();
@@ -57,4 +57,32 @@ test("public pages render with metadata and no horizontal overflow at 375px", as
   expect((await page.goto("/nope-404"))?.status()).toBe(404);
   expect((await page.request.get("/api/health")).ok()).toBeTruthy();
   expect(await (await page.request.get("/llms.txt")).text()).toContain("Straightpin");
+});
+
+test("landing: price and refund on the first screen, chips update the sample count", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Jobs straight from company careers pages");
+  const price = page.getByText("$10.99 a month").first();
+  await expect(price).toBeVisible();
+  expect((await price.boundingBox())!.y).toBeLessThan(812);
+  await expect(page.getByText(/7 day refund/).first()).toBeVisible();
+  const chip = page.getByRole("button", { name: /^Data entry/ });
+  await chip.click();
+  await expect(chip).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByText(/for Data entry/)).toBeVisible();
+  await expect(page.getByText("We removed 63 staffing agency posts from this list.")).toBeVisible();
+  for (const el of await page.locator("main a, main button").all()) {
+    if (!(await el.isVisible())) continue;
+    const box = await el.boundingBox();
+    if (box && box.height < 44 && (await el.evaluate((n) => getComputedStyle(n).display !== "inline"))) {
+      throw new Error(`tap target under 44px: ${await el.innerText()} (${box.height})`);
+    }
+  }
+});
+
+test("pricing lists every plan from product.ts", async ({ page }) => {
+  await page.goto("/pricing");
+  for (const t of ["$4.99", "$10.99", "$23.99", "$19.99", "$98.99"]) await expect(page.getByText(t).first()).toBeVisible();
+  await expect(page.getByText("Pre selected", { exact: true })).toBeVisible();
 });

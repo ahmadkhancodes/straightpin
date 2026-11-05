@@ -10,97 +10,76 @@ export const privacy: LegalDoc = {
       id: "who-we-are",
       title: "Who we are",
       body: [
-        `${p.name} is operated by ${p.legal.entity}, ${p.legal.address}. This policy explains what personal data we handle when you visit ${p.host}, create an account or use the service.`,
-        `For account and billing data we are the controller. For form submissions that your visitors send to your endpoints, you are the controller and we are your processor. The data processing addendum covers that second case.`,
+        `${p.name} is operated by ${p.legal.entity}, ${p.legal.address}. This policy explains what personal data we handle when you visit ${p.host}, create an account or use the service. We are the controller of that data.`,
       ],
     },
     {
-      id: "data-we-collect",
-      title: "Data we collect",
+      id: "data",
+      title: "What we collect",
       body: [
-        "We collect only what we need to run the service.",
         {
           list: [
-            "Account data: your email address, name if you give one, and sign in credentials such as passkeys or two factor settings.",
-            "Organization data: workspace name, members, roles, API keys (stored hashed) and the settings you configure.",
-            "Billing data: your plan and subscription status. Card details go straight to Stripe and never touch our servers.",
-            "Form submissions: the fields and files that visitors of your sites send to your endpoints, plus delivery receipts and spam verdicts. You receive this data and we store it for you.",
+            "Account data: your email address and sign in details such as passkeys or a second step.",
+            "Job search data: the fields you pick, the jobs you open and save, your alert settings and, on paid plans, your application tracker notes.",
+            "Billing data: your plan, payment status and invoices. Card details go straight to Stripe and we never see or store them.",
             "Technical data: IP address, browser type and request logs, kept briefly for security, abuse prevention and debugging.",
+            "Job listings: we read public job postings from employer careers pages. These are business information about roles, not personal data about you.",
           ],
         },
-        "We do not sell personal data and we do not use submission content for advertising or to train models.",
+        "We do not sell personal data. We do not show ads. We do not use your data to train AI models, and we do not send your search to a language model.",
       ],
     },
     {
-      id: "how-we-use-it",
-      title: "How we use it and our legal bases",
+      id: "use",
+      title: "Why we use it",
       body: [
-        "If you are in the European Economic Area or the United Kingdom, we rely on these legal bases under the GDPR and UK GDPR.",
         {
           list: [
-            "Contract: to create your account, deliver submissions and bill you.",
-            "Legitimate interests: to secure the service, prevent abuse and spam, and keep records that let us fix problems.",
-            "Legal obligation: to keep tax and accounting records.",
-            "Consent: for optional communications, which you can withdraw at any time.",
+            "Contract: to create your account, show your matches, send alerts and take payment.",
+            "Legitimate interests: to keep the service secure, prevent abuse and fix problems.",
+            "Legal duty: to keep invoices and respond to lawful requests.",
           ],
         },
       ],
     },
     {
       id: "sharing",
-      title: "Who we share data with",
-      body: [
-        "We share data only with the subprocessors listed on our subprocessors page, and only to provide the service. We may also disclose data if a valid legal request requires it, and we will tell you first unless the law forbids it.",
-      ],
+      title: "Who we share it with",
+      body: ["Only the providers on the subprocessors page, who help us host the service, store data, take payments and send email. We share data with authorities only when the law requires it."],
     },
     {
       id: "retention",
-      title: "Retention",
+      title: "How long we keep it",
       body: [
         {
           list: [
-            "Account and organization data is kept while your account is open.",
-            "Submissions are kept for the history period of your plan, then deleted.",
-            "After you delete your account we remove your data within 30 days, except billing records we must keep by law, which are kept for the period the law requires.",
-            "Server logs are kept for up to 30 days.",
-            "Backups roll off within 35 days after deletion.",
+            "Account and job search data is kept while your account is open.",
+            "When you delete your account we delete your data within 30 days, except invoices we must keep for tax law.",
+            "Request logs are kept for 30 days.",
           ],
         },
       ],
     },
     {
-      id: "deletion-export",
-      title: "Account deletion and data export",
+      id: "rights",
+      title: "Your rights",
       body: [
-        "You can export or delete your data yourself. In the app, open Settings, then Account. You can also use the API: GET /api/account/export returns a copy of your data, and DELETE /api/account permanently deletes your account and workspace.",
-      ],
-    },
-    {
-      id: "your-rights",
-      title: "Your rights under GDPR and UK GDPR",
-      body: [
-        "You can ask us to access, correct, delete, restrict or port your personal data, and you can object to processing based on legitimate interests. Most of these you can do from Settings. For anything else, email us. You also have the right to complain to your data protection authority.",
-      ],
-    },
-    {
-      id: "ccpa",
-      title: "California rights under CCPA and CPRA",
-      body: [
-        "If you live in California you can ask what personal information we hold, ask us to delete or correct it, and ask us to stop selling or sharing it. We do not sell or share personal information for cross context advertising. We will not discriminate against you for using these rights.",
+        "You can download or delete your data yourself in Settings. You can also ask us to correct your data, limit how we use it or object to a use. In the UK and EU you can complain to your data protection authority. If you live in California you can ask what we hold, ask us to delete or correct it, and we do not sell or share your data. Canadian residents have similar rights under federal and provincial law.",
+        `Write to ${p.legalEmail} and we reply within 30 days.`,
       ],
     },
     {
       id: "transfers",
       title: "International transfers",
       body: [
-        "Our subprocessors are mainly in the United States. When we transfer personal data from the EEA, UK or Switzerland, we rely on the EU Standard Contractual Clauses and the UK addendum, and on the EU US Data Privacy Framework where a provider is certified.",
+        "Our providers are mainly in the United States. When we transfer personal data from the EEA, UK or Switzerland, we rely on the EU Standard Contractual Clauses and the UK addendum, and on the EU US Data Privacy Framework where a provider is certified.",
       ],
     },
     {
       id: "security",
       title: "Security",
       body: [
-        "We encrypt data in transit and at rest and limit access to people who need it. See the security page for details. No system is perfectly secure, and we will notify you of a breach that affects you as the law requires.",
+        "We encrypt data in transit and at rest and limit access to people who need it. See the security page for details. No system is perfectly secure, and we will tell you about a breach that affects you as the law requires.",
       ],
     },
     {
@@ -111,7 +90,7 @@ export const privacy: LegalDoc = {
     {
       id: "changes",
       title: "Changes to this policy",
-      body: ["If we make a material change we will email account owners at least 14 days before it takes effect."],
+      body: ["If we make a material change we will email you at least 14 days before it takes effect."],
     },
     {
       id: "contact",

@@ -39,15 +39,11 @@ export default async function OverviewPage() {
           </div>
         </section>
       </div>
-      <Panel title="Workspace" description="Where your product's main screen lives.">
+      <Panel title="Your matches" description="Direct jobs for the field you pick.">
         <EmptyState
-          title="Your product's main screen goes here"
-          body={
-            <>
-              This page is the signed-in home. Replace <code>src/app/app/page.tsx</code> with the screen people use every day, and keep the plan and usage cards above it or move them to the sidebar. Start with the one task a new member must finish to get value, and teach it here before they see anything else.
-            </>
-          }
-          action={<Link href="/app/settings/members" className={buttonClass("primary")}>Invite a teammate</Link>}
+          title="Your matches are on their way"
+          body="We are still building the job list. Pick your field on the home page and we will count your matches as soon as the first company pages are checked."
+          action={<Link href="/#pick-field" className={buttonClass("primary")}>Pick your field</Link>}
         />
       </Panel>
     </>

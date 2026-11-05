@@ -5,8 +5,8 @@ const money = (usd: number) => `$${(usd / 100).toLocaleString("en-US", { minimum
 
 export const billing: DocPage = {
   slug: "billing",
-  title: "Billing",
-  description: `Plans, checkout, the customer portal and billing webhooks for ${p.name}.`,
+  title: "Billing and refunds",
+  description: `Plans, how to cancel in two taps and how to get a ${p.refundDays} day refund.`,
   sections: [
     {
       heading: "Plans",
@@ -18,27 +18,17 @@ export const billing: DocPage = {
       }),
     },
     {
-      heading: "Checkout",
-      body: [
-        "Choose a plan in Settings, then Billing. You are sent to a Stripe Checkout page to pay. When payment succeeds you return to the app and your plan updates within seconds.",
-      ],
+      heading: "Cancel in two taps",
+      body: ["Open Billing, then tap Cancel plan. Your plan stays active until the end of the period you paid for. We email a renewal reminder before every renewal, with the date and the amount."],
     },
     {
-      heading: "Customer portal",
-      body: [
-        "Use the portal to change plan, update your card, download invoices and cancel anytime. Open it from Settings, then Billing, then Manage billing. A cancelled plan stays active until the end of the period you paid for.",
-      ],
+      heading: "Refunds",
+      body: [`Changed your mind within ${p.refundDays} days of a payment? Email ${p.supportEmail} and you get a full refund. No questions.`],
     },
     {
       heading: "Failed payments",
       body: [
-        `If a payment fails, your plan stays active for ${p.graceDays} days while Stripe retries. After that the account falls back to the Free plan limits. Your data is kept.`,
-      ],
-    },
-    {
-      heading: "Billing webhooks",
-      body: [
-        `Billing state is synced from Stripe through a webhook at ${p.url}/api/stripe/webhook. The endpoint verifies the Stripe signature and is idempotent, so retries are safe. You do not need to configure anything as a customer.`,
+        `If a payment fails, your plan stays active for ${p.graceDays} days while we retry. After that the account falls back to Free. Your saved jobs are kept.`,
       ],
     },
   ],

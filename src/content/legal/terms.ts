@@ -1,4 +1,4 @@
-import { product as p } from "@/config/product";
+import { intervalText, product as p } from "@/config/product";
 import type { LegalDoc } from "./types";
 
 export const terms: LegalDoc = {
@@ -10,7 +10,7 @@ export const terms: LegalDoc = {
       id: "agreement",
       title: "Agreement",
       body: [
-        `These terms are a contract between you and ${p.legal.entity} (${p.legal.address}). By creating an account or using ${p.name} you accept them. If you use the service for a company, you confirm you can bind that company.`,
+        `These terms are a contract between you and ${p.legal.entity} (${p.legal.address}). By creating an account or using ${p.name} you accept them. You must be at least 16.`,
       ],
     },
     {
@@ -25,7 +25,7 @@ export const terms: LegalDoc = {
       id: "accounts",
       title: "Accounts",
       body: [
-        "Keep your sign in details and API keys safe. You are responsible for activity under your account. Tell us promptly at the support address if you suspect unauthorized access.",
+        "Keep your sign in details safe. You are responsible for activity under your account. Tell us promptly at the support address if you suspect unauthorized access.",
       ],
     },
     {
@@ -35,7 +35,7 @@ export const terms: LegalDoc = {
         {
           list: p.plans.map((pl) => {
             const prices = pl.prices.length
-              ? pl.prices.map((x) => `$${(x.usd / 100).toFixed(2)} per ${x.interval}`).join(" or ")
+              ? pl.prices.map((x) => `$${(x.usd / 100).toFixed(2)} ${intervalText(x.interval)}`).join(" or ")
               : "free";
             return `${pl.name}: ${prices}.`;
           }),
@@ -47,20 +47,20 @@ export const terms: LegalDoc = {
       id: "cancel-refunds",
       title: "Cancellation and refunds",
       body: [
-        "You can cancel anytime from the customer portal in Settings, then Billing. Your plan stays active until the end of the period you paid for.",
-        "Refunds: {{refund policy}}",
+        "You can cancel in two taps from Billing in the app. Your plan stays active until the end of the period you paid for.",
+        `Refunds: any payment is refunded in full if you ask within ${p.refundDays} days. See the refund policy.`,
       ],
     },
     {
       id: "acceptable-use",
       title: "Acceptable use",
-      body: ["You must follow our acceptable use policy. We may suspend an account that breaks it."],
+      body: ["Use the service for your own job search. Do not scrape it, resell its data, share one paid account between several people or try to break its security. We may suspend an account that does."],
     },
     {
       id: "your-data",
       title: "Your data",
       body: [
-        "You own your content and submissions. You give us a limited license to host, process and deliver it to run the service. You are responsible for having a lawful basis to collect the data your forms gather and for telling your visitors how it is used.",
+        "You own what you save, such as notes. You give us a limited license to host and process it to run the service. Job listings come from employers: we link to the employer's own page and keep a short excerpt. We are not a recruiter, we do not take a cut of your pay, and companies shown are not affiliated with us. We do not promise that you will get a job or an interview.",
       ],
     },
     {
@@ -82,7 +82,7 @@ export const terms: LegalDoc = {
       id: "liability",
       title: "Limit of liability",
       body: [
-        `To the extent the law allows, our total liability for any claim is limited to {{cap}}. We are not liable for indirect or consequential loss, such as lost profit. Nothing here limits liability that cannot be limited by law.`,
+        `To the extent the law allows, our total liability for any claim is limited to {{liability cap}}. We are not liable for indirect or consequential loss, such as lost profit. Nothing here limits liability that cannot be limited by law.`,
       ],
     },
     {
@@ -98,7 +98,7 @@ export const terms: LegalDoc = {
     {
       id: "changes",
       title: "Changes",
-      body: ["We will email account owners at least 14 days before a material change takes effect. Continuing to use the service after that means you accept the change."],
+      body: ["We will email you at least 14 days before a material change takes effect. Continuing to use the service after that means you accept the change."],
     },
     {
       id: "contact",

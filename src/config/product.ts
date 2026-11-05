@@ -140,8 +140,9 @@ export const product = {
     maintenance: "off",
   } as Record<string, string>,
   nav: [
+    { href: "/#pick-field", label: "Jobs" },
     { href: "/pricing", label: "Pricing" },
-    { href: "/docs", label: "Docs" },
+    { href: "/how-we-check", label: "How we check" },
   ],
 } as const;
 

@@ -5,8 +5,8 @@ import { product } from "@/config/product";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
-  title: "Documentation",
-  description: `Guides and reference for the ${product.name} API, authentication, billing and webhooks.`,
+  title: "Help",
+  description: `Help for signing in, your account, billing and refunds on ${product.name}.`,
   path: "/docs",
 });
 
@@ -14,8 +14,8 @@ export default function DocsIndexPage() {
   return (
     <Container className="py-12 md:py-20">
       <header className="mb-12 flex max-w-3xl flex-col gap-3">
-        <h1 className="heading-4 text-text">Documentation</h1>
-        <p className="body-3 text-text-subtle">Everything you need to connect {product.name} to your sites and systems.</p>
+        <h1 className="heading-4 text-text">Help</h1>
+        <p className="body-3 text-text-subtle">Short answers about signing in, billing and refunds.</p>
       </header>
       <div className="flex flex-col gap-12">
         {docGroups.map((g) => (

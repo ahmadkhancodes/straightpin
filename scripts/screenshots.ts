@@ -6,13 +6,13 @@ import { chromium } from "playwright";
 import { mkdirSync } from "node:fs";
 
 const BASE = process.env.BASE_URL ?? "http://localhost:3000";
-const ROUTES = ["/", "/pricing", "/docs", "/docs/getting-started", "/legal/privacy", "/legal/terms", "/compare/web3forms", "/sign-in", "/this-page-does-not-exist", ...process.argv.slice(2)];
+const ROUTES = ["/", "/pricing", "/compare/directroles", "/how-we-check", "/sign-in", ...process.argv.slice(2)];
 const OUT = process.env.OUT_DIR ?? `docs/qa/${new Date().toISOString().slice(0, 10)}`;
 const WIDTHS = [375, 1440];
 
 async function main() {
   mkdirSync(OUT, { recursive: true });
-  const browser = await chromium.launch();
+  const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || undefined });
   const problems: string[] = [];
   for (const theme of ["light", "dark"] as const) {
     for (const width of WIDTHS) {
