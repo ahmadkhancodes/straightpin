@@ -1,0 +1,3 @@
+<?xml version="1.0"?>
+<!DOCTYPE offers [<!ENTITY xxe "boom">]>
+<offers><offer><id>1</id><title>&xxe;</title><careers_url>https://acme.recruitee.com/o/1</careers_url><country>United States</country></offer></offers>

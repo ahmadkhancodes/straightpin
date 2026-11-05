@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://careers.example.com/jobs/search</loc></url>
+  <url><loc>https://careers.example.com/jobs/</loc></url>
+  <url><loc>https://careers.example.com/jobs/1001-staff-engineer</loc></url>
+  <url><loc>https://careers.example.com/jobs/1002-support-lead</loc></url>
+  <url><loc>https://careers.example.com/jobs/1003-gone</loc></url>
+  <url><loc>https://careers.example.com/jobs/1004-expired</loc></url>
+  <url><loc>https://careers.example.com/about</loc></url>
+</urlset>

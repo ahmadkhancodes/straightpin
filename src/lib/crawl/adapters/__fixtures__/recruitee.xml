@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<offers>
+<offer><id>9001</id><guid>g1</guid><title>Frontend Developer</title><description><![CDATA[<p>Build <b>UIs</b></p>]]></description><city>Vancouver</city><country>Canada</country><country_code>CA</country_code><state_name>British Columbia</state_name><remote>true</remote><careers_url>https://acme.recruitee.com/o/frontend-developer</careers_url><created_at>2026-10-05 08:00:00 UTC</created_at></offer>
+<offer><id>9002</id><title>Ops &amp; Support</title><city>Manchester</city><country>United Kingdom</country><country_code>GB</country_code><careers_url>https://acme.recruitee.com/o/ops</careers_url></offer>
+<offer><id>9003</id><title>Rome Chef</title><city>Rome</city><country>Italy</country><country_code>IT</country_code><careers_url>https://acme.recruitee.com/o/chef</careers_url></offer>
+<offer><title>No id</title></offer>
+</offers>

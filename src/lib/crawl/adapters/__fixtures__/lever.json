@@ -1,0 +1,6 @@
+[
+{"id":"aaaa-1","text":"Staff Engineer","hostedUrl":"https://jobs.lever.co/acme/aaaa-1","applyUrl":"https://jobs.lever.co/acme/aaaa-1/apply","createdAt":1760000000000,"country":"US","workplaceType":"hybrid","categories":{"location":"San Francisco, CA","team":"Eng"},"descriptionPlain":"Work on infra.","salaryRange":{"currency":"USD","interval":"per-year-salary","min":180000,"max":240000}},
+{"id":"aaaa-2","text":"Support Lead","hostedUrl":"https://jobs.lever.co/acme/aaaa-2","createdAt":1760100000000,"country":"GB","categories":{"location":"London"},"descriptionPlain":"Help."},
+{"id":"aaaa-3","text":"Paris Role","hostedUrl":"https://jobs.lever.co/acme/aaaa-3","createdAt":1760100000000,"country":"FR","categories":{"location":"Paris"}},
+{"text":"Broken"}
+]
