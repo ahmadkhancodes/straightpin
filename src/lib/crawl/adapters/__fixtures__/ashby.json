@@ -1,0 +1,8 @@
+{"jobs":[
+{"id":"ab-1","title":"Product Designer","location":"New York, NY, United States","isListed":true,"isRemote":false,"workplaceType":"Hybrid","publishedAt":"2026-10-20T12:00:00.000+00:00","jobUrl":"https://jobs.ashbyhq.com/acme/ab-1","applyUrl":"https://jobs.ashbyhq.com/acme/ab-1/application","descriptionPlain":"Design things.","address":{"postalAddress":{"addressRegion":"New York","addressCountry":"United States"}},
+ "compensation":{"compensationTierSummary":"$150K - $190K","scrapeableCompensationSalarySummary":"$150K - $190K","summaryComponents":[{"compensationType":"Salary","interval":"1 YEAR","currencyCode":"USD","minValue":150000,"maxValue":190000},{"compensationType":"EquityPercentage","interval":"NONE","currencyCode":null,"minValue":0.1,"maxValue":0.2}]}},
+{"id":"ab-2","title":"Contractor","location":"Remote, Canada","isListed":true,"isRemote":true,"publishedAt":"2026-10-21T12:00:00.000+00:00","jobUrl":"https://jobs.ashbyhq.com/acme/ab-2","compensation":{"scrapeableCompensationSalarySummary":"CAD $60 - $80 per hour"}},
+{"id":"ab-3","title":"Hidden","location":"Austin, TX, USA","isListed":false,"jobUrl":"https://jobs.ashbyhq.com/acme/ab-3"},
+{"id":"ab-4","title":"UK Analyst","location":"London","isListed":true,"publishedAt":"not-a-date","jobUrl":"https://jobs.ashbyhq.com/acme/ab-4","compensation":{"summaryComponents":[{"compensationType":"Salary","interval":"1 YEAR","currencyCode":"GBP","minValue":50000,"maxValue":60000}]}},
+{"id":"ab-5","title":"Sydney","location":"Sydney, Australia","isListed":true,"jobUrl":"https://jobs.ashbyhq.com/acme/ab-5"}
+]}

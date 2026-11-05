@@ -1,0 +1,6 @@
+{"name":"Acme","jobs":[
+{"title":"Data Analyst","shortcode":"ABC123","employment_type":"Full-time","telecommuting":true,"published_on":"2026-10-10","created_at":"2026-10-09","country":"United States","city":"Austin","state":"Texas","url":"https://apply.workable.com/j/ABC123","application_url":"https://apply.workable.com/j/ABC123/apply","description":"<p>Analyse <b>data</b></p>"},
+{"title":"Created Only","shortcode":"DEF456","created_at":"2026-10-08","country":"United Kingdom","city":"Leeds","url":"https://apply.workable.com/j/DEF456"},
+{"title":"Madrid","shortcode":"GHI789","country":"Spain","city":"Madrid","url":"https://apply.workable.com/j/GHI789"},
+"garbage"
+]}

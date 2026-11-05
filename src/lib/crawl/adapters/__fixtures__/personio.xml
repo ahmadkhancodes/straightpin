@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workzag-jobs>
+<position><id>555</id><office>London, UK</office><department>Eng</department><name>Backend Engineer</name><jobDescriptions><jobDescription><name>Intro</name><value><![CDATA[<p>Join <b>us</b></p>]]></value></jobDescription></jobDescriptions><employmentType>permanent</employmentType><createdAt>2026-09-01T10:00:00+00:00</createdAt></position>
+<position><id>556</id><office>Munich</office><name>Muenchen Job</name><createdAt>2026-09-02T10:00:00+00:00</createdAt></position>
+<position><office>London</office><name>No id</name></position>
+</workzag-jobs>
