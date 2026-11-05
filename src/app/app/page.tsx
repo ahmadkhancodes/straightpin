@@ -8,6 +8,8 @@ import { requireOrg } from "@/lib/auth/session";
 import { effectivePlan } from "@/lib/billing/entitlement";
 import { currentUsage } from "@/lib/billing/usage";
 import { getDb } from "@/lib/db";
+import { fieldLabel } from "@/lib/jobs/fields";
+import { answersFromProfile, liveCount, queryFromAnswers } from "@/lib/jobs/matching";
 
 export const metadata = { title: "Overview" };
 
@@ -17,6 +19,9 @@ export default async function OverviewPage() {
   const ent = await db.getEntitlement(ctx.org.id);
   const plan = effectivePlan(ent);
   const usage = await currentUsage(db, ctx.org.id, METERS_SHOWN);
+  const profile = await db.getProfile(ctx.org.id);
+  const saved = await db.listSaved(ctx.org.id);
+  const count = profile ? (await liveCount(db, queryFromAnswers(answersFromProfile(profile)))).count : 0;
   return (
     <>
       <PageHeader title={ctx.org.name} description={`Signed in as ${ctx.user.email}.`} />
@@ -40,11 +45,19 @@ export default async function OverviewPage() {
         </section>
       </div>
       <Panel title="Your matches" description="Direct jobs for the field you pick.">
-        <EmptyState
-          title="Your matches are on their way"
-          body="We are still building the job list. Pick your field on the home page and we will count your matches as soon as the first company pages are checked."
-          action={<Link href="/#pick-field" className={buttonClass("primary")}>Pick your field</Link>}
-        />
+        {profile ? (
+          <EmptyState
+            title={`${count.toLocaleString("en-US")} direct ${count === 1 ? "match" : "matches"} for ${fieldLabel(profile.field)}`}
+            body={`${saved.length} saved. Daily email ${profile.digest ? "on" : "off"}.`}
+            action={<Link href="/matches" className={buttonClass("primary")}>See my matches</Link>}
+          />
+        ) : (
+          <EmptyState
+            title="Answer six questions to see your matches"
+            body="One question per screen, with a live count from the job database."
+            action={<Link href="/quiz" className={buttonClass("primary")}>Start the quiz</Link>}
+          />
+        )}
       </Panel>
     </>
   );

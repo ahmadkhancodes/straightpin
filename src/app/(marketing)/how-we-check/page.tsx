@@ -37,7 +37,7 @@ const checks = [
     title: "3. Does it look like a ghost job?",
     body: [
       "A ghost job is a listing that is not really being filled. We cannot see inside a company, so we do not say a job is a ghost. We show the signs we can measure and you decide.",
-      "A job posted more than 30 days ago gets an Old posting label with its age. A job whose closing date has already passed gets a warning too. Greenhouse reported that 18 to 22% of postings are not actively filled, which is why the date matters.",
+      "A job posted more than 30 days ago gets an Old posting label with its age. A job whose closing date has already passed gets a warning too. Some postings stay up long after the company stopped hiring, which is why the date matters.",
     ],
   },
   {

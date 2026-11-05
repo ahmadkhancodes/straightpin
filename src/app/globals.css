@@ -183,6 +183,10 @@
 @utility tear-open { transform: translateX(6px); }
 @utility lift-on-hover { &:hover { box-shadow: 0 1px 0 var(--border), 0 6px 16px color-mix(in srgb, var(--text) 10%, transparent); } }
 
+/* Counter digit flip: transform only, 240ms. Reduced motion turns it off below. */
+@keyframes digit-flip { from { transform: perspective(200px) rotateX(-90deg); } to { transform: perspective(200px) rotateX(0deg); } }
+@utility digit-flip { animation: digit-flip 240ms var(--ease-out-kit) both; transform-origin: 50% 0; }
+
 @utility focus-ring {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
@@ -210,5 +214,6 @@
 @media (prefers-reduced-motion: reduce) {
   .kit-reveal { transform: none; transition: opacity 300ms var(--ease-out-kit); }
   .kit-word { opacity: 1; transition: none; }
+  .digit-flip { animation: none !important; }
   *, *::before, *::after { animation-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }

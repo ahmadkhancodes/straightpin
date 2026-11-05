@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { Db } from "@/lib/db/types";
 import { NONE } from "@/lib/billing/entitlement";
+import { fixtureJobs, NOW } from "@/lib/jobs/fixtures";
+import type { SearchProfile } from "@/lib/jobs/types";
 
 // Shared contract suite (ported from trayo server/__tests__/dbContract.ts, sync/family/merge removed).
 // Run against memory always, and against Mongo when MONGODB_URI_TEST is set.
@@ -95,6 +97,100 @@ export function dbContract(name: string, make: () => Promise<Db>) {
       expect(await db.getEntitlement(org)).toBeNull();
       expect(await db.listWebhookEndpoints(org)).toEqual([]);
       expect((await db.listAudit(org)).length).toBe(1);
+    });
+
+    it("employers: insert only upsert, due list, leases are exclusive and expire", async () => {
+      const db = await make();
+      const slug = `acme${Math.random().toString(36).slice(2, 8)}`;
+      expect(await db.upsertEmployer({ name: "Acme", ats: "greenhouse", slug }, NOW, true)).toBe(true);
+      expect(await db.upsertEmployer({ name: "Renamed", ats: "greenhouse", slug }, NOW)).toBe(false);
+      const id = `greenhouse:${slug}`;
+      expect((await db.getEmployer(id))?.name).toBe("Acme");
+      expect((await db.dueEmployers(NOW, 10)).some((e) => e.id === id)).toBe(true);
+      await db.patchEmployer(id, { nextCrawlAt: new Date(NOW.getTime() + 3_600_000) });
+      expect((await db.dueEmployers(NOW, 10)).some((e) => e.id === id)).toBe(false);
+
+      expect(await db.tryLease(id, "a", NOW, 1000)).toBe(true);
+      expect(await db.tryLease(id, "b", new Date(NOW.getTime() + 500), 1000)).toBe(false);
+      expect(await db.tryLease(id, "b", new Date(NOW.getTime() + 1500), 1000)).toBe(true); // a's lease expired
+      await db.releaseLease(id, "a"); // not the owner: no effect
+      expect(await db.tryLease(id, "a", new Date(NOW.getTime() + 1600), 1000)).toBe(false);
+      await db.releaseLease(id, "b");
+      expect(await db.tryLease(id, "a", new Date(NOW.getTime() + 1600), 1000)).toBe(true);
+    });
+
+    it("jobs: upsert is idempotent, keeps firstSeenAt, closes after 2 misses and reopens", async () => {
+      const db = await make();
+      const jobs = fixtureJobs(NOW).map((j) => ({ ...j, employerId: "greenhouse:contract", id: `c_${j.id}` }));
+      const t1 = new Date(NOW.getTime());
+      const r1 = await db.upsertJobs(jobs, t1);
+      expect(r1).toEqual({ inserted: jobs.length, updated: 0 });
+      const t2 = new Date(NOW.getTime() + 3_600_000);
+      expect(await db.upsertJobs(jobs, t2)).toEqual({ inserted: 0, updated: jobs.length });
+      const j0 = (await db.getJob(jobs[0]!.id))!;
+      expect(j0.firstSeenAt.getTime()).toBe(t1.getTime());
+      expect(j0.lastSeenAt.getTime()).toBe(t2.getTime());
+      expect(j0.postedAt.getTime()).toBe(j0.firstPublishedAt!.getTime());
+      // a job without a company date sorts by first seen
+      const undated = (await db.getJob(jobs[jobs.length - 1]!.id))!;
+      expect(undated.firstPublishedAt).toBeNull();
+      expect(undated.postedAt.getTime()).toBe(t1.getTime());
+
+      const keep = jobs.slice(1).map((j) => j.externalId);
+      expect(await db.closeMissing("greenhouse:contract", keep, t2)).toBe(0); // first miss
+      expect((await db.getJob(jobs[0]!.id))!.closedAt).toBeNull();
+      expect(await db.closeMissing("greenhouse:contract", keep, t2)).toBe(1); // second miss closes
+      expect((await db.getJob(jobs[0]!.id))!.closedAt).not.toBeNull();
+      await db.upsertJobs([jobs[0]!], t2);
+      expect((await db.getJob(jobs[0]!.id))!.closedAt).toBeNull();
+      expect(await db.closeByExternalIds("greenhouse:contract", [jobs[0]!.externalId], t2)).toBe(1);
+    });
+
+    it("jobs: queries filter, hide agency posts, count and sort newest first", async () => {
+      const db = await make();
+      await db.upsertJobs(fixtureJobs(NOW).map((j) => ({ ...j, id: `q_${j.id}`, employerId: "greenhouse:queries" })), NOW);
+      const support = await db.queryJobs({ field: "support", country: "US", limit: 50 });
+      expect(support.every((j) => j.field === "support" && j.agencyFlag !== "yes")).toBe(true);
+      expect(support.map((j) => j.title)).not.toContain("Customer Service Representative");
+      const times = support.map((j) => j.postedAt.getTime());
+      expect(times).toEqual([...times].sort((a, b) => b - a));
+      expect(await db.countJobs({ field: "support", country: "US" })).toBe(support.length);
+      expect(await db.countAgencyHidden({ field: "support", country: "US" })).toBe(1);
+      const remote = await db.countJobs({ field: "support", country: "US", remoteTypes: ["remote"] });
+      expect(remote).toBeLessThan(support.length);
+      // a pay floor keeps jobs with no pay shown, drops lower paid ones
+      const floor = await db.queryJobs({ field: "support", country: "US", payFloor: 18, limit: 50 });
+      expect(floor.every((j) => j.payHourlyMax === null || j.payHourlyMax >= 18)).toBe(true);
+      expect(await db.countJobs({ field: "support", firstSeenAfter: new Date(NOW.getTime() + 1) })).toBe(0);
+      expect((await db.queryJobs({ field: "support", limit: 2, skip: 1 })).length).toBe(2);
+    });
+
+    it("opens, saves and profiles", async () => {
+      const db = await make();
+      const org = `org_j${Math.random()}`;
+      expect(await db.recordOpen(org, "2026-11-05", "j1")).toBe(true);
+      expect(await db.recordOpen(org, "2026-11-05", "j1")).toBe(false);
+      expect(await db.hasOpened(org, "2026-11-06", "j1")).toBe(false);
+      expect(await db.saveJob(org, "j1", NOW)).toBe(true);
+      expect(await db.saveJob(org, "j1", NOW)).toBe(false);
+      expect((await db.listSaved(org)).map((s) => s.jobId)).toEqual(["j1"]);
+      expect(await db.unsaveJob(org, "j1")).toBe(true);
+      const p: SearchProfile = { orgId: org, email: "a@x.test", field: "support", country: "US", remote: "remote", payFloor: 20, level: "any", schedule: "any", tz: "America/New_York", digest: true, alerts: false, lastDigestAt: null, lastAlertAt: null, updatedAt: NOW };
+      await db.saveProfile(p);
+      expect(await db.getProfile(org)).toEqual(p);
+      expect((await db.listProfiles({ digest: true })).some((x) => x.orgId === org)).toBe(true);
+      expect((await db.listProfiles({ alerts: true })).some((x) => x.orgId === org)).toBe(false);
+      await db.deleteOrgData(org);
+      expect(await db.getProfile(org)).toBeNull();
+    });
+
+    it("source runs list newest first", async () => {
+      const db = await make();
+      const mk = (id: string, at: number) => ({ id, kind: "crawl-tick" as const, startedAt: new Date(at), finishedAt: new Date(at + 1), employers: 1, jobsSeen: 2, inserted: 2, updated: 0, closed: 0, agencyHidden: 0, errors: [], budgetHit: false });
+      await db.recordSourceRun(mk(`r1_${Math.random()}`, 1000));
+      const id2 = `r2_${Math.random()}`;
+      await db.recordSourceRun(mk(id2, 2000));
+      expect((await db.listSourceRuns(1))[0]!.id).toBe(id2);
     });
 
     it("config round trip", async () => {

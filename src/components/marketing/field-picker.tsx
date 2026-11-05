@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState } from "react";
 import { ShieldCheck } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/components/ui/cn";
@@ -10,7 +11,7 @@ function Counter({ value }: { value: number }) {
   return (
     <span aria-hidden className="inline-flex gap-0.5">
       {String(value).split("").map((d, i) => (
-        <span key={`${i}-${d}`} className="heading-5 min-w-6 rounded-sm border border-border bg-surface-raised px-1 text-center tabular-nums text-text">{d}</span>
+        <span key={`${i}-${d}`} className="digit-flip heading-5 min-w-6 rounded-sm border border-border bg-surface-raised px-1 text-center tabular-nums text-text">{d}</span>
       ))}
     </span>
   );
@@ -46,6 +47,11 @@ export function FieldPicker({ withList = false, headingId }: { withList?: boolea
           <b className="font-semibold">matches so far</b>{" "}
           <span className="text-text-subtle">for {current.label}. {current.agencyRemoved} staffing agency posts removed. Sample numbers.</span>
         </span>
+      </p>
+      <p className="mt-3">
+        <Link href={`/quiz?field=${field}`} className="button-md inline-flex min-h-12 items-center text-action underline underline-offset-4 focus-visible:focus-ring">
+          Answer five more questions for your real count
+        </Link>
       </p>
       {withList ? (
         <div className="mt-8 grid grid-cols-1 gap-4 rounded-lg border border-border bg-surface p-4">

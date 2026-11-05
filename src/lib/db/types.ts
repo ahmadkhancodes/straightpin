@@ -4,6 +4,7 @@
 // TTL fields are BSON Dates (the apps stored numbers, so Mongo TTL never fired: BACKEND_REUSE 1.5).
 
 import type { PlanId } from "@/config/product";
+import type { EmployerDoc, EmployerSeed, JobDoc, JobQuery, JobUpsert, SavedJob, SearchProfile, SourceRun } from "@/lib/jobs/types";
 
 export type EntitlementStatus = "none" | "trialing" | "active" | "past_due" | "canceled" | "lifetime";
 
@@ -130,6 +131,41 @@ export interface Db {
   // remote flags
   getConfig(): Promise<Record<string, string>>;
   setConfig(key: string, value: string): Promise<void>;
+
+  // job database (M2). employers = the source list; crawl_leases = shard claims; source_runs = crawl health.
+  /** Insert only: an existing row keeps its crawl state. Returns true when created. */
+  upsertEmployer(e: EmployerSeed, now: Date, seed?: boolean): Promise<boolean>;
+  getEmployer(id: string): Promise<EmployerDoc | null>;
+  listEmployers(): Promise<EmployerDoc[]>;
+  dueEmployers(now: Date, limit: number): Promise<EmployerDoc[]>;
+  patchEmployer(id: string, patch: Partial<Omit<EmployerDoc, "id">>): Promise<void>;
+  /** Atomic claim of one key. False if another owner holds an unexpired lease. */
+  tryLease(key: string, owner: string, now: Date, ttlMs: number): Promise<boolean>;
+  releaseLease(key: string, owner: string): Promise<void>;
+  /** Idempotent by job id. New rows get firstSeenAt = now; seen rows are reopened and miss count reset. */
+  upsertJobs(jobs: JobUpsert[], now: Date): Promise<{ inserted: number; updated: number }>;
+  /** Jobs of an employer not in `seenExternalIds` get a miss; at `threshold` misses they close. Returns closed count. */
+  closeMissing(employerId: string, seenExternalIds: string[], now: Date, threshold?: number): Promise<number>;
+  closeByExternalIds(employerId: string, externalIds: string[], now: Date): Promise<number>;
+  jobsByDedupeKeys(keys: string[]): Promise<{ id: string; dedupeKey: string; firstSeenAt: Date }[]>;
+  getJob(id: string): Promise<JobDoc | null>;
+  getJobs(ids: string[]): Promise<JobDoc[]>;
+  queryJobs(q: JobQuery): Promise<JobDoc[]>;
+  countJobs(q: JobQuery): Promise<number>;
+  /** Open jobs hidden because they are flagged as staffing agency posts. */
+  countAgencyHidden(q: JobQuery): Promise<number>;
+  recordSourceRun(r: SourceRun): Promise<void>;
+  listSourceRuns(limit: number): Promise<SourceRun[]>;
+  /** One open per (org, day, job). True when this is the first open of that job that day. */
+  recordOpen(orgId: string, day: string, jobId: string): Promise<boolean>;
+  hasOpened(orgId: string, day: string, jobId: string): Promise<boolean>;
+  /** True when newly saved. */
+  saveJob(orgId: string, jobId: string, now: Date): Promise<boolean>;
+  unsaveJob(orgId: string, jobId: string): Promise<boolean>;
+  listSaved(orgId: string): Promise<SavedJob[]>;
+  getProfile(orgId: string): Promise<SearchProfile | null>;
+  saveProfile(p: SearchProfile): Promise<void>;
+  listProfiles(filter: { digest?: boolean; alerts?: boolean }): Promise<SearchProfile[]>;
 
   // privacy
   exportOrgData(orgId: string): Promise<Record<string, unknown>>;

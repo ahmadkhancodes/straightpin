@@ -1,0 +1,18 @@
+{
+  "_note": "SEED DATA. A small starting list of public employer boards used to exercise the crawl in M2. It is not the production source list (the directory and board discovery come later) and a listed name does not mean the company endorses Straightpin. Remove or suppress any entry on request.",
+  "sources": [
+    { "name": "Airbnb", "ats": "greenhouse", "slug": "airbnb" },
+    { "name": "GitLab", "ats": "greenhouse", "slug": "gitlab" },
+    { "name": "Instacart", "ats": "greenhouse", "slug": "instacart" },
+    { "name": "Dropbox", "ats": "greenhouse", "slug": "dropbox" },
+    { "name": "Twilio", "ats": "greenhouse", "slug": "twilio" },
+    { "name": "Spotify", "ats": "lever", "slug": "spotify" },
+    { "name": "Palantir", "ats": "lever", "slug": "palantir" },
+    { "name": "Ramp", "ats": "ashby", "slug": "ramp" },
+    { "name": "Notion", "ats": "ashby", "slug": "notion" },
+    { "name": "Linear", "ats": "ashby", "slug": "linear" },
+    { "name": "Workable", "ats": "workable", "slug": "workable" },
+    { "name": "Recruitee", "ats": "recruitee", "slug": "recruitee" },
+    { "name": "Personio", "ats": "personio", "slug": "personio", "region": "eu" }
+  ]
+}

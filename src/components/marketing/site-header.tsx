@@ -69,7 +69,7 @@ export function SiteHeader() {
 
   const panelItems = [
     ...product.nav.map((n) => ({ ...n, kind: "link" as const })),
-    { href: "/#pick-field", label: "See my matches", kind: "cta" as const },
+    { href: "/quiz", label: "See my matches", kind: "cta" as const },
   ];
 
   return (
@@ -88,7 +88,7 @@ export function SiteHeader() {
         </nav>
         <div className="flex items-center gap-1">
           <Link href="/sign-in" className={buttonClass("secondary", "md")}>Log in</Link>
-          <span className="hidden md:block"><Link href="/#pick-field" className={buttonClass("primary", "md")}>See my matches</Link></span>
+          <span className="hidden md:block"><Link href="/quiz" className={buttonClass("primary", "md")}>See my matches</Link></span>
           <ThemeToggle />
           <button
             ref={toggleRef}
