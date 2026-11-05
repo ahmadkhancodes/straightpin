@@ -49,3 +49,24 @@ export function fixtureJobs(now: Date = NOW): JobUpsert[] {
     };
   });
 }
+
+/** INVENTED extra rows so a few programmatic pages pass the minimum count in e2e: 10 Toronto and 10 remote support jobs. */
+export function pageFixtureJobs(now: Date = NOW): JobUpsert[] {
+  const tpl = fixtureJobs(now).find((j) => j.field === "support" && j.agencyFlag === "no")!;
+  const employers = ["Northgate Clinics", "Cedar & Pine Retail", "Bluewater Insurance"];
+  return Array.from({ length: 20 }, (_, i) => {
+    const toronto = i < 10;
+    const employerName = employers[i % 3]!;
+    const employerId = `greenhouse:${employerName.toLowerCase().replace(/[^a-z0-9]+/g, "")}`;
+    const externalId = `p${i}`;
+    return {
+      ...tpl, id: jobId(employerId, externalId), employerId, employerName, externalId,
+      title: `Customer Support Specialist ${toronto ? "I" : "II"}`, titleNorm: `customer support specialist ${toronto ? "i" : "ii"}`,
+      country: toronto ? "CA" : "US", location: toronto ? "Toronto, ON" : "Remote", remoteType: toronto ? "onsite" : "remote",
+      payMin: 18 + (i % 5), payMax: 22 + (i % 5), payPeriod: "hour", currency: toronto ? "CAD" : "USD", payHourlyMax: 22 + (i % 5),
+      firstPublishedAt: new Date(now.getTime() - (i + 1) * 86_400_000),
+      applyUrl: `https://boards.greenhouse.io/${employerId.split(":")[1]}/jobs/${externalId}`,
+      dedupeKey: dedupeKey({ companyId: employerId, titleNorm: `support ${i}`, locationNorm: toronto ? "toronto" : "remote" }),
+    } as JobUpsert;
+  });
+}

@@ -31,3 +31,14 @@ Everything else (DB user via MongoDB connector, Stripe test products via connect
 8. **Fill the legal placeholders** (before taking real money, M5)
    Files: `src/config/product.ts` (`legal.jurisdiction`, `legal.address`) and `src/content/legal/terms.ts` (`{{liability cap}}`).
    Needed from the owner: the governing law and courts (`{{jurisdiction}}`), the registered address of BufferSol Technologies (`{{registered address}}`), and the liability cap wording (`{{liability cap}}`). They render as visible placeholders on /legal/privacy and /legal/terms until set. A lawyer should read the legal pages before launch.
+
+## Added in M4 (launch prep)
+9. **Placeholder inventory** (every `{{...}}` in `src/`; a unit test fails if one is missing here)
+   - `{{jurisdiction}}`: `src/config/product.ts` (`legal.jurisdiction`). Governing law and courts.
+   - `{{registered address}}`: `src/config/product.ts` (`legal.address`). Registered address of BufferSol Technologies.
+   - `{{liability cap}}`: `src/content/legal/terms.ts`. Liability cap wording.
+   Outside the code: `{{launch_job_target}}` (docs/ARCHITECTURE.md), set after the first full crawl.
+10. **Redeploy the Cloudflare cron worker** (new `DAILY_JOBS`: `source-health`, `retention`)
+    `cd infra/cron-worker && npx wrangler deploy` (needs the Cloudflare token). Full order in `docs/LAUNCH_CHECKLIST.md`.
+11. **Run `npm run db:indexes` against Atlas** (new `alert_rules` collection and indexes).
+12. **Review the seed source list** after the first live crawl: `/admin/crawl` shows disabled and unverified sources. See `docs/LAUNCH_CHECKLIST.md` section 5.

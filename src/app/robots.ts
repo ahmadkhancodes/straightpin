@@ -3,7 +3,7 @@ import { product } from "@/config/product";
 
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: { userAgent: "*", allow: "/", disallow: ["/api/", "/app/", "/admin/", "/account", "/paywall"] },
+    rules: { userAgent: "*", allow: "/", disallow: ["/api/", "/app/", "/admin/", "/account", "/paywall", "/alerts"] },
     sitemap: `${product.url}/sitemap.xml`,
   };
 }

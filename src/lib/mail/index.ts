@@ -28,6 +28,17 @@ export async function unsubscribeUrl(email: string, scope: string) {
   return `${appUrl()}/api/mail/unsubscribe?${q}`;
 }
 
+/** Signed link token for the no login "manage my alerts" page. One token per email address, so it cannot be reused for another address. */
+export async function manageToken(email: string) {
+  // A different key from the unsubscribe tokens, so one kind of link can never stand in for the other.
+  return hmacSha256Hex(`${unsubSecret()}:manage-link`, email.toLowerCase());
+}
+
+export async function manageUrl(email: string) {
+  const q = new URLSearchParams({ e: email.toLowerCase(), t: await manageToken(email) });
+  return `${appUrl()}/alerts/manage?${q}`;
+}
+
 /**
  * The one way to send mail. Checks the suppression list (transactional mail skips marketing scopes),
  * adds List-Unsubscribe + List-Unsubscribe-Post for non-transactional mail.

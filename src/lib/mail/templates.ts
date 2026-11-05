@@ -59,11 +59,13 @@ ${opts.actionUrl ? button(opts.actionUrl, opts.actionLabel ?? "Open") : ""}`);
 export interface DigestJob { title: string; company: string; place: string; line: string; url: string }
 
 /** Daily digest and instant alert: a short list of jobs with direct links, a receipt line and a one click unsubscribe. */
-export function digestEmail(opts: { kind: "digest" | "alerts"; total: number; jobs: DigestJob[]; moreUrl: string; unsubscribeUrl: string; receipt?: string }) {
+export function digestEmail(opts: { kind: "digest" | "alerts"; total: number; jobs: DigestJob[]; moreUrl: string; unsubscribeUrl: string; manageUrl?: string; /** Name of the saved alert this email is for, like "Customer support · Toronto, CA". */ label?: string; receipt?: string }) {
   const n = opts.total;
   const subject = opts.kind === "digest"
     ? `${n} new ${n === 1 ? "job" : "jobs"} for you today`
-    : `${n} new ${n === 1 ? "match" : "matches"} straight from company pages`;
+    : opts.label
+      ? `${n} new ${n === 1 ? "match" : "matches"} for ${opts.label}`
+      : `${n} new ${n === 1 ? "match" : "matches"} straight from company pages`;
   const more = n > opts.jobs.length ? `${n - opts.jobs.length} more are waiting in your matches.` : "";
   const text = [
     subject,
@@ -73,6 +75,7 @@ export function digestEmail(opts: { kind: "digest" | "alerts"; total: number; jo
     `See all: ${opts.moreUrl}`,
     opts.receipt ?? "",
     "",
+    opts.manageUrl ? `Change or delete your alerts: ${opts.manageUrl}` : "",
     `Unsubscribe in one click: ${opts.unsubscribeUrl}`,
   ].filter((l, i, a) => l !== "" || a[i - 1] !== "").join("\n");
   const items = opts.jobs
@@ -85,7 +88,7 @@ export function digestEmail(opts: { kind: "digest" | "alerts"; total: number; jo
 ${more ? `<p style="margin:0;font-size:14px;color:#404040">${esc(more)}</p>` : ""}
 ${button(opts.moreUrl, "See all my matches")}
 ${opts.receipt ? `<p style="margin:0;font-size:12px;color:#767676">${esc(opts.receipt)}</p>` : ""}
-<p style="margin:16px 0 0;font-size:12px"><a href="${esc(opts.unsubscribeUrl)}" style="color:#767676">Unsubscribe in one click</a></p>`,
+<p style="margin:16px 0 0;font-size:12px">${opts.manageUrl ? `<a href="${esc(opts.manageUrl)}" style="color:#767676">Change or delete your alerts</a> · ` : ""}<a href="${esc(opts.unsubscribeUrl)}" style="color:#767676">Unsubscribe in one click</a></p>`,
   );
   return { subject, text, html };
 }

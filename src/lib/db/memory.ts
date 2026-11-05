@@ -1,6 +1,6 @@
 import { uuidv7 } from "@/lib/ids";
 import { byNewest, matchesQuery } from "@/lib/jobs/query";
-import type { EmployerDoc, JobDoc, SavedJob, SearchProfile, SourceRun } from "@/lib/jobs/types";
+import type { AlertRule, EmployerDoc, JobDoc, SavedJob, SearchProfile, SourceRun } from "@/lib/jobs/types";
 import type { AgencyFlag } from "@/lib/classify/types";
 import type { AuditEntry, BillingAccount, Db, Entitlement, LabelDoc, RefundRecord, Suppression, WebhookDelivery, WebhookEndpoint } from "./types";
 
@@ -22,6 +22,7 @@ export function createMemoryDb(app: string, config: Record<string, string> = {})
   const opens = new Set<string>();
   const saved = new Map<string, SavedJob>();
   const profiles = new Map<string, SearchProfile>();
+  const alertRules = new Map<string, AlertRule>();
   const lifetime = new Set<string>();
   const refunds = new Map<string, RefundRecord>();
   const reminders = new Set<string>();
@@ -334,8 +335,43 @@ export function createMemoryDb(app: string, config: Record<string, string> = {})
     async listProfiles({ digest, alerts }) {
       return [...profiles.values()].filter((p) => (digest === undefined || p.digest === digest) && (alerts === undefined || p.alerts === alerts)).map(clone);
     },
+    async listAlertRules(orgId) {
+      return [...alertRules.values()].filter((r) => r.orgId === orgId).sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime() || a.id.localeCompare(b.id)).map(clone);
+    },
+    async listAlertRulesByEmail(email) {
+      return [...alertRules.values()].filter((r) => r.email.toLowerCase() === email.toLowerCase()).sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime() || a.id.localeCompare(b.id)).map(clone);
+    },
+    async listActiveAlertRules() {
+      return [...alertRules.values()].filter((r) => r.active).sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime() || a.id.localeCompare(b.id)).map(clone);
+    },
+    async saveAlertRule(r) {
+      alertRules.set(r.id, clone(r));
+    },
+    async deleteAlertRule(orgId, id) {
+      const r = alertRules.get(id);
+      if (!r || r.orgId !== orgId) return false;
+      return alertRules.delete(id);
+    },
+    async purgeClosedJobs(before) {
+      let n = 0;
+      for (const [id, j] of jobs) {
+        if (j.closedAt && j.closedAt < before) {
+          jobs.delete(id);
+          for (const [k, sv] of saved) if (sv.jobId === id) saved.delete(k);
+          n++;
+        }
+      }
+      return n;
+    },
+    async purgeSourceRuns(before) {
+      const keep = runs.filter((r) => r.finishedAt >= before);
+      const n = runs.length - keep.length;
+      runs.splice(0, runs.length, ...keep);
+      return n;
+    },
     async exportOrgData(orgId) {
       return {
+        alertRules: [...alertRules.values()].filter((r) => r.orgId === orgId),
         profile: profiles.get(orgId) ?? null,
         savedJobs: [...saved.values()].filter((s) => s.orgId === orgId),
         billingAccount: accounts.get(orgId) ?? null,
@@ -351,6 +387,7 @@ export function createMemoryDb(app: string, config: Record<string, string> = {})
       for (const [k, e] of endpoints) if (e.orgId === orgId) endpoints.delete(k);
       for (const [k, d] of deliveries) if (d.orgId === orgId) deliveries.delete(k);
       profiles.delete(orgId);
+      for (const [k, r] of alertRules) if (r.orgId === orgId) alertRules.delete(k);
       for (const [k, sv] of saved) if (sv.orgId === orgId) saved.delete(k);
       for (const k of opens) if (k.startsWith(`${orgId}|`)) opens.delete(k);
       // The audit log is append-only: entries are kept (no PII beyond ids) per the privacy policy.

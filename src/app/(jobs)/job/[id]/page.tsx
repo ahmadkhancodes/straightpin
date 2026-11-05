@@ -9,6 +9,8 @@ import { Notice } from "@/components/ui/states";
 import { getOrgContext } from "@/lib/auth/session";
 import { ageDays, ghostSignals } from "@/lib/crawl/score/ghost";
 import { getDb } from "@/lib/db";
+import { jobPostingLd, ldScript } from "@/lib/jobs/jobPostingLd";
+import { pageMetadata } from "@/lib/seo";
 import { checkedAgo, formatPay, placeOf, postedInfo, repostText } from "@/lib/jobs/format";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +18,14 @@ type Props = { params: Promise<{ id: string }>; searchParams: Promise<Record<str
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const job = await (await getDb()).getJob((await params).id);
-  return { title: job ? `${job.title} at ${job.employerName}` : "Job not found", robots: { index: false } };
+  if (!job) return { title: "Job not found", robots: { index: false } };
+  // Open jobs are indexable with a canonical address; a job the company took down is not.
+  return pageMetadata({
+    title: `${job.title} at ${job.employerName}`,
+    description: `${job.title} at ${job.employerName}${job.location ? `, ${job.location}` : ""}. First posted date, repost count and a direct link to the company's own page.`,
+    path: `/job/${job.id}`,
+    noindex: !!job.closedAt,
+  });
 }
 
 const date = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
@@ -34,8 +43,10 @@ export default async function JobPage({ params, searchParams }: Props) {
   const pay = formatPay(job);
   const signals = ghostSignals({ ageDays: ageDays(job.firstPublishedAt, now), repostCount90d: job.repostCount90d, validThrough: job.validThrough, now });
   const closed = !!job.closedAt;
+  const ld = jobPostingLd(job);
   return (
     <Container className="max-w-3xl py-10 md:py-16">
+      {ld ? <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldScript(ld) }} /> : null}
       <p><Link href="/matches" className="body-6 text-text-subtle underline underline-offset-4 focus-visible:focus-ring">Back to matches</Link></p>
       {sp.limit === "opens" ? (
         <div className="mt-6"><Notice tone="warning" title="You have used today's free job opens">Free plans open 5 jobs a day. It resets at midnight UTC. <Link href="/pricing" className="text-action underline underline-offset-4">See plans</Link></Notice></div>
