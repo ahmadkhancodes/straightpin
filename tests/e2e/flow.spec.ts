@@ -29,7 +29,7 @@ test("magic link sign-in, org, billing state, api key, cron guard", async ({ pag
   expect(csrf.status()).toBe(403);
 
   // Stub mode: checkout without Stripe answers 503 billing_unavailable (calm UI notice), never 500
-  const co = await page.request.post("/api/billing/checkout", { data: { plan: "pro", interval: "year" }, headers: origin });
+  const co = await page.request.post("/api/billing/checkout", { data: { plan: "plus", interval: "year" }, headers: origin });
   expect([200, 503]).toContain(co.status());
 
   const key = await page.request.post("/api/auth/api-key/create", { data: { name: "ci", organizationId: orgId }, headers: origin });
@@ -56,5 +56,5 @@ test("public pages render with metadata and no horizontal overflow at 375px", as
   }
   expect((await page.goto("/nope-404"))?.status()).toBe(404);
   expect((await page.request.get("/api/health")).ok()).toBeTruthy();
-  expect(await (await page.request.get("/llms.txt")).text()).toContain("Postslot");
+  expect(await (await page.request.get("/llms.txt")).text()).toContain("Straightpin");
 });

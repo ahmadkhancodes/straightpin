@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Check } from "@phosphor-icons/react/dist/ssr";
-import { product, plans, type Interval, type Plan, type PlanPrice } from "@/config/product";
+import { product, plans, intervalText, type Interval, type Plan, type PlanPrice } from "@/config/product";
 import { buttonClass } from "@/components/ui/button";
 import Link from "next/link";
 import { cn } from "@/components/ui/cn";
@@ -90,7 +90,7 @@ export function PricingTable({ id = "pricing", title }: { id?: string; title?: s
               </div>
               <p className="flex items-baseline gap-1 pb-6">
                 <span className="heading-3 tabular-nums text-text">{free ? "$0" : money(price.usd)}</span>
-                <span className="body-6 text-text-subtle">{free ? "free" : `per ${price.interval}`}</span>
+                <span className="body-6 text-text-subtle">{free ? "free" : intervalText(price.interval)}</span>
               </p>
               <div className="pb-3">
                 <Link href={href} className={cn(buttonClass(plan.featured ? "primary" : "secondary", "md"), "w-full")}>{plan.cta}</Link>

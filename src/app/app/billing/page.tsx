@@ -34,7 +34,7 @@ export default async function BillingPage({ searchParams }: { searchParams: SP }
         renewsAt={ent?.expiresAt ?? null}
         cancelAtPeriodEnd={!!ent?.cancelAtPeriodEnd}
         usage={usage}
-        preselect={wanted && wanted.id !== "free" ? { plan: wanted.id, interval: one(sp.interval) === "month" ? "month" : "year" } : null}
+        preselect={wanted && wanted.id !== "free" ? { plan: wanted.id, interval: wanted.prices.find((x) => x.interval === one(sp.interval))?.interval ?? wanted.prices[0]!.interval } : null}
         returnedSession={one(sp.session_id) ?? null}
       />
     </>

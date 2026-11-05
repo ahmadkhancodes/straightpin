@@ -4,11 +4,11 @@ export async function adminOverview(): Promise<{ users: number; orgs: number; pa
   if (uri) {
     const { mongoClient } = await import("@/lib/db/mongo");
     const client = await mongoClient(uri);
-    const db = client.db(process.env.MONGODB_DB ?? "postslot");
+    const db = client.db(process.env.MONGODB_DB ?? "straightpin");
     const [users, orgs, paidOrgs] = await Promise.all([
       db.collection("user").countDocuments(),
       db.collection("organization").countDocuments(),
-      db.collection("entitlements").countDocuments({ isPaid: true, app: process.env.APP_NAME ?? "postslot" }),
+      db.collection("entitlements").countDocuments({ isPaid: true, app: process.env.APP_NAME ?? "straightpin" }),
     ]);
     return { users, orgs, paidOrgs };
   }

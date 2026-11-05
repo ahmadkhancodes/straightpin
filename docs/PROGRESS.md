@@ -8,7 +8,7 @@
   - `src/lib/crawl/careers/`: JSON-LD JobPosting extractor, sitemap parser, career site crawler.
   - `src/lib/crawl/dedupe/`, `score/`: MinHash dedupe, repost/ghost signals and labels.
   - `src/lib/classify/` + `ml/agency/`: agency rules, hashed TF-IDF logistic model, training and precision gate.
-- Root `package.json`/`tsconfig.json` here are temporary scaffolding: when the kit is copied (KIT_COPY.md), merge devDependencies (vitest, typescript) into the kit's package.json and keep `src/lib/crawl`, `src/lib/classify`, `ml/`.
 - Known gaps: no labelled agency data yet (model stays off until the precision gate passes; rules + review queue ship); adapters use hand written fixtures shaped like the public APIs, not recorded live responses (verify against live boards in M2).
-- Next: wait for "kit-v1 ready", then M1.
+- Next: M1-B (landing and pricing pages).
 - Live URL: not deployed yet.
+- 5 Nov 2026 M1-A done: kit renamed to Straightpin (product.ts plans = brief prices, lookup keys `straightpin_<plan>_<interval>`, Lifetime one-time checkout), crawl/classify/ml merged (tests run in `npm test`, 228 pass), tomato/paper tokens and Bricolage/Public Sans/JetBrains Mono/Caveat fonts in, `*.product.json` removed. lint, typecheck, test, build green. Landing/pricing copy is still kit sample text (M1-B). Lifetime 1,000 buyer cap not enforced yet.

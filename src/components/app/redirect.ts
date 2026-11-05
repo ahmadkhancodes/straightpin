@@ -11,7 +11,7 @@ export function safeNext(next: string | null | undefined, fallback = "/app"): st
 export function afterSignIn(p: { next?: string | null; plan?: string | null; interval?: string | null }): string {
   const plan = p.plan ? planById(p.plan) : undefined;
   if (plan && plan.id !== "free") {
-    const interval: Interval = p.interval === "month" ? "month" : "year";
+    const interval: Interval = plan.prices.find((x) => x.interval === p.interval)?.interval ?? plan.prices[0]!.interval;
     return `/app/billing?plan=${plan.id}&interval=${interval}`;
   }
   return safeNext(p.next);
