@@ -15,10 +15,10 @@ export default function NotFound() {
           <div className="flex min-h-96 max-w-2xl flex-col items-start justify-center gap-6">
             <p className="caption-3 text-text-subtle">Error 404</p>
             <h1 id="nf-title" className="heading-3 md:heading-1 text-text">This page did not arrive</h1>
-            <p className="body-3 text-text-subtle">The link may be old or mistyped. Head back home, or read the docs.</p>
+            <p className="body-3 text-text-subtle">The link may be old or mistyped. Head back home, or read the help pages.</p>
             <div className="flex flex-wrap items-center gap-4">
               <ButtonLink href="/" size="lg">Back to home</ButtonLink>
-              <ButtonLink href="/docs" size="lg" variant="secondary">Read the docs</ButtonLink>
+              <ButtonLink href="/docs" size="lg" variant="secondary">Read the help pages</ButtonLink>
             </div>
           </div>
         </Section>

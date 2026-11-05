@@ -27,3 +27,7 @@ Everything else (DB user via MongoDB connector, Stripe test products via connect
 7. **Trademark check** (launch, recommended)
    https://tmsearch.uspto.gov/ , https://www.ipo.gov.uk/tmcase/ , https://ised-isde.canada.ca/cipo/trademark-search/srch
    Search "Straightpin" in software classes 9, 35, 42. Fallback name: Straightboard.
+
+8. **Fill the legal placeholders** (before taking real money, M5)
+   Files: `src/config/product.ts` (`legal.jurisdiction`, `legal.address`) and `src/content/legal/terms.ts` (`{{liability cap}}`).
+   Needed from the owner: the governing law and courts (`{{jurisdiction}}`), the registered address of BufferSol Technologies (`{{registered address}}`), and the liability cap wording (`{{liability cap}}`). They render as visible placeholders on /legal/privacy and /legal/terms until set. A lawyer should read the legal pages before launch.

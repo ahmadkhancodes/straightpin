@@ -1,9 +1,7 @@
-import { api } from "./api";
-import { authentication } from "./authentication";
+import { account } from "./account";
 import { billing } from "./billing";
 import { gettingStarted } from "./getting-started";
 import type { DocPage } from "./types";
-import { webhooks } from "./webhooks";
 
 export type { DocPage, DocSection } from "./types";
 
@@ -12,12 +10,11 @@ export interface DocGroup {
   docs: DocPage[];
 }
 
-export const docs: DocPage[] = [gettingStarted, authentication, billing, webhooks, api];
+export const docs: DocPage[] = [gettingStarted, account, billing];
 
 export const docGroups: DocGroup[] = [
-  { title: "Start here", docs: [gettingStarted, authentication] },
-  { title: "Build", docs: [api, webhooks] },
-  { title: "Account", docs: [billing] },
+  { title: "Start here", docs: [gettingStarted] },
+  { title: "Account and billing", docs: [account, billing] },
 ];
 
 export const getDoc = (slug: string): DocPage | undefined => docs.find((d) => d.slug === slug);

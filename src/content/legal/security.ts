@@ -4,68 +4,52 @@ import type { LegalDoc } from "./types";
 export const security: LegalDoc = {
   slug: "security",
   title: "Security",
-  description: `How ${p.name} protects your account and your submissions.`,
+  description: `How ${p.name} protects your account and your data.`,
   sections: [
     {
-      id: "overview",
-      title: "Overview",
-      body: [`We design ${p.name} so that a mistake in one place does not expose everything. This page lists what we do today, and nothing we do not do.`],
-    },
-    {
-      id: "data-protection",
-      title: "Data protection",
+      id: "account",
+      title: "Your account",
       body: [
         {
           list: [
-            "All traffic uses TLS.",
-            "Data is encrypted at rest by our database and hosting providers.",
-            "API keys and webhook secrets are shown once. API keys are stored as hashes.",
-            "Every query is scoped to your organization.",
+            "Sign in with an emailed link or a passkey. There is no password for us to lose.",
+            "Optional second step on your account.",
+            "Sessions expire and you can sign out everywhere.",
           ],
         },
       ],
     },
     {
-      id: "access",
-      title: "Access control",
+      id: "data",
+      title: "Your data",
       body: [
         {
           list: [
-            "Sign in with magic link or passkey, with optional two factor authentication.",
-            "Roles limit what each team member can change.",
-            "Staff access to production data is limited, logged and used only for support you request or to fix incidents.",
+            "Encrypted in transit (TLS) and at rest.",
+            "Card details are handled by Stripe. We never see or store them.",
+            "Every query is scoped to your account.",
+            "Access to production data is limited to the people who run the service.",
           ],
         },
       ],
     },
     {
-      id: "application",
-      title: "Application security",
+      id: "service",
+      title: "The service",
       body: [
         {
           list: [
-            "Rate limiting on public endpoints and on the API.",
-            "Spam and abuse filtering on submissions.",
-            "Outbound webhooks are signed so you can verify them.",
-            "Dependencies are updated regularly and checked for known vulnerabilities.",
+            "Rate limiting on public endpoints.",
+            "Our crawler reads only public pages, respects robots.txt and limits how fast it asks each site.",
+            "Signed, replay safe handling of payment events from Stripe.",
           ],
         },
       ],
     },
     {
-      id: "infrastructure",
-      title: "Infrastructure",
-      body: ["We run on the providers listed on the subprocessors page. We rely on their physical and network security controls."],
-    },
-    {
-      id: "incidents",
-      title: "Incident response",
-      body: ["If a breach affects your data we will tell you without undue delay and share what happened, what data was involved and what we are doing about it."],
-    },
-    {
-      id: "reporting",
-      title: "Report a vulnerability",
-      body: [`Email ${p.legalEmail} with the details and steps to reproduce. Please give us reasonable time to fix the issue before you disclose it. We will not take legal action against honest research.`],
+      id: "report",
+      title: "Report a problem",
+      body: [`Found a security problem? Email ${p.legalEmail}. Please give us a reasonable time to fix it before you share it.`],
     },
   ],
 };

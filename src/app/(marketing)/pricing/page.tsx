@@ -5,7 +5,7 @@ import { Faq } from "@/components/marketing/faq";
 import { product } from "@/config/product";
 
 const title = "Pricing";
-const description = `${product.name} plans from free to agency. Spam never counts toward your quota and over-limit submissions are held, never dropped.`;
+const description = `What we charge, full stop. Free to start, $10.99 a month, $4.99 a week, or $23.99 once. Cancel in two taps, ${product.refundDays} day refund.`;
 
 export const metadata: Metadata = {
   title,
@@ -15,19 +15,21 @@ export const metadata: Metadata = {
 };
 
 const billingFaq = [
-  { q: "Can I cancel anytime?", a: "Yes. You can cancel a paid plan from your account whenever you like." },
-  { q: "Does spam count toward my submission quota?", a: "No. Submissions blocked as spam never count toward your monthly quota on any plan." },
-  { q: "What happens if I go over my limit?", a: "Submissions over the limit are held, not dropped. They wait in your inbox so you can release them once you have upgraded." },
-  { q: "Do I need a credit card for the Free plan?", a: "No. Start on Free with no card and move to a paid plan when you need more." },
-  { q: "Can I pay monthly instead of yearly?", a: "Pro and Agency can be billed monthly or yearly. Starter is billed yearly only." },
+  { q: "How do I cancel?", a: "Two taps from your account: open Billing, then Cancel plan. You keep your plan until the end of the period you paid for." },
+  { q: "What if I forget to cancel?", a: "We email you a renewal reminder before every renewal, with the date and the amount. If you are charged and did not mean to be, ask within 7 days and you get a full refund." },
+  { q: "How do I get a refund?", a: "Within 7 days of any payment, email support and say you want it. No questions, full refund." },
+  { q: "Do I need a card for the Free plan?", a: "No. Free has 5 job opens a day, 10 saved jobs and a daily email digest." },
+  { q: "What does Lifetime include?", a: "The core plan for as long as the service runs, without the Plus features. It is limited to the first 1,000 buyers, then reviewed." },
+  { q: "Which currency?", a: "US dollars for now. Canada and the UK get local prices at checkout later." },
 ];
 
 export default function PricingPage() {
   return (
     <>
       <Section labelledBy="pricing-title">
-        <h1 className="sr-only">{title}</h1>
-        <PricingTable title="Pricing that stays out of the way" />
+        <h1 id="pricing-title" className="heading-3 md:heading-1 max-w-3xl text-text">What we charge, full stop.</h1>
+        <p className="body-3 md:title-1 mt-4 max-w-2xl text-text-subtle">The price is on this page before you sign up. Monthly is pre selected. Nothing is crossed out.</p>
+        <div className="mt-12"><PricingTable /></div>
       </Section>
       <Faq title="Billing questions" items={billingFaq} />
     </>

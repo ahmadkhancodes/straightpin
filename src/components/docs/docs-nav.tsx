@@ -14,7 +14,7 @@ export function DocsNav({ groups, current }: { groups: NavGroup[]; current: stri
   return (
     <>
       <div className="lg:hidden">
-        <label htmlFor="docs-select" className="title-4 mb-2 block text-text">Documentation</label>
+        <label htmlFor="docs-select" className="title-4 mb-2 block text-text">Help</label>
         <select
           id="docs-select"
           value={current}

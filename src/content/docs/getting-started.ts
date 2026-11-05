@@ -1,36 +1,27 @@
-import { product as p } from "@/config/product";
+import { freePlan, product as p } from "@/config/product";
 import type { DocPage } from "./types";
 
 export const gettingStarted: DocPage = {
   slug: "getting-started",
   title: "Getting started",
-  description: `Create a ${p.name} account and make your first request in a few minutes.`,
+  description: `Sign in, pick your field and open your first job on ${p.name}.`,
   sections: [
     {
-      heading: "Create your account",
+      heading: "Sign in",
       body: [
-        `Go to ${p.url} and sign in with your email. We send a magic link, so there is no password to set. Your first sign in creates an organization that holds your data, members and billing.`,
-        `New accounts start on the ${p.plans[0]?.name ?? "Free"} plan. You can upgrade from Settings, then Billing, at any time.`,
+        "Enter your email and we send you a link. Tap it and you are in. There is no password to remember. You can add a passkey later in Settings.",
       ],
     },
     {
-      heading: "Create an API key",
+      heading: "Pick your field",
       body: [
-        "Open Settings, then API keys, and create a key. The full key is shown once, so copy it into your secrets manager straight away. Keys are stored as hashes and cannot be recovered.",
+        "Choose the kind of work you want, such as customer support or data entry. We count the direct matches as you answer, then show them newest first.",
       ],
     },
     {
-      heading: "Make your first request",
-      body: ["Send the key in the x-api-key header. This call returns the organization the key belongs to."],
-      code: {
-        lang: "bash",
-        code: `curl ${p.url}/api/v1/me \\\n  -H "x-api-key: YOUR_API_KEY"`,
-      },
-    },
-    {
-      heading: "Next steps",
+      heading: "Open a job and apply at the company",
       body: [
-        "Read the authentication guide to add passkeys and two factor sign in. Set up webhooks to receive events in your own systems. See the API reference for errors and rate limits.",
+        `Every job shows its first posted date, how many times it was reposted and the website it comes from. Free accounts can open ${freePlan.limits.opens} jobs a day and save ${freePlan.limits.saves}. Tap Apply at company and the employer's own page opens. You apply as yourself.`,
       ],
     },
   ],

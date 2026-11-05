@@ -69,15 +69,15 @@ export function SiteHeader() {
 
   const panelItems = [
     ...product.nav.map((n) => ({ ...n, kind: "link" as const })),
-    { href: "/sign-in", label: "Sign in", kind: "link" as const },
-    { href: "/sign-in", label: "Start free", kind: "cta" as const },
+    { href: "/#pick-field", label: "See my matches", kind: "cta" as const },
   ];
 
   return (
-    <header className="fixed inset-x-0 top-3 z-50 px-4 sm:px-6">
-      <div className="relative z-50 mx-auto flex w-full max-w-7xl items-center justify-between gap-4 rounded-lg border border-border bg-surface/80 py-1 pl-4 pr-1 backdrop-blur-md">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-surface-raised">
+      <div className="relative z-50 mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-2 sm:px-6 lg:px-8">
         <Link href="/" className="inline-flex min-h-11 items-center rounded-md title-2 text-text focus-visible:focus-ring" aria-label={`${product.name} home`}>
-          {product.name}
+          <span className="heading-5">{product.name}</span>
+          <span className="caption-4 ml-2 mt-1 hidden text-text-subtle min-[480px]:inline">by BufferSol</span>
         </Link>
         <nav aria-label="Primary" className="hidden items-center gap-1 md:flex">
           {product.nav.map((n) => (
@@ -87,8 +87,8 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="flex items-center gap-1">
-          <Link href="/sign-in" className={cn(buttonClass("tertiary", "md"), "hidden md:inline-flex")}>Sign in</Link>
-          <Link href="/sign-in" className={cn(buttonClass("primary", "md"), "hidden md:inline-flex")}>Start free</Link>
+          <Link href="/sign-in" className={buttonClass("secondary", "md")}>Log in</Link>
+          <span className="hidden md:block"><Link href="/#pick-field" className={buttonClass("primary", "md")}>See my matches</Link></span>
           <ThemeToggle />
           <button
             ref={toggleRef}
@@ -115,7 +115,7 @@ export function SiteHeader() {
         aria-label="Menu"
         inert={!open}
         className={cn(
-          "fixed inset-0 z-40 flex flex-col bg-surface px-4 pt-24 transition-[opacity,visibility] duration-200 ease-out-kit md:hidden",
+          "fixed inset-0 z-40 flex flex-col bg-surface px-4 pt-20 transition-[opacity,visibility] duration-200 ease-out-kit md:hidden",
           open ? "visible opacity-100" : "invisible opacity-0",
         )}
       >
