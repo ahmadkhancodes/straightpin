@@ -16,24 +16,24 @@ Each job is a paper notice on a calm board. The apply action is a perforated tea
 **Signature move (one per page):** the tear off tab. Tap slides the tab 6px, the perforation opens (transform only, 160ms), then the employer's page opens. In the hero it is a live, real component. Second: the match counter ticks like a flip number.
 
 ## 4. Palette (hex tokens, role names)
-Flat surfaces only. No background gradients. One accent (pushpin teal, saturation under 80%).
+Flat surfaces only. No background gradients. One accent: **pushpin tomato** (saturation about 73%). Changed 5 Nov 2026 on orchestrator review: the first draft was teal, the fourth dark green in the BufferSol batch; this is the only consumer product, so it is warmer and friendlier, with warm paper neutrals, and the margin notes use ballpoint blue so red keeps one job (actions).
 
 | Token | Light | Dark ("Night board") | Use |
 |---|---|---|---|
-| `--color-board` | #F3F4F1 | #121614 | page background |
-| `--color-paper` | #FFFFFF | #1B201E | notice cards, sheets |
-| `--color-ink` | #14201E | #E8ECEA | text (AAA on board/paper) |
-| `--color-ink-muted` | #4F5D5A | #A3AFAB | secondary text (7:1 / 7.5:1) |
-| `--color-rule` | #D5D9D3 | #2E3532 | borders, perforation |
-| `--color-brand` | #0F5C55 | #5FC2B5 | actions, links, focus. White text on light brand 7.8:1; dark ink text on dark brand |
-| `--color-brand-hover` | #0B4842 | #7AD3C7 | |
-| `--color-brand-tint` | #E3F1EE | #17302C | selected chips, soft fills |
-| `--color-brand-on` | #FFFFFF | #0B1A18 | text on brand |
-| `--color-highlight` | #FFE45C | #E9CF4A | highlighter behind "Direct to company" and "New today" only; text on it is ink (#14201E in both modes) |
-| `--color-marker` | #C4321F | #FF8A73 | ghost/agency warnings, always icon + word |
+| `--color-board` | #F6F1E9 | #1A1512 | page background (warm paper) |
+| `--color-paper` | #FFFDF9 | #241D19 | notice cards, sheets |
+| `--color-ink` | #1F1A17 | #F1EAE2 | text (15:1 on board) |
+| `--color-ink-muted` | #5C524B | #B5A99F | secondary text (6.8:1 / 7.2:1) |
+| `--color-rule` | #DDD3C6 | #3A302A | borders, perforation |
+| `--color-brand` | #B8381C (pushpin tomato) | #FF8A6B | actions, links, focus. White on brand 5.8:1; brand on board 5.2:1; dark ink #2A0F08 on dark brand 7.8:1 |
+| `--color-brand-hover` | #8F2B14 | #FFA48A | white on hover 8.3:1 |
+| `--color-brand-tint` | #FBE7DF | #3A211A | selected chips, tear off tab fill |
+| `--color-brand-on` | #FFFFFF | #2A0F08 | text on brand |
+| `--color-highlight` | #FFE45C | #E9CF4A | highlighter behind "Direct to company" and "New today" only; text on it is ink #14201E in both modes |
+| `--color-marker` | #2A4B9B (ballpoint blue) | #8FB0FF | margin notes and agency/ghost callouts, always icon + word (8:1) |
 | `--color-success` | #1E7B4F | #5BC48C | |
-| `--color-warn` | #8A5A00 | #E0A93B | old posting (>30 days) |
-| `--color-error` | #B42318 | #FF8478 | |
+| `--color-warn` | #8A5A00 | #E0A93B | old posting (>30 days), 5.8:1 |
+| `--color-error` | #B42318 | #FF8478 | errors only, never confused with brand because it is always paired with an icon and message |
 
 Two layer model: primitives (ramp) and semantic roles above; components use only roles. Dark mode: via `[data-theme=dark]` and `prefers-color-scheme`; never pure #000.
 
@@ -44,8 +44,8 @@ Fonts self hosted at build via `next/font/google` (no runtime font CDN).
 |---|---|---|---|
 | Display + UI headings | **Bricolage Grotesque** | 600, 700 | no 800/900 (skill rule: max bold). Optical size axis on. Tracking -0.02em on display |
 | Body + UI | **Public Sans** | 400, 500, 700 | 16px minimum on mobile inputs |
-| Data | **JetBrains Mono** | 400, 600 | dates, counts, source hosts, prices in tables only |
-| Margin note | **Caveat** | 600 | max 4 words per note, never body, decorative `aria-hidden` when it duplicates a visible label |
+| Data | **JetBrains Mono** | 400, 600 | **tiny metadata only**: source host on cards and tear off tab, first posted date in the trust strip. Never for counts, prices, labels, headings, tags or nav (changed 5 Nov: sans carries all UI at 375) |
+| Margin note | **Caveat** | 600 | one use only: the "Old posting" margin note. Max 4 words, never body, decorative `aria-hidden` when it duplicates a visible label |
 
 Scale snaps to the Tailwind default steps (skill B1). Named styles: Heading 1 (text-6xl desktop, text-4xl mobile) ... Caption 5, defined once as classes `heading-1` ... `caption-5`. Hero H1 uses Heading 1 on desktop; on 375 it uses Heading 3 (36/40). `text-wrap: balance` headings, `pretty` body. No italics anywhere. No hyphens in UI copy (rewrite: "direct to company" becomes "straight from the company" in sentences; the brand mark text "Direct to company" is a label with spaces).
 
@@ -82,7 +82,7 @@ Don't: indigo/violet or mint hero; background gradients; glassmorphism; icon in 
 ## 10. Why it fits this ICP better than the competitors
 1. **Trust before taste.** Rhonda's top question is "Is this a scam?". We answer it with the price, refund and a source host on the first screen; DirectRoles puts a star pill and tech jobs there.
 2. **It looks like her world.** A paper notice with a date and tear off tab is the most legible metaphor for "a real job at a real place"; competitors use AI copilot dashboards for software engineers.
-3. **Calm over hype.** Teal on warm paper, left aligned, quiet motion. Jobright is mint and all caps, DirectRoles indigo gradient, Simplify serif plus collage.
+3. **Calm over hype.** Tomato on warm paper, left aligned, quiet motion. Jobright is mint and all caps, DirectRoles indigo gradient, Simplify serif plus collage.
 4. **Honest signals are the visual.** "Posted 2 days ago · never reposted", the marker note "Old posting, 41 days", and the "We removed 41 staffing agency posts" receipt are design elements nobody else has because nobody else computes them.
 5. **Phone first.** Bottom tab bar, 48px targets, one question per screen quiz, 16px inputs.
 
