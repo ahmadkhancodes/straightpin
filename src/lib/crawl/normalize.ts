@@ -26,7 +26,7 @@ export function normLocation(loc: string | null | undefined): string {
   return (loc ?? '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-const US_STATES = 'al ak az ar ca co ct de fl ga hi id il in ia ks ky la me md ma mi mn ms mo mt ne nv nh nj nm ny nc nd oh ok or pa ri sc sd tn tx ut vt va wa wv wi wy dc'.split(' ');
+const US_STATES = 'al ak az ar ca co ct fl ga hi id il in ia ks ky la me md ma mi mn ms mo mt ne nv nh nj nm ny nc nd oh ok or pa ri sc sd tn tx ut vt va wa wv wi wy dc'.split(' ');
 const CA_PROV = 'on bc ab qc mb sk ns nb nl pe yt nt nu'.split(' ');
 
 /** Best effort country from a free text location. Returns null when not clearly US/CA/UK. */
@@ -35,7 +35,7 @@ export function detectCountry(location: string | null | undefined, hint?: string
   const s = ' ' + raw.toLowerCase().replace(/[.,;()/|-]+/g, ' ').replace(/\s+/g, ' ') + ' ';
   if (!raw) return null;
   if (/ (united kingdom|uk|gb|great britain|england|scotland|wales|northern ireland|london|manchester|birmingham|leeds|glasgow) /.test(s)) return 'UK';
-  if (/ (canada|ca|toronto|vancouver|montreal|ottawa|calgary|ontario|british columbia|alberta|quebec) /.test(s) && !/ california /.test(s)) {
+  if (/ (canada|toronto|vancouver|montreal|ottawa|calgary|ontario|british columbia|alberta|quebec) /.test(s)) {
     if (!/ (united states|usa|us) /.test(s)) return 'CA';
   }
   if (/ (united states|united states of america|usa|us|u s) /.test(s)) return 'US';
