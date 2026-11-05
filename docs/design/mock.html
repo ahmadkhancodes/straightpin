@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Straightpin by BufferSol: design mock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Caveat:wght@600&family=JetBrains+Mono:wght@400;600&family=Public+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --board:#F3F4F1;--paper:#FFFFFF;--ink:#14201E;--ink-muted:#4F5D5A;--rule:#D5D9D3;
+  --brand:#0F5C55;--brand-hover:#0B4842;--brand-tint:#E3F1EE;--brand-on:#FFFFFF;
+  --highlight:#FFE45C;--marker:#C4321F;--success:#1E7B4F;--warn:#8A5A00;
+  --ease:cubic-bezier(0.22,1,0.36,1);
+  --font-display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --font-body:"Public Sans",ui-sans-serif,system-ui,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,monospace;
+  --font-hand:"Caveat",cursive;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){
+  --board:#121614;--paper:#1B201E;--ink:#E8ECEA;--ink-muted:#A3AFAB;--rule:#2E3532;
+  --brand:#5FC2B5;--brand-hover:#7AD3C7;--brand-tint:#17302C;--brand-on:#0B1A18;
+  --highlight:#E9CF4A;--marker:#FF8A73;--success:#5BC48C;--warn:#E0A93B;}}
+:root[data-theme=dark]{
+  --board:#121614;--paper:#1B201E;--ink:#E8ECEA;--ink-muted:#A3AFAB;--rule:#2E3532;
+  --brand:#5FC2B5;--brand-hover:#7AD3C7;--brand-tint:#17302C;--brand-on:#0B1A18;
+  --highlight:#E9CF4A;--marker:#FF8A73;--success:#5BC48C;--warn:#E0A93B;}
+*{box-sizing:border-box;margin:0}
+html{-webkit-text-size-adjust:100%}
+html,body{overflow-x:clip}
+body{background:var(--board);color:var(--ink);font:400 16px/24px var(--font-body);}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.skip{position:absolute;left:-999px}.skip:focus{left:16px;top:8px;background:var(--paper);padding:8px 12px;z-index:60}
+.wrap{max-width:1200px;margin:0 auto;padding:0 16px}
+@media(min-width:768px){.wrap{padding:0 24px}}
+/* text styles */
+.heading-1{font:600 36px/40px var(--font-display);letter-spacing:-.02em;text-wrap:balance}
+@media(min-width:768px){.heading-1{font-size:60px;line-height:60px}}
+.heading-4{font:600 24px/32px var(--font-display);letter-spacing:-.01em;text-wrap:balance}
+.title-2{font:600 18px/28px var(--font-display)}
+.title-3{font:500 16px/24px var(--font-body)}
+.body-3{font:400 16px/24px var(--font-body);text-wrap:pretty}
+.body-6{font:400 14px/20px var(--font-body)}
+.button-md{font:700 16px/24px var(--font-body)}
+.caption-3{font:600 12px/16px var(--font-mono);letter-spacing:.02em}
+.muted{color:var(--ink-muted)}
+/* top bar */
+.bar{background:var(--paper);border-bottom:1px solid var(--rule);position:sticky;top:0;z-index:10}
+.bar .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{display:flex;align-items:baseline;gap:8px;text-decoration:none}
+.logo b{font:700 24px/32px var(--font-display);letter-spacing:-.02em;position:relative}
+.logo b i{position:absolute;left:62%;top:27px;width:10px;height:8px;border:1.5px dashed var(--brand);border-top:0;background:var(--brand-tint)}
+.logo span{font:400 12px/16px var(--font-mono);color:var(--ink-muted)}
+.nav{display:none;gap:24px}.nav a{text-decoration:none;color:var(--ink-muted);font:500 14px/20px var(--font-body)}
+.nav a[aria-current]{color:var(--ink);text-decoration:underline;text-decoration-color:var(--brand);text-underline-offset:8px;text-decoration-thickness:2px}
+@media(min-width:768px){.nav{display:flex}}
+.btn{display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:8px 24px;border-radius:8px;border:1px solid transparent;background:var(--brand);color:var(--brand-on);text-decoration:none;cursor:pointer;transition:background-color .3s var(--ease),transform .5s var(--ease)}
+.btn:hover{background:var(--brand-hover)}.btn:active{transform:translateY(1px)}
+.btn.sm{min-height:40px;padding:8px 12px;font:700 14px/20px var(--font-body)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--rule)}
+.btn svg{width:20px;height:20px}
+/* hero */
+.hero{padding:32px 0 48px}
+@media(min-width:1120px){.hero{padding:64px 0 80px}}
+.hero .grid{display:grid;gap:32px}
+@media(min-width:1120px){.hero .grid{grid-template-columns:7fr 5fr;gap:64px;align-items:center}}
+.hero h1{max-width:680px}
+.hero p.sub{max-width:680px;margin-top:16px;color:var(--ink-muted);font-size:18px;line-height:28px}
+.hl{background:var(--highlight);color:#14201E;padding:0 4px;border-radius:2px}
+.cta-row{margin-top:24px;display:flex;flex-wrap:wrap;gap:16px 24px;align-items:center}
+.price{margin-top:16px;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline}
+.price strong{font:600 14px/20px var(--font-mono)}
+.counter{margin-top:24px;display:flex;align-items:center;gap:12px;padding-top:16px;border-top:1.5px dashed var(--rule);max-width:560px}
+.digits{display:inline-flex;gap:2px}
+.digits span{font:600 20px/28px var(--font-mono);background:var(--paper);border:1px solid var(--rule);border-radius:2px;padding:0 4px;min-width:20px;text-align:center}
+/* notice card */
+.notice{background:var(--paper);border:1px solid var(--rule);border-radius:2px;transition:box-shadow .3s var(--ease),transform .5s var(--ease)}
+.notice:hover{box-shadow:0 1px 0 var(--rule),0 6px 16px rgb(20 32 30/.08)}
+.stack{display:grid;gap:12px;position:relative}
+.notice .body{padding:16px}
+.notice h3{font:600 18px/24px var(--font-display)}
+.company{margin-top:4px}
+.meta{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:12px;font:400 12px/16px var(--font-mono);color:var(--ink-muted)}
+.meta b{font-weight:600;color:var(--ink)}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+.note{font:600 18px/20px var(--font-hand);color:var(--marker);display:inline-flex;gap:4px;align-items:center}
+.note svg{width:16px;height:16px}
+.warn{color:var(--warn)}
+.tear{display:flex;width:100%;justify-content:space-between;align-items:center;min-height:48px;padding:8px 16px;background:var(--brand-tint);color:var(--brand);border:0;border-top:1.5px dashed var(--rule);font:700 14px/20px var(--font-body);cursor:pointer;border-radius:0 0 2px 2px;text-align:left;gap:8px}
+.tear span.h{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;font:600 12px/16px var(--font-mono);color:var(--ink-muted)}
+.tear .t{white-space:nowrap;display:inline-flex;gap:8px;align-items:center;transition:transform .16s var(--ease)}
+.tear:hover .t{transform:translateX(4px)}
+.tear.torn .t{transform:translateX(6px)}
+.tear svg{width:20px;height:20px}
+.stack .notice:nth-child(2){margin-left:0}
+@media(min-width:768px){.stack .notice:nth-child(2){margin-left:32px}.stack .notice:nth-child(3){margin-left:8px}}
+.stack .notice.dim{opacity:.0}
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.chip{display:inline-flex;gap:8px;align-items:center;min-height:48px;padding:8px 16px;border-radius:9999px;border:1px solid var(--rule);background:var(--paper);font:500 14px/20px var(--font-body);cursor:pointer;color:var(--ink);transition:background-color .3s var(--ease),border-color .3s var(--ease)}
+.chip:hover{border-color:var(--brand)}
+.chip[aria-pressed=true]{background:var(--brand-tint);border-color:var(--brand);color:var(--brand)}
+.chip em{font:600 12px/16px var(--font-mono);font-style:normal;color:var(--ink-muted)}
+/* app screen */
+.section{padding:48px 0}
+.sec-head{display:grid;gap:8px;max-width:680px;margin-bottom:24px}
+.app{display:grid;border:1px solid var(--rule);background:var(--board);border-radius:8px;overflow:hidden}
+@media(min-width:1120px){.app{grid-template-columns:420px 1fr}}
+.list{padding:16px;display:grid;gap:12px;align-content:start;background:var(--board)}
+@media(min-width:1120px){.list{border-right:1px solid var(--rule);max-height:760px;overflow:hidden}}
+.filters{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.filters .chip{min-height:40px;white-space:nowrap}
+.receipt{display:flex;gap:8px;align-items:flex-start;padding:12px;border:1px dashed var(--rule);border-radius:2px;background:var(--paper);font-size:14px;line-height:20px}
+.receipt svg{flex:none;width:20px;height:20px;color:var(--brand)}
+.notice.sel{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand)}
+.locked{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;padding:12px 16px;opacity:.85}
+.locked .lk{font:600 12px/16px var(--font-mono);color:var(--ink-muted);display:inline-flex;gap:4px;align-items:center;white-space:nowrap}
+.locked svg{width:16px;height:16px}
+.reader{display:none;padding:32px;background:var(--board)}
+@media(min-width:1120px){.reader{display:block}}
+.sheet{max-width:640px}
+.sheet h2{font:600 30px/36px var(--font-display);letter-spacing:-.01em;text-wrap:balance}
+.trust{display:grid;grid-template-columns:repeat(2,1fr);gap:0;margin-top:24px;border:1px solid var(--rule);border-radius:2px;background:var(--paper)}
+.trust div{padding:12px 16px;border-bottom:1px solid var(--rule)}
+.trust div:nth-child(odd){border-right:1px solid var(--rule)}
+.trust div:nth-last-child(-n+2){border-bottom:0}
+.trust dt{font:400 12px/16px var(--font-mono);color:var(--ink-muted)}
+.trust dd{font:600 16px/24px var(--font-body);margin-top:2px}
+.trust dd.mono{font:600 14px/20px var(--font-mono)}
+.desc{margin-top:24px;display:grid;gap:12px;color:var(--ink)}
+.desc p{max-width:60ch}
+.sheet .tearwrap{margin-top:24px;border:1px solid var(--rule);border-radius:2px;background:var(--paper)}
+.spark{display:block;margin-top:8px}
+.tabbar{display:grid;grid-template-columns:repeat(4,1fr);background:var(--paper);border-top:1px solid var(--rule)}
+@media(min-width:1120px){.tabbar{display:none}}
+.tabbar a{display:grid;justify-items:center;gap:2px;padding:8px 0;min-height:56px;text-decoration:none;font:500 12px/16px var(--font-body);color:var(--ink-muted)}
+.tabbar a[aria-current]{color:var(--brand)}
+.tabbar svg{width:24px;height:24px}
+.nowrap{white-space:nowrap}
+footer{padding:32px 0 48px;border-top:1px solid var(--rule);margin-top:32px}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-arrow" viewBox="0 0 256 256"><path fill="currentColor" d="M221.66 133.66l-72 72a8 8 0 0 1-11.32-11.32L196.69 136H40a8 8 0 0 1 0-16h156.69l-58.35-58.34a8 8 0 0 1 11.32-11.32l72 72a8 8 0 0 1 0 11.32Z"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 256 256"><path fill="currentColor" d="M208 40H48a16 16 0 0 0-16 16v58.78c0 89.61 75.82 119.34 91 124.39a15.53 15.53 0 0 0 10 0c15.2-5.05 91-34.78 91-124.39V56a16 16 0 0 0-16-16Zm0 74.79c0 78.42-66.35 104.62-80 109.18-13.53-4.51-80-30.69-80-109.18V56h160ZM82.34 141.66a8 8 0 0 1 11.32-11.32L112 148.69l50.34-50.35a8 8 0 0 1 11.32 11.32l-56 56a8 8 0 0 1-11.32 0Z"/></symbol>
+    <symbol id="i-warn" viewBox="0 0 256 256"><path fill="currentColor" d="M236.8 188.09 149.35 36.22a24.76 24.76 0 0 0-42.7 0L19.2 188.09a23.51 23.51 0 0 0 0 23.72A24.35 24.35 0 0 0 40.55 224h174.9a24.35 24.35 0 0 0 21.33-12.19 23.51 23.51 0 0 0 .02-23.72Zm-13.87 15.71a8.5 8.5 0 0 1-7.48 4.2H40.55a8.5 8.5 0 0 1-7.48-4.2 7.59 7.59 0 0 1 0-7.72l87.45-151.87a8.75 8.75 0 0 1 15 0l87.45 151.87a7.59 7.59 0 0 1-.04 7.72ZM120 144v-40a8 8 0 0 1 16 0v40a8 8 0 0 1-16 0Zm20 36a12 12 0 1 1-12-12 12 12 0 0 1 12 12Z"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 256 256"><path fill="currentColor" d="M208 80h-32V56a48 48 0 0 0-96 0v24H48a16 16 0 0 0-16 16v112a16 16 0 0 0 16 16h160a16 16 0 0 0 16-16V96a16 16 0 0 0-16-16ZM96 56a32 32 0 0 1 64 0v24H96Zm112 152H48V96h160Z"/></symbol>
+    <symbol id="i-list" viewBox="0 0 256 256"><path fill="currentColor" d="M224 128a8 8 0 0 1-8 8H40a8 8 0 0 1 0-16h176a8 8 0 0 1 8 8ZM40 72h176a8 8 0 0 0 0-16H40a8 8 0 0 0 0 16Zm176 112H40a8 8 0 0 0 0 16h176a8 8 0 0 0 0-16Z"/></symbol>
+    <symbol id="i-bookmark" viewBox="0 0 256 256"><path fill="currentColor" d="M184 32H72a16 16 0 0 0-16 16v176a8 8 0 0 0 12.24 6.78L128 193.43l59.77 37.35A8 8 0 0 0 200 224V48a16 16 0 0 0-16-16Zm0 177.57-51.77-32.35a8 8 0 0 0-8.48 0L72 209.57V48h112Z"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 256 256"><path fill="currentColor" d="M221.8 175.94c-5.55-9.56-13.8-36.61-13.8-71.94a80 80 0 1 0-160 0c0 35.34-8.26 62.38-13.81 71.94A16 16 0 0 0 48 200h40.81a40 40 0 0 0 78.38 0H208a16 16 0 0 0 13.8-24.06ZM128 216a24 24 0 0 1-22.62-16h45.24A24 24 0 0 1 128 216ZM48 184c7.7-13.24 16-43.92 16-80a64 64 0 1 1 128 0c0 36.05 8.28 66.73 16 80Z"/></symbol>
+    <symbol id="i-user" viewBox="0 0 256 256"><path fill="currentColor" d="M230.92 212c-15.23-26.33-38.7-45.21-66.09-54.16a72 72 0 1 0-73.66 0C63.78 166.78 40.31 185.66 25.08 212a8 8 0 1 0 13.85 8c18.84-32.56 52.14-52 89.07-52s70.23 19.44 89.07 52a8 8 0 1 0 13.85-8ZM72 96a56 56 0 1 1 56 56 56.06 56.06 0 0 1-56-56Z"/></symbol>
+  </defs>
+</svg>
+
+<header class="bar">
+  <div class="wrap">
+    <a class="logo" href="#" aria-label="Straightpin by BufferSol, home"><b>Straightpin<i aria-hidden="true"></i></b><span>by BufferSol</span></a>
+    <nav class="nav" aria-label="Main">
+      <a href="#matches" aria-current="page">Jobs</a><a href="#pricing">Pricing</a><a href="#how">How we check</a>
+    </nav>
+    <div style="display:flex;gap:8px"><a class="btn sm ghost" href="#">Log in</a></div>
+  </div>
+</header>
+
+<main id="main">
+<section class="hero">
+  <div class="wrap grid">
+    <div>
+      <h1 class="heading-1">Jobs straight from company careers pages.<br>Half the price.</h1>
+      <p class="sub">We check thousands of company hiring pages every hour, drop staffing agency reposts, and show you when each job was really posted.</p>
+      <div class="cta-row">
+        <a class="btn button-md" href="#chips">Pick your field, see your matches <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        <a class="body-6" href="#how" style="text-decoration:underline;text-underline-offset:4px">How we check every job</a>
+      </div>
+      <p class="price body-6"><strong>$10.99 a month</strong><span class="muted">or $4.99 a week. Free to start. Cancel in two taps. 7 day refund.</span></p>
+      <div class="counter" aria-live="polite">
+        <span class="digits" aria-hidden="true"><span>3</span><span>1</span><span>2</span></span>
+        <span class="body-6"><b>matches so far</b> <span class="muted">for Customer support, remote. 41 staffing agency posts removed.</span></span>
+      </div>
+    </div>
+    <div class="stack" aria-label="Sample job notices">
+      <article class="notice">
+        <div class="body">
+          <span class="hl caption-3">Direct to company</span>
+          <h3 style="margin-top:8px">Customer Support Specialist</h3>
+          <p class="company body-6 muted">Brightwell Home Health · Remote, US · $19 to $24 an hour</p>
+          <p class="meta"><span><b>Posted 2 days ago</b></span><span>Never reposted</span><span>Checked 14 min ago</span></p>
+        </div>
+        <button class="tear" type="button" data-tear><span class="t"><svg aria-hidden="true"><use href="#i-arrow"/></svg>Apply at company</span><span class="h">jobs.lever.co/brightwell</span></button>
+      </article>
+      <article class="notice">
+        <div class="body">
+          <span class="hl caption-3">New today</span>
+          <h3 style="margin-top:8px">Data Entry Clerk</h3>
+          <p class="company body-6 muted">Harlow &amp; Finch Logistics · Remote, Canada · C$22 to C$26 an hour</p>
+          <p class="meta"><span><b>Posted 5 hours ago</b></span><span>Never reposted</span><span>Checked 6 min ago</span></p>
+        </div>
+        <button class="tear" type="button" data-tear><span class="t"><svg aria-hidden="true"><use href="#i-arrow"/></svg>Apply at company</span><span class="h">boards.greenhouse.io/harlowfinch</span></button>
+      </article>
+      <article class="notice">
+        <div class="body">
+          <h3>Administrative Assistant</h3>
+          <p class="company body-6 muted">Oakmere Council Services · Manchester, UK · £24,500</p>
+          <p class="meta"><span><b>Posted 41 days ago</b></span><span>Reposted 3 times</span></p>
+          <p class="tags"><span class="note warn" style="color:var(--warn)"><svg aria-hidden="true"><use href="#i-warn"/></svg>Old posting</span><span class="caption-3 warn" style="color:var(--warn)">41 days</span></p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="chips" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head"><h2 class="heading-4">Pick your field. We'll count real matches as you answer.</h2></div>
+    <div class="chips" role="group" aria-label="Fields">
+      <button class="chip" aria-pressed="true">Customer support <em>312</em></button>
+      <button class="chip" aria-pressed="false">Data entry <em>187</em></button>
+      <button class="chip" aria-pressed="false">Admin and executive assistant <em>264</em></button>
+      <button class="chip" aria-pressed="false">Project coordination <em>141</em></button>
+      <button class="chip" aria-pressed="false">Sales and customer success <em>298</em></button>
+      <button class="chip" aria-pressed="false">Operations <em>203</em></button>
+      <button class="chip" aria-pressed="false">Finance and accounting support <em>119</em></button>
+      <button class="chip" aria-pressed="false">Marketing coordination <em>96</em></button>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="matches">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="caption-3 muted">Core app screen: your matches</p>
+      <h2 class="heading-4">Your 312 matches, newest first, straight from the company.</h2>
+    </div>
+    <div class="app">
+      <div class="list">
+        <div class="filters" role="group" aria-label="Filters">
+          <button class="chip" aria-pressed="true">Remote</button><button class="chip" aria-pressed="false">US</button><button class="chip" aria-pressed="false">$17+ an hour</button><button class="chip" aria-pressed="false">Posted this week</button>
+        </div>
+        <div class="receipt"><svg aria-hidden="true"><use href="#i-shield"/></svg><span><b>We removed 41 staffing agency posts from this list.</b> <span class="muted">Checked 14 min ago.</span></span></div>
+        <article class="notice sel">
+          <div class="body">
+            <span class="hl caption-3">Direct to company</span>
+            <h3 style="margin-top:8px">Customer Support Specialist</h3>
+            <p class="company body-6 muted">Brightwell Home Health · Remote, US · $19 to $24 an hour</p>
+            <p class="meta"><span><b>Posted 2 days ago</b></span><span>Never reposted</span><span>jobs.lever.co</span></p>
+          </div>
+        </article>
+        <article class="notice">
+          <div class="body">
+            <h3>Member Care Representative</h3>
+            <p class="company body-6 muted">Tidewater Credit Union · Remote, US · $18.50 an hour</p>
+            <p class="meta"><span><b>Posted 6 days ago</b></span><span>Never reposted</span><span>myworkdayjobs.com</span></p>
+          </div>
+        </article>
+        <article class="notice">
+          <div class="body">
+            <h3>Customer Support Associate, Evenings</h3>
+            <p class="company body-6 muted">Pinecrest Pet Supply · Remote, US · $17 to $20 an hour</p>
+            <p class="meta"><span><b>Posted 19 days ago</b></span><span>Reposted once</span><span>jobs.ashbyhq.com</span></p>
+          </div>
+        </article>
+        <article class="notice locked">
+          <div><h3 class="title-2">Technical Support Agent</h3><p class="body-6 muted">Larkspur Software Co.</p></div>
+          <span class="lk"><svg aria-hidden="true"><use href="#i-lock"/></svg>3 free opens left today</span>
+        </article>
+      </div>
+      <div class="reader">
+        <div class="sheet">
+          <p class="caption-3 muted">Brightwell Home Health</p>
+          <h2 style="margin-top:4px">Customer Support Specialist</h2>
+          <p class="body-3 muted" style="margin-top:8px">Remote, United States · $19 to $24 an hour · Full time</p>
+          <dl class="trust">
+            <div><dt>First posted</dt><dd class="mono">3 Nov 2026</dd></div>
+            <div><dt>Reposts in 90 days</dt><dd>None</dd></div>
+            <div><dt>Last checked</dt><dd>14 min ago</dd></div>
+            <div><dt>Source</dt><dd class="mono">jobs.lever.co</dd></div>
+          </dl>
+          <svg class="spark" viewBox="0 0 640 40" width="100%" height="40" role="img" aria-label="New Customer support jobs per day, last 30 days: steady, 9 to 14 a day"><polyline fill="none" stroke="var(--brand)" stroke-width="1" points="0,26 24,22 48,28 72,20 96,24 120,18 144,22 168,16 192,24 216,20 240,14 264,22 288,18 312,24 336,12 360,20 384,16 408,22 432,14 456,18 480,10 504,20 528,16 552,22 576,12 600,18 640,14"/></svg>
+          <p class="caption-3 muted">New Customer support jobs a day, last 30 days</p>
+          <div class="desc">
+            <p>Answer calls and chats from home health patients and their families, schedule visits, and keep notes in the shared case system.</p>
+            <p>You need one year of customer service work and a quiet place to take calls. Paid training for the first two weeks.</p>
+          </div>
+          <div class="tearwrap">
+            <button class="tear" type="button" data-tear style="border-top:0;border-radius:2px 2px 0 0;background:var(--brand);color:var(--brand-on);min-height:56px"><span class="t"><svg aria-hidden="true"><use href="#i-arrow"/></svg>Apply at company</span><span class="h" style="color:var(--brand-on);opacity:.85">jobs.lever.co/brightwell</span></button>
+            <p class="body-6 muted" style="padding:12px 16px;border-top:1.5px dashed var(--rule)">Opens the company's own page in a new tab. We are not a recruiter and never take a cut of your pay.</p>
+          </div>
+        </div>
+      </div>
+      <nav class="tabbar" aria-label="App">
+        <a href="#" aria-current="page"><svg aria-hidden="true"><use href="#i-list"/></svg>Matches</a>
+        <a href="#"><svg aria-hidden="true"><use href="#i-bookmark"/></svg>Saved</a>
+        <a href="#"><svg aria-hidden="true"><use href="#i-bell"/></svg>Alerts</a>
+        <a href="#"><svg aria-hidden="true"><use href="#i-user"/></svg>Account</a>
+      </nav>
+    </div>
+  </div>
+</section>
+</main>
+<footer>
+  <div class="wrap body-6 muted">
+    <p><b style="color:var(--ink)">A BufferSol product.</b> Companies shown are samples and not affiliated with Straightpin by BufferSol. We are not a recruiter and never take a cut of your pay.</p>
+    <p style="margin-top:8px">Design mock, 5 Nov 2026. All names, pay and counts are invented for layout.</p>
+  </div>
+</footer>
+<script>
+document.querySelectorAll('[data-tear]').forEach(b=>b.addEventListener('click',()=>{b.classList.add('torn');if(navigator.vibrate)navigator.vibrate(10);setTimeout(()=>b.classList.remove('torn'),600)}));
+document.querySelectorAll('.chips .chip').forEach(c=>c.addEventListener('click',()=>{c.parentElement.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed','false'));c.setAttribute('aria-pressed','true')}));
+</script>
+</body>
+</html>
