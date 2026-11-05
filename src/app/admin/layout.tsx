@@ -22,8 +22,18 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             Back to app
           </Link>
         </div>
+        <nav aria-label="Admin" className="hidden items-center gap-4 md:flex">
+          {[["/admin", "Overview"], ["/admin/crawl", "Crawl health"], ["/admin/review", "Review queue"], ["/admin/users", "Users"]].map(([href, label]) => (
+            <Link key={href} href={href!} className="inline-flex min-h-11 items-center body-6 text-text-subtle transition-colors duration-300 hover:text-text focus-visible:focus-ring">{label}</Link>
+          ))}
+        </nav>
         <ThemeToggle />
       </header>
+      <nav aria-label="Admin sections" className="flex gap-4 overflow-x-auto border-b border-border px-4 md:hidden">
+        {[["/admin", "Overview"], ["/admin/crawl", "Crawl"], ["/admin/review", "Review"], ["/admin/users", "Users"]].map(([href, label]) => (
+          <Link key={href} href={href!} className="inline-flex min-h-11 items-center whitespace-nowrap body-6 text-text-subtle hover:text-text focus-visible:focus-ring">{label}</Link>
+        ))}
+      </nav>
       <main id="main" className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6 lg:px-10 lg:py-12">{children}</main>
     </div>
   );

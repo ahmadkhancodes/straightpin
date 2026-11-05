@@ -14,5 +14,5 @@ export const POST = withApi(async () => {
   requirePermission(ctx, "billing", "manage");
   const db = await getDb();
   await enforceRateLimit(`billing:${ctx.user.id}`, RULES.billing, db);
-  return json(await createPortalSession(requireStripe(), db, ctx.org.id, `${appUrl()}/app/billing`));
+  return json(await createPortalSession(requireStripe(), db, ctx.org.id, `${appUrl()}/account`));
 });

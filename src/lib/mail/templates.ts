@@ -89,3 +89,24 @@ ${opts.receipt ? `<p style="margin:0;font-size:12px;color:#767676">${esc(opts.re
   );
   return { subject, text, html };
 }
+
+/** Refund confirmation (transactional). `amountText` like "$10.99". */
+export function refundEmail(opts: { amountText: string; planName: string }) {
+  const subject = `Your ${product.name} refund of ${opts.amountText} is on its way`;
+  const text = `We refunded ${opts.amountText} for your ${opts.planName} plan and turned the plan off. Refunds usually reach your card in 5 to 10 business days.\n\nYour free account stays open. Questions: ${product.supportEmail}`;
+  const html = layout(subject, `<h1 style="margin:0 0 8px;font-size:20px">Refund issued</h1>
+<p style="margin:0 0 12px;font-size:14px;line-height:20px;color:#404040">We refunded ${esc(opts.amountText)} for your ${esc(opts.planName)} plan and turned the plan off. Refunds usually reach your card in 5 to 10 business days.</p>
+<p style="margin:0;font-size:14px;line-height:20px;color:#404040">Your free account stays open. Questions: <a href="mailto:${esc(product.supportEmail)}" style="color:#181818">${esc(product.supportEmail)}</a></p>`);
+  return { subject, text, html };
+}
+
+/** Renewal reminder with the price, the date, and how to cancel. */
+export function renewalReminderEmail(opts: { planName: string; amountText: string; intervalText: string; dateText: string; accountUrl: string; unsubscribeUrl: string }) {
+  const subject = `${opts.planName} renews on ${opts.dateText}`;
+  const text = `Your ${product.name} ${opts.planName} plan renews on ${opts.dateText} for ${opts.amountText} ${opts.intervalText}.\n\nTo cancel or change your card, open your account: ${opts.accountUrl}\nCancelling takes two taps and you keep the plan until the date above.\n\nStop these reminders: ${opts.unsubscribeUrl}`;
+  const html = layout(subject, `<h1 style="margin:0 0 8px;font-size:20px">${esc(subject)}</h1>
+<p style="margin:0;font-size:14px;line-height:20px;color:#404040">Your ${esc(opts.planName)} plan renews for ${esc(opts.amountText)} ${esc(opts.intervalText)}. Cancelling takes two taps and you keep the plan until that date.</p>
+${button(opts.accountUrl, "Open my account")}
+<p style="margin:16px 0 0;font-size:12px"><a href="${esc(opts.unsubscribeUrl)}" style="color:#767676">Stop renewal reminders</a></p>`);
+  return { subject, text, html };
+}

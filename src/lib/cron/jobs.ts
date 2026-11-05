@@ -1,4 +1,5 @@
 import { getDb } from "@/lib/db";
+import { runRenewalReminders } from "@/lib/billing/reminders";
 import { runAlerts, runDigest } from "@/lib/jobs/digest";
 import { politeFetcher, runCrawlTick } from "@/lib/jobs/crawlTick";
 import { retryDueDeliveries } from "@/lib/webhooks/outbound";
@@ -13,4 +14,6 @@ export const cronJobs: Record<string, () => Promise<unknown>> = {
   digest: async () => runDigest(await getDb(), new Date()),
   /** Hourly: paid users get new matches since their last alert. */
   alerts: async () => runAlerts(await getDb(), new Date()),
+  /** Hourly: weekly and monthly renewals get a reminder 3 days ahead, annual ones on the day. */
+  "renewal-reminders": async () => runRenewalReminders(await getDb(), new Date()),
 };

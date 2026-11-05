@@ -95,6 +95,8 @@ export interface SourceRun {
   closed: number;
   agencyHidden: number;
   errors: { employerId: string; message: string }[];
+  /** Per board result of this run (M3, crawl health). Older rows do not have it. */
+  boards?: { employerId: string; ok: boolean; inserted: number; closed: number }[];
   budgetHit: boolean;
 }
 

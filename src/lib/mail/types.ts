@@ -8,7 +8,7 @@ export interface MailMessage {
   replyTo?: string;
   headers?: Record<string, string>;
   /** Suppression scope; "transactional" mail (sign-in links) ignores marketing unsubscribes. */
-  category?: "transactional" | "notification" | "marketing" | "digest" | "alerts";
+  category?: "transactional" | "notification" | "marketing" | "digest" | "alerts" | "renewals";
   tags?: Record<string, string>;
 }
 

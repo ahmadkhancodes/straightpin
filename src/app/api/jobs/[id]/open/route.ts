@@ -24,12 +24,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return redirect(`/sign-in?next=${encodeURIComponent(`/job/${id}`)}`);
     }
     const db = await getDb();
+    if (await db.isSuspended(ctx.org.id)) throw new HttpError(403, "account_suspended");
     const job = await db.getJob(id);
     if (!job || job.closedAt || !/^https?:\/\//.test(job.applyUrl)) throw new HttpError(404, "not_found");
     const r = await consumeOpen(db, ctx.org.id, job.id);
     if (!r.ok) {
       if (wantsJson) return json({ error: "open_limit", used: r.state.used, limit: r.state.limit }, 402);
-      return redirect(`/job/${id}?limit=opens`);
+      return redirect(`/paywall?reason=opens&from=${encodeURIComponent(`/job/${id}`)}`);
     }
     return wantsJson ? json({ ok: true, applyUrl: job.applyUrl, repeat: r.repeat, used: r.state.used, limit: r.state.limit }) : redirect(job.applyUrl);
   } catch (e) {

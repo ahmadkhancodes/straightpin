@@ -20,11 +20,12 @@ export const POST = withApi(async (req) => {
   if (!flagOn(await getFlags(), "payments_enabled")) throw new HttpError(503, "payments_disabled");
   const body = await readJson(req, Body);
   const db = await getDb();
+  if (await db.isSuspended(ctx.org.id)) throw new HttpError(403, "account_suspended");
   await enforceRateLimit(`billing:${ctx.user.id}`, RULES.billing, db);
   const base = appUrl();
   const r = await createCheckoutSession(requireStripe(), db, { orgId: ctx.org.id, email: ctx.user.email, userId: ctx.user.id }, body.plan, body.interval, {
-    success: `${base}/app/billing?checkout=success`,
-    cancel: `${base}/app/billing?checkout=canceled`,
+    success: `${base}/account?checkout=success`,
+    cancel: `${base}/account?checkout=canceled`,
   });
   await audit({ orgId: ctx.org.id, actorId: ctx.user.id, action: "billing.checkout_started", target: `${body.plan}:${body.interval}` });
   return json(r);

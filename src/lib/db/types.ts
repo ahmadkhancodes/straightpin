@@ -4,6 +4,7 @@
 // TTL fields are BSON Dates (the apps stored numbers, so Mongo TTL never fired: BACKEND_REUSE 1.5).
 
 import type { PlanId } from "@/config/product";
+import type { AgencyFlag, ClassifyInput } from "@/lib/classify/types";
 import type { EmployerDoc, EmployerSeed, JobDoc, JobQuery, JobUpsert, SavedJob, SearchProfile, SourceRun } from "@/lib/jobs/types";
 
 export type EntitlementStatus = "none" | "trialing" | "active" | "past_due" | "canceled" | "lifetime";
@@ -86,6 +87,25 @@ export interface Suppression {
   at: Date;
 }
 
+/** A reviewer's verdict on one job. Collection `labels`, one row per job (latest wins). Feeds ml/agency training. */
+export interface LabelDoc {
+  jobId: string;
+  label: "agency" | "direct";
+  input: ClassifyInput;
+  by: string;
+  at: Date;
+}
+
+/** One self-serve or admin refund per Stripe customer. Collection `refunds`, keyed by customer id. */
+export interface RefundRecord {
+  customerId: string;
+  orgId: string;
+  chargeId: string;
+  amount: number;
+  by: "self" | "admin";
+  at: Date;
+}
+
 export interface Db {
   readonly app: string;
 
@@ -122,6 +142,30 @@ export interface Db {
   listDeliveries(orgId: string, opts?: { endpointId?: string; limit?: number }): Promise<WebhookDelivery[]>;
   getDelivery(orgId: string, id: string): Promise<WebhookDelivery | null>;
   dueDeliveries(now: Date, limit: number): Promise<WebhookDelivery[]>;
+
+  /** Lifetime cap: atomic counter plus one claim per org (re-claiming is free). `sold` is the count after the call. */
+  claimLifetime(orgId: string, cap: number): Promise<{ ok: boolean; sold: number }>;
+  /** Gives the org's claimed slot back (abandoned checkout, full refund). No-op when it holds none. */
+  releaseLifetime(orgId: string): Promise<void>;
+  lifetimeSold(): Promise<number>;
+  /** Insert only. False when this customer already had a refund (the once only rule). */
+  reserveRefund(r: RefundRecord): Promise<boolean>;
+  releaseRefund(customerId: string): Promise<void>;
+  getRefund(customerId: string): Promise<RefundRecord | null>;
+  /** Paid, non lifetime plans (for renewal reminders). */
+  listEntitlements(): Promise<{ orgId: string; entitlement: Entitlement }[]>;
+  /** Insert only: true the first time a key is seen (reminder dedupe). */
+  markReminder(key: string): Promise<boolean>;
+  setSuspended(orgId: string, suspended: boolean, by: string): Promise<void>;
+  isSuspended(orgId: string): Promise<boolean>;
+
+  // agency review (admin)
+  /** Upsert by job id. */
+  addLabel(l: LabelDoc): Promise<void>;
+  listLabels(limit?: number): Promise<LabelDoc[]>;
+  /** Open jobs whose classification is still `pending`, newest first. */
+  listPendingAgency(limit: number): Promise<JobDoc[]>;
+  setJobAgency(id: string, flag: AgencyFlag, score: number): Promise<void>;
 
   // mail suppression list
   addSuppression(s: Omit<Suppression, "at"> & { at?: Date }): Promise<void>;

@@ -20,6 +20,10 @@ export function fakeStripe(nowSec = () => 1_800_000_000) {
   const customers = new Map<string, { id: string; metadata: Record<string, string>; email?: string }>();
   const subs: Sub[] = [];
   const calls: { method: string; args: unknown }[] = [];
+  type Charge = { id: string; customer: string; status: string; amount: number; amount_refunded: number; refunded: boolean; created: number; metadata: Record<string, string> };
+  const charges: Charge[] = [];
+  const refunds: { id: string; charge: string }[] = [];
+  const failRefund = { on: false };
   let n = 0;
 
   const addSub = (customer: string, lookupKey: string, status = "active", extra: Partial<Sub> = {}) => {
@@ -32,7 +36,28 @@ export function fakeStripe(nowSec = () => 1_800_000_000) {
     return s;
   };
 
+  const addCharge = (customer: string, amount: number, createdSec = nowSec(), extra: Partial<Charge> = {}) => {
+    const c: Charge = { id: `ch_${++n}`, customer, status: "succeeded", amount, amount_refunded: 0, refunded: false, created: createdSec, metadata: {}, ...extra };
+    charges.unshift(c); // Stripe lists newest first
+    return c;
+  };
+
   const stripe = {
+    charges: {
+      list: async (p: { customer: string }) => ({ data: charges.filter((c) => c.customer === p.customer) }),
+    },
+    refunds: {
+      create: async (p: { charge: string }, o?: { idempotencyKey?: string }) => {
+        calls.push({ method: "refunds.create", args: { ...p, ...o } });
+        if (failRefund.on) throw new Error("stripe refused");
+        const c = charges.find((x) => x.id === p.charge)!;
+        c.amount_refunded = c.amount;
+        c.refunded = true;
+        const r = { id: `re_${++n}`, charge: p.charge };
+        refunds.push(r);
+        return r;
+      },
+    },
     prices: {
       list: async (p: { lookup_keys: string[] }) => ({ data: prices.filter((x) => p.lookup_keys.includes(x.lookup_key)) }),
     },
@@ -63,6 +88,12 @@ export function fakeStripe(nowSec = () => 1_800_000_000) {
         calls.push({ method: "subscriptions.retrieve", args: id });
         return subs.find((x) => x.id === id) ?? { id, customer: null };
       },
+      update: async (id: string, p: { cancel_at_period_end?: boolean }) => {
+        calls.push({ method: "subscriptions.update", args: { id, ...p } });
+        const s = subs.find((x) => x.id === id)!;
+        if (p.cancel_at_period_end !== undefined) s.cancel_at_period_end = p.cancel_at_period_end;
+        return s;
+      },
       cancel: async (id: string) => {
         calls.push({ method: "subscriptions.cancel", args: id });
         const s = subs.find((x) => x.id === id);
@@ -80,7 +111,7 @@ export function fakeStripe(nowSec = () => 1_800_000_000) {
       },
     },
   };
-  return { stripe: stripe as unknown as Stripe, subs, customers, calls, addSub };
+  return { stripe: stripe as unknown as Stripe, subs, customers, calls, addSub, addCharge, charges, refunds, failRefund };
 }
 
 let evt = 0;

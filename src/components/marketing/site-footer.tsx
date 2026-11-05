@@ -10,6 +10,9 @@ const columns = [
       { href: "/how-we-check", label: "How we check" },
       { href: "/compare/directroles", label: "Compare" },
       { href: "/docs", label: "Help" },
+      { href: "/account", label: "Account" },
+      { href: "/bot", label: "Our crawler" },
+      { href: "/about/data", label: "What we store" },
     ],
   },
   {
