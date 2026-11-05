@@ -1,0 +1,202 @@
+@import "tailwindcss";
+
+/*
+ * Universal kit tokens (docs/factory/DESIGN_PLAYBOOK.md §3, §5, §6).
+ * PLACEHOLDER THEME: deliberately plain greys + one muted accent. Each product replaces ONLY the
+ * values in the two `:root` blocks below (from its docs/DESIGN.md). Components reference role tokens only.
+ */
+:root {
+  --font-sans-family: var(--font-kit-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono-family: var(--font-kit-mono), ui-monospace, monospace;
+
+  /* raw ramp (neutral 00..1000) */
+  --n-0: #ffffff;
+  --n-50: #f7f7f7;
+  --n-100: #efefef;
+  --n-200: #e2e2e2;
+  --n-300: #cfcfcf;
+  --n-400: #a3a3a3;
+  --n-500: #767676;
+  --n-600: #5c5c5c;
+  --n-700: #404040;
+  --n-800: #272727;
+  --n-900: #181818;
+  --n-1000: #000000;
+  --accent-500: #3d5a80; /* placeholder accent, <80% saturation */
+  --accent-600: #2f4766;
+
+  /* role tokens: light */
+  --surface: var(--n-0);
+  --surface-raised: var(--n-50);
+  --surface-sunken: var(--n-100);
+  --surface-inverse: var(--n-900);
+  --text: var(--n-900);
+  --text-subtle: var(--n-600);
+  --text-muted: var(--n-500);
+  --text-inverse: var(--n-0);
+  --border: var(--n-200);
+  --border-strong: var(--n-300);
+  --action: var(--accent-500);
+  --action-hover: var(--accent-600);
+  --action-text: #ffffff;
+  --focus: var(--accent-500);
+  --success: #2f7a4a;
+  --success-surface: #ecf6ef;
+  --warning: #8a5a00;
+  --warning-surface: #fdf5e4;
+  --danger: #b3261e;
+  --danger-surface: #fcecea;
+  --hero-from: #000000;
+  --hero-to: #666666;
+  --shadow-color: 0 0% 0%;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --surface: #181818;
+  --surface-raised: #1f1f1f;
+  --surface-sunken: #000000;
+  --surface-inverse: var(--n-50);
+  --text: #f2f2f2;
+  --text-subtle: #b4b4b4;
+  --text-muted: #8f8f8f;
+  --text-inverse: var(--n-900);
+  --border: #313131;
+  --border-strong: #404040;
+  --action: #8fa9cc;
+  --action-hover: #a9bfdc;
+  --action-text: #0b1320;
+  --focus: #8fa9cc;
+  --success: #6fcf8f;
+  --success-surface: #13261a;
+  --warning: #e7b85a;
+  --warning-surface: #2a210e;
+  --danger: #f2877e;
+  --danger-surface: #2c1513;
+  --hero-from: #ffffff;
+  --hero-to: #9b9b9b;
+  --shadow-color: 0 0% 0%;
+  color-scheme: dark;
+}
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme inline {
+  --font-sans: var(--font-sans-family);
+  --font-mono: var(--font-mono-family);
+
+  --color-*: initial;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-surface-inverse: var(--surface-inverse);
+  --color-text: var(--text);
+  --color-text-subtle: var(--text-subtle);
+  --color-text-muted: var(--text-muted);
+  --color-text-inverse: var(--text-inverse);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-action: var(--action);
+  --color-action-hover: var(--action-hover);
+  --color-action-text: var(--action-text);
+  --color-focus: var(--focus);
+  --color-success: var(--success);
+  --color-success-surface: var(--success-surface);
+  --color-warning: var(--warning);
+  --color-warning-surface: var(--warning-surface);
+  --color-danger: var(--danger);
+  --color-danger-surface: var(--danger-surface);
+
+  /* Spacing restricted to the playbook scale: 0 2 4 8 12 16 24 32 40 48 64 80 96 (+ layout widths). */
+  --spacing-*: initial;
+  --spacing: initial;
+  --spacing-0: 0px;
+  --spacing-px: 1px;
+  --spacing-0\.5: 2px;
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-10: 40px;
+  --spacing-11: 44px; /* min tap target */
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+  --spacing-20: 80px;
+  --spacing-24: 96px;
+
+  --ease-out-kit: cubic-bezier(0.22, 1, 0.36, 1);
+  --default-transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  --default-transition-duration: 300ms;
+}
+
+/* ---- Named type styles (playbook §5). Use these, never loose size+weight pairs. ---- */
+@utility heading-1 { font-size: 3.75rem; line-height: 1; font-weight: 600; letter-spacing: -0.02em; text-wrap: balance; }
+@utility heading-2 { font-size: 3rem; line-height: 1; font-weight: 600; letter-spacing: -0.02em; text-wrap: balance; }
+@utility heading-3 { font-size: 2.25rem; line-height: 2.5rem; font-weight: 600; letter-spacing: -0.015em; text-wrap: balance; }
+@utility heading-4 { font-size: 1.875rem; line-height: 2.25rem; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
+@utility heading-5 { font-size: 1.5rem; line-height: 2rem; font-weight: 600; text-wrap: balance; }
+@utility heading-6 { font-size: 1.25rem; line-height: 1.75rem; font-weight: 600; text-wrap: balance; }
+@utility title-1 { font-size: 1.25rem; line-height: 1.75rem; font-weight: 500; }
+@utility title-2 { font-size: 1.125rem; line-height: 1.75rem; font-weight: 500; }
+@utility title-3 { font-size: 1rem; line-height: 1.5rem; font-weight: 500; }
+@utility title-4 { font-size: 0.875rem; line-height: 1.25rem; font-weight: 500; }
+@utility title-5 { font-size: 0.75rem; line-height: 1rem; font-weight: 500; }
+@utility body-1 { font-size: 1rem; line-height: 1.5rem; font-weight: 600; text-wrap: pretty; }
+@utility body-2 { font-size: 1rem; line-height: 1.5rem; font-weight: 500; text-wrap: pretty; }
+@utility body-3 { font-size: 1rem; line-height: 1.5rem; font-weight: 400; text-wrap: pretty; }
+@utility body-4 { font-size: 0.875rem; line-height: 1.25rem; font-weight: 600; text-wrap: pretty; }
+@utility body-5 { font-size: 0.875rem; line-height: 1.25rem; font-weight: 500; text-wrap: pretty; }
+@utility body-6 { font-size: 0.875rem; line-height: 1.25rem; font-weight: 400; text-wrap: pretty; }
+@utility button-lg { font-size: 1.125rem; line-height: 1.75rem; font-weight: 600; }
+@utility button-md { font-size: 1rem; line-height: 1.5rem; font-weight: 600; }
+@utility button-sm { font-size: 0.875rem; line-height: 1.25rem; font-weight: 600; }
+@utility button-xsm { font-size: 0.75rem; line-height: 1rem; font-weight: 600; }
+@utility caption-1 { font-size: 0.875rem; line-height: 1.25rem; font-weight: 500; }
+@utility caption-2 { font-size: 0.875rem; line-height: 1.25rem; font-weight: 400; }
+@utility caption-3 { font-size: 0.75rem; line-height: 1rem; font-weight: 600; }
+@utility caption-4 { font-size: 0.75rem; line-height: 1rem; font-weight: 500; }
+@utility caption-5 { font-size: 0.75rem; line-height: 1rem; font-weight: 400; }
+
+/* The only gradient allowed (playbook §6): hero heading text, left to right. */
+@utility hero-gradient-text {
+  background-image: linear-gradient(to right, var(--hero-from), var(--hero-to));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility focus-ring {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--surface);
+    color: var(--text);
+    font-family: var(--font-sans-family);
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  ::selection { background: var(--action); color: var(--action-text); }
+  code, kbd, pre, samp { font-family: var(--font-mono-family); }
+}
+
+/* Scroll reveal (rise 32px + fade, once). Reduced motion: opacity only. */
+.kit-reveal { opacity: 0; transform: translateY(32px); transition: opacity 700ms var(--ease-out-kit), transform 700ms var(--ease-out-kit); }
+.kit-reveal[data-visible="true"] { opacity: 1; transform: none; }
+.kit-word { opacity: 0.3; transition: opacity 500ms var(--ease-out-kit); }
+.kit-word[data-on="true"] { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .kit-reveal { transform: none; transition: opacity 300ms var(--ease-out-kit); }
+  .kit-word { opacity: 1; transition: none; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
