@@ -115,4 +115,47 @@ describe('fetchPolite', () => {
     await expect(fetcher.fetch({ url: 'https://a.test/x' })).rejects.toThrow('boom');
     expect(release).toHaveBeenCalledTimes(2);
   });
+
+  describe('redirects (REVIEW P0-3)', () => {
+    it('refuses a redirect to a denied host and never requests it', async () => {
+      const { fetcher, calls } = setup({
+        'https://a.test/robots.txt': { status: 404 },
+        'https://a.test/jobs': { status: 302, headers: { Location: 'https://www.indeed.com/viewjob?jk=1' } },
+      });
+      await expect(fetcher.fetch({ url: 'https://a.test/jobs' })).rejects.toBeInstanceOf(EgressBlockedError);
+      expect(calls.some((c) => c.url.includes('indeed.com'))).toBe(false);
+    });
+    it('refuses a redirect to a private address', async () => {
+      const { fetcher, calls } = setup({
+        'https://a.test/robots.txt': { status: 404 },
+        'https://a.test/jobs': { status: 301, headers: { location: 'http://169.254.169.254/latest/meta-data' } },
+      });
+      await expect(fetcher.fetch({ url: 'https://a.test/jobs' })).rejects.toBeInstanceOf(EgressBlockedError);
+      expect(calls.some((c) => c.url.includes('169.254'))).toBe(false);
+    });
+    it("applies the target host's robots.txt before following", async () => {
+      const { fetcher, calls } = setup({
+        'https://a.test/robots.txt': { status: 404 },
+        'https://a.test/jobs': { status: 302, headers: { location: 'https://b.test/private/list' } },
+        'https://b.test/robots.txt': { status: 200, body: 'User-agent: *\nDisallow: /private' },
+        'https://b.test/private/list': { status: 200, body: 'secret' },
+      });
+      await expect(fetcher.fetch({ url: 'https://a.test/jobs' })).rejects.toBeInstanceOf(RobotsDisallowedError);
+      expect(calls.some((c) => c.url === 'https://b.test/private/list')).toBe(false);
+    });
+    it('follows an allowed relative redirect and stops after 5 hops', async () => {
+      const ok = setup({
+        'https://a.test/robots.txt': { status: 404 },
+        'https://a.test/old': { status: 308, headers: { location: '/new' } },
+        'https://a.test/new': { status: 200, body: 'fine' },
+      });
+      await expect(ok.fetcher.fetch({ url: 'https://a.test/old' })).resolves.toMatchObject({ status: 200, body: 'fine' });
+      const loop = setup({
+        'https://a.test/robots.txt': { status: 404 },
+        'https://a.test/loop': { status: 302, headers: { location: '/loop' } },
+      });
+      await expect(loop.fetcher.fetch({ url: 'https://a.test/loop' })).rejects.toThrow('too many redirects');
+      expect(loop.calls.filter((c) => c.url === 'https://a.test/loop')).toHaveLength(6);
+    });
+  });
 });

@@ -1,5 +1,5 @@
 import { product } from "@/config/product";
-import { appUrl, env } from "@/lib/env";
+import { appUrl, env, isProd } from "@/lib/env";
 import { getDb } from "@/lib/db";
 import { hmacSha256Hex } from "@/lib/ids";
 import { consoleTransport, resendTransport, smtpTransport } from "./transports";
@@ -15,7 +15,13 @@ export function transportFromEnv(): MailTransport {
   return consoleTransport();
 }
 
-const unsubSecret = () => env().BETTER_AUTH_SECRET ?? "dev-unsubscribe-secret";
+/** Signing key for unsubscribe and manage links. Production never falls back to a public constant (REVIEW P1-6). */
+const unsubSecret = () => {
+  const k = env().BETTER_AUTH_SECRET;
+  if (k) return k;
+  if (isProd()) throw new Error("BETTER_AUTH_SECRET is required to sign email links");
+  return "dev-unsubscribe-secret";
+};
 
 /** Signed one-click unsubscribe token (RFC 8058). */
 export async function unsubscribeToken(email: string, scope: string) {

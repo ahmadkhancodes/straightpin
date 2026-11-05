@@ -1,10 +1,12 @@
+import { product } from "@/config/product";
 import type { JobDoc } from "./types";
 
 const COUNTRY = { US: "US", CA: "CA", UK: "GB" } as const;
 const UNIT = { hour: "HOUR", day: "DAY", week: "WEEK", month: "MONTH", year: "YEAR" } as const;
 
 /**
- * schema.org JobPosting for a job page. `url` is the employer's own apply page (we do not take applications),
+ * schema.org JobPosting for a job page. `url` is our own job page, never the employer's apply link: the page HTML is
+ * public, and the apply link is what a daily open unlocks (REVIEW P0-2). We do not take applications (directApply false),
  * the description is the short excerpt we keep, and the posted date is the company's own first published date
  * (never an updated date). Returns null for a closed job: a page that says "taken down" must not claim an open posting.
  */
@@ -20,7 +22,7 @@ export function jobPostingLd(job: JobDoc): Record<string, unknown> | null {
     employmentType: job.schedule === "part" ? "PART_TIME" : "FULL_TIME",
     hiringOrganization: { "@type": "Organization", name: job.employerName },
     identifier: { "@type": "PropertyValue", name: job.employerName, value: job.externalId },
-    url: job.applyUrl,
+    url: `${product.url}/job/${encodeURIComponent(job.id)}`,
     directApply: false,
   };
   if (job.validThrough) ld.validThrough = job.validThrough.toISOString();

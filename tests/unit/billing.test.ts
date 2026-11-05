@@ -6,6 +6,7 @@ import { createCheckoutSession, createPortalSession } from "@/lib/billing/checko
 import { NONE, effectivePlan, invoiceSubscriptionId, lifetimeEntitlement, periodEndOf, requirePlan } from "@/lib/billing/entitlement";
 import { handleStripeWebhook } from "@/lib/billing/webhook";
 import { event, fakeStripe } from "./fakes";
+import { plansOnSale } from "@/config/product";
 
 const NOW = 1_800_000_000_000;
 const subject = { orgId: "org_1", email: "dana@studio.test", userId: "u_1" };
@@ -37,12 +38,12 @@ describe("Stripe API version tolerance", () => {
 
 describe("checkout", () => {
   it("creates a hosted Checkout Session for this app's price, tagged metadata.app (C-28)", async () => {
-    const r = await createCheckoutSession(f.stripe, db, subject, "plus", "year", urls);
+    const r = await createCheckoutSession(f.stripe, db, subject, "weekly", "week", urls);
     expect(r.url).toMatch(/^https:\/\/checkout\.stripe\.test\//);
     const call = f.calls.find((c) => c.method === "checkout.sessions.create")!.args as Record<string, any>;
     expect(call.mode).toBe("subscription");
-    expect(call.line_items[0].price).toBe("price_plus_y");
-    expect(call.subscription_data.metadata).toMatchObject({ app: "straightpin", plan: "plus", org_id: "org_1" });
+    expect(call.line_items[0].price).toBe("price_weekly_w");
+    expect(call.subscription_data.metadata).toMatchObject({ app: "straightpin", plan: "weekly", org_id: "org_1" });
     expect(call.client_reference_id).toBe("org_1");
     expect(call.success_url).toContain("{CHECKOUT_SESSION_ID}");
     expect((await db.getBillingAccount("org_1"))?.stripeCustomerId).toMatch(/^cus_/);
@@ -57,16 +58,47 @@ describe("checkout", () => {
     await createCheckoutSession(f.stripe, db, subject, "monthly", "month", urls);
     const cus = (await db.getBillingAccount("org_1"))!.stripeCustomerId!;
     f.addSub(cus, "straightpin_monthly_month");
-    await expect(createCheckoutSession(f.stripe, db, subject, "plus", "year", urls)).rejects.toMatchObject({ status: 409, code: "already_subscribed" });
+    await expect(createCheckoutSession(f.stripe, db, subject, "weekly", "week", urls)).rejects.toMatchObject({ status: 409, code: "already_subscribed" });
   });
 
   it("reuses the customer and opens the portal", async () => {
     await createCheckoutSession(f.stripe, db, subject, "monthly", "month", urls);
-    await createCheckoutSession(f.stripe, db, subject, "plus", "year", urls);
+    await createCheckoutSession(f.stripe, db, subject, "weekly", "week", urls);
     expect(f.customers.size).toBe(1);
     const p = await createPortalSession(f.stripe, db, "org_1", "https://app.test/app/billing");
     expect(p.url).toContain("billing.stripe.test");
     await expect(createPortalSession(f.stripe, db, "org_none", "x")).rejects.toMatchObject({ code: "no_customer" });
+  });
+});
+
+describe("pre-launch review fixes", () => {
+  it("P0-1: Plus is not on sale, Checkout refuses it and the paywall leaves it out", async () => {
+    await expect(createCheckoutSession(f.stripe, db, subject, "plus", "month", urls)).rejects.toMatchObject({ status: 409, code: "plan_not_on_sale" });
+    await expect(createCheckoutSession(f.stripe, db, subject, "plus", "year", urls)).rejects.toMatchObject({ status: 409, code: "plan_not_on_sale" });
+    expect(f.calls.some((c) => c.method === "checkout.sessions.create")).toBe(false);
+    expect(plansOnSale().map((p) => p.id)).toEqual(["weekly", "monthly", "lifetime"]);
+  });
+
+  it("P0-1: no plan on sale lists a feature that is not built", () => {
+    const text = plansOnSale().flatMap((p) => [p.tagline, ...p.highlights]).join(" ").toLowerCase();
+    for (const missing of ["tracker", "follow compan", "resume", "cover letter", "15 minutes"]) expect(text).not.toContain(missing);
+  });
+
+  it("P0-4: a subscriber cannot buy Lifetime on top (no slot taken, no session)", async () => {
+    await createCheckoutSession(f.stripe, db, subject, "monthly", "month", urls);
+    const cus = (await db.getBillingAccount("org_1"))!.stripeCustomerId!;
+    f.addSub(cus, "straightpin_monthly_month");
+    const before = f.calls.filter((c) => c.method === "checkout.sessions.create").length;
+    await expect(createCheckoutSession(f.stripe, db, subject, "lifetime", "once", urls)).rejects.toMatchObject({ status: 409, code: "already_subscribed" });
+    expect(f.calls.filter((c) => c.method === "checkout.sessions.create").length).toBe(before);
+    expect(await db.lifetimeSold()).toBe(0);
+  });
+
+  it("P0-4: a Lifetime holder cannot start a subscription", async () => {
+    await db.setEntitlement("org_1", lifetimeEntitlement("lifetime", "pi_1", NOW));
+    await expect(createCheckoutSession(f.stripe, db, subject, "monthly", "month", urls)).rejects.toMatchObject({ status: 409, code: "already_subscribed" });
+    await expect(createCheckoutSession(f.stripe, db, subject, "lifetime", "once", urls)).rejects.toMatchObject({ status: 409, code: "already_subscribed" });
+    expect(f.calls.some((c) => c.method === "checkout.sessions.create")).toBe(false);
   });
 });
 

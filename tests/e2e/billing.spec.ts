@@ -26,7 +26,9 @@ test("paywall: Monthly pre-selected, price and refund visible, close works, pric
   await expect(page.getByText("$10.99").first()).toBeVisible();
   await expect(page.getByText("Full refund in the first 7 days")).toBeVisible();
   await expect(page.getByText("Renews every month at $10.99 until you cancel.")).toBeVisible();
-  for (const name of [/^Weekly/, /^Lifetime/, /^Plus monthly/, /^Plus yearly/]) await expect(page.getByRole("radio", { name })).toBeVisible();
+  for (const name of [/^Weekly/, /^Lifetime/]) await expect(page.getByRole("radio", { name })).toBeVisible();
+  // Plus is not on sale until its features exist (REVIEW P0-1)
+  await expect(page.getByRole("radio", { name: /^Plus/ })).toHaveCount(0);
   await page.getByRole("radio", { name: /^Lifetime/ }).check();
   await expect(page.getByText("One payment, no renewal.")).toBeVisible();
   await page.getByRole("radio", { name: /^Monthly/ }).check();

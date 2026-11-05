@@ -1,6 +1,7 @@
 import { effectivePlan } from "@/lib/billing/entitlement";
 import type { Db } from "@/lib/db/types";
 import { appUrl } from "@/lib/env";
+import { log } from "@/lib/logger";
 import { manageUrl, sendMail, unsubscribeUrl } from "@/lib/mail";
 import type { MailMessage, SendResult } from "@/lib/mail";
 import { digestEmail, type DigestJob } from "@/lib/mail/templates";
@@ -30,6 +31,17 @@ export const isDigestHour = (tz: string, now: Date, hour = DIGEST_HOUR) => local
 export type SendFn = (msg: MailMessage) => Promise<SendResult>;
 export const defaultSend: SendFn = (m) => sendMail(m);
 
+/** One failed email (provider down, bad address) must not stop the hourly run for everyone after it (REVIEW P1-7). */
+async function trySend(send: SendFn, msg: Parameters<SendFn>[0]): Promise<boolean> {
+  try {
+    await send(msg);
+    return true;
+  } catch (e) {
+    log.warn("mail_send_failed", { message: (e as Error).message });
+    return false;
+  }
+}
+
 export const jobUrl = (id: string) => `${appUrl()}/job/${id}`;
 
 const place = (j: JobDoc) => [j.remoteType === "remote" ? "Remote" : j.location, j.country].filter(Boolean).join(", ");
@@ -58,13 +70,14 @@ export function buildDigest(
   return { to: profile.email, subject: mail.subject, text: mail.text, html: mail.html, category: opts.kind, tags: { kind: opts.kind } };
 }
 
-export interface MailRunResult { considered: number; sent: number; skipped: number }
+/** `failed`: the mail provider refused or was down for that one email; the run carries on with the next person. */
+export interface MailRunResult { considered: number; sent: number; skipped: number; failed: number }
 
 const isPaid = async (db: Db, orgId: string, now: Date) => effectivePlan(await db.getEntitlement(orgId), now.getTime()).id !== "free";
 
 /** Hourly cron. Free users get one digest at 08:00 local; paid users get instant alerts instead. */
 export async function runDigest(db: Db, now: Date, send: SendFn = defaultSend, unsub: (email: string, scope: string) => Promise<string> = unsubscribeUrl, manage: (email: string) => Promise<string> = manageUrl): Promise<MailRunResult> {
-  const res: MailRunResult = { considered: 0, sent: 0, skipped: 0 };
+  const res: MailRunResult = { considered: 0, sent: 0, skipped: 0, failed: 0 };
   for (const p of await db.listProfiles({ digest: true })) {
     res.considered++;
     if (!isDigestHour(p.tz, now) || (p.lastDigestAt && now.getTime() - p.lastDigestAt.getTime() < 20 * HOUR) || (await isPaid(db, p.orgId, now)) || (await db.isSuppressed(p.email, "digest"))) {
@@ -77,7 +90,10 @@ export async function runDigest(db: Db, now: Date, send: SendFn = defaultSend, u
     const fresh = await db.queryJobs({ ...q, limit: 50 });
     const msg = buildDigest(p, fresh, { kind: "digest", now, total, unsubscribeUrl: await unsub(p.email, "digest"), manageUrl: await manage(p.email), agencyHidden });
     if (msg) {
-      await send(msg);
+      if (!(await trySend(send, msg))) {
+        res.failed++;
+        continue; // not marked as sent, so a provider outage does not silently swallow it
+      }
       res.sent++;
     } else res.skipped++;
     await db.saveProfile({ ...p, lastDigestAt: now });
@@ -96,7 +112,7 @@ const ruleAsProfile = (r: AlertRule, tz: string): SearchProfile => ({
  * (up to the plan's number). An account with no saved alerts but the quiz alert switched on keeps one alert from its quiz answers.
  */
 export async function runAlerts(db: Db, now: Date, send: SendFn = defaultSend, unsub: (email: string, scope: string) => Promise<string> = unsubscribeUrl, manage: (email: string) => Promise<string> = manageUrl): Promise<MailRunResult> {
-  const res: MailRunResult = { considered: 0, sent: 0, skipped: 0 };
+  const res: MailRunResult = { considered: 0, sent: 0, skipped: 0, failed: 0 };
   const byOrg = new Map<string, AlertRule[]>();
   for (const r of await db.listActiveAlertRules()) byOrg.set(r.orgId, [...(byOrg.get(r.orgId) ?? []), r]);
   const profiles = await db.listProfiles({ alerts: true });
@@ -106,7 +122,10 @@ export async function runAlerts(db: Db, now: Date, send: SendFn = defaultSend, u
     const [total, fresh] = await Promise.all([db.countJobs(q), db.queryJobs({ ...q, limit: 50 })]);
     const msg = buildDigest(p, fresh, { kind: "alerts", now, total, unsubscribeUrl: await unsub(p.email, "alerts"), manageUrl: await manage(p.email), label: extra.label });
     if (msg) {
-      await send(msg);
+      if (!(await trySend(send, msg))) {
+        res.failed++;
+        return; // retried next hour with the same "since"
+      }
       res.sent++;
     } else res.skipped++;
     await save(now);

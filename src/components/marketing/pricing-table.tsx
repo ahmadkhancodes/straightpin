@@ -26,8 +26,16 @@ function PlanCard({ plan, price }: { plan: Plan; price: PlanPrice | null }) {
         <span className="heading-3 tabular-nums text-text">{price ? money(price.usd) : "$0"}</span>
         <span className="body-6 text-text-subtle">{price ? intervalText(price.interval) : "free"}</span>
       </p>
-      <Link href={href} className={cn(buttonClass(plan.featured ? "primary" : "secondary", "md"), "mt-4 w-full")}>{plan.cta}</Link>
-      <p className="caption-2 mt-2 text-text-subtle">{price ? "Cancel in two taps." : "No card needed."}</p>
+      {plan.onSale ? (
+        <>
+          <Link href={href} className={cn(buttonClass(plan.featured ? "primary" : "secondary", "md"), "mt-4 w-full")}>{plan.cta}</Link>
+          <p className="caption-2 mt-2 text-text-subtle">{price ? "Cancel in two taps." : "No card needed."}</p>
+        </>
+      ) : (
+        <p className="body-6 mt-4 rounded-md border border-dashed border-border px-4 py-3 text-text">
+          Not on sale yet. These features are still being built, so we do not take money for them.
+        </p>
+      )}
       <ul className="mt-6 flex flex-col gap-2 border-t border-border pt-6">
         {plan.highlights.map((h) => (
           <li key={h} className="body-6 flex items-start gap-2 text-text">
@@ -58,7 +66,7 @@ export function PricingTable({ id = "pricing", title, compact = false }: { id?: 
       {compact && lifetime && lifetimePrice ? (
         <p className="body-3 mt-6 text-text">
           <b className="font-semibold">Lifetime {money(lifetimePrice.usd)} once.</b> Core plan forever. First {product.lifetimeCap.toLocaleString("en-US")} buyers.{" "}
-          <Link href="/pricing" className="text-action underline underline-offset-4 focus-visible:focus-ring">All plans, including Plus</Link>
+          <Link href="/pricing" className="text-action underline underline-offset-4 focus-visible:focus-ring">All plans</Link>
         </p>
       ) : null}
       {!compact && lifetime && lifetimePrice && plus ? (

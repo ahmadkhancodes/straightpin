@@ -37,13 +37,21 @@ export async function createCheckoutSession(
 ): Promise<{ url: string }> {
   const def = planById(plan);
   if (!def || def.prices.length === 0) throw new HttpError(400, "bad_plan");
+  // A plan whose features are not built yet is never sold, whatever the client sends (REVIEW P0-1).
+  if (!def.onSale) throw new HttpError(409, "plan_not_on_sale");
   const price = await findPrice(stripe, db.app, plan, interval);
   if (!price || (interval === "once" ? !!price.recurring : !price.recurring)) throw new HttpError(400, "unknown_price");
+  // One paid plan at a time, enforced here and not only by the paywall button (REVIEW P0-4): a Lifetime holder
+  // cannot start a subscription and a subscriber cannot buy Lifetime on top of a plan that keeps renewing.
+  const ent0 = await db.getEntitlement(s.orgId);
+  if (ent0?.status === "lifetime") throw new HttpError(409, "already_subscribed");
   const customer = await ensureCustomer(stripe, db, s);
+  const past = (await stripe.subscriptions.list({ customer: customer.id, status: "all", limit: 20 })).data.filter(
+    (x) => x.metadata?.app === db.app,
+  );
+  if (past.some((x) => ["active", "trialing", "past_due"].includes(x.status))) throw new HttpError(409, "already_subscribed");
   if (interval === "once") {
     // Lifetime: one-time payment; the payment_intent.succeeded webhook grants it (metadata.mode = "lifetime").
-    const ent0 = await db.getEntitlement(s.orgId);
-    if (ent0?.status === "lifetime") throw new HttpError(409, "already_subscribed");
     // Cap: an atomic counter in the DB. The slot is held for this org until the session expires or the payment lands.
     const claim = await db.claimLifetime(s.orgId, product.lifetimeCap);
     if (!claim.ok) throw new HttpError(409, "lifetime_sold_out");
@@ -70,12 +78,7 @@ export async function createCheckoutSession(
     }
     return { url: one.url };
   }
-  const past = (await stripe.subscriptions.list({ customer: customer.id, status: "all", limit: 20 })).data.filter(
-    (x) => x.metadata?.app === db.app,
-  );
-  if (past.some((x) => ["active", "trialing", "past_due"].includes(x.status))) throw new HttpError(409, "already_subscribed");
-  const ent = await db.getEntitlement(s.orgId);
-  const trialUsed = customer.metadata?.trial_used === "true" || !!ent?.trialUsed || past.some((x) => !!x.trial_start);
+  const trialUsed = customer.metadata?.trial_used === "true" || !!ent0?.trialUsed || past.some((x) => !!x.trial_start);
   const trialDays = !trialUsed && def.trialDays > 0 ? def.trialDays : undefined;
   const meta = { app: db.app, plan, interval, org_id: s.orgId, user_id: s.userId };
   const session = await stripe.checkout.sessions.create({

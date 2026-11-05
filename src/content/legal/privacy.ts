@@ -20,7 +20,7 @@ export const privacy: LegalDoc = {
         {
           list: [
             "Account data: your email address and sign in details such as passkeys or a second step.",
-            "Job search data: the fields you pick, the jobs you open and save, your alert settings and, on paid plans, your application tracker notes.",
+            "Job search data: the fields you pick, the jobs you open and save, and your alert settings.",
             "Billing data: your plan, payment status and invoices. Card details go straight to Stripe and we never see or store them.",
             "Technical data: IP address, browser type and request logs, kept briefly for security, abuse prevention and debugging.",
             "Job listings: we read public job postings from employer careers pages. These are business information about roles, not personal data about you.",

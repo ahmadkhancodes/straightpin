@@ -42,3 +42,9 @@ Everything else (DB user via MongoDB connector, Stripe test products via connect
     `cd infra/cron-worker && npx wrangler deploy` (needs the Cloudflare token). Full order in `docs/LAUNCH_CHECKLIST.md`.
 11. **Run `npm run db:indexes` against Atlas** (new `alert_rules` collection and indexes).
 12. **Review the seed source list** after the first live crawl: `/admin/crawl` shows disabled and unverified sources. See `docs/LAUNCH_CHECKLIST.md` section 5.
+
+## Added in M5 (pre-launch review, see docs/REVIEW.md)
+13. **Make sure `BETTER_AUTH_SECRET` is set in Vercel Production** (a long random value). Email unsubscribe and manage links now refuse to sign without it in production.
+    https://vercel.com/dashboard → project straightpin → Settings → Environment Variables
+14. **Decide on the refund rule** (optional): the code refunds the newest charge if it is under 7 days old, once per customer (D-038). The brief says the first charge only. To narrow it, say so and the build session changes `refundLatestCharge` and the policy text together.
+15. **Before switching Plus on:** ship its features, set `onSale: true` in `src/config/product.ts`, and move the annual renewal reminder to 15 to 45 days before renewal (REVIEW P1-4).
