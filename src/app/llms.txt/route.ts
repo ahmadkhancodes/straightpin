@@ -17,7 +17,7 @@ export function GET() {
     "",
     "## Product",
     "",
-    `- [Pricing](${u("/pricing")}): Free, Weekly, Monthly, Lifetime and Plus, with the 7 day refund`,
+    `- [Pricing](${u("/pricing")}): Free, Weekly, Monthly and Lifetime, with the 7 day refund (Plus is not on sale yet)`,
     `- [How we check](${u("/how-we-check")}): How we check direct source, reposts, ghost signals and agencies`,
     `- [Compare with directroles.net](${u("/compare/directroles")}): Dated price comparison`,
     `- [Full documentation as one file](${u("/llms-full.txt")}): All docs in markdown`,

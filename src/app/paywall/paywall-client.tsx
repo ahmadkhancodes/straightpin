@@ -6,7 +6,7 @@ import { api } from "@/components/app/api";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { cn } from "@/components/ui/cn";
 import { Notice } from "@/components/ui/states";
-import { intervalText, product, type Interval, type PlanId } from "@/config/product";
+import { intervalText, plansOnSale, product, type Interval, type PlanId } from "@/config/product";
 
 interface Option {
   key: string;
@@ -19,8 +19,8 @@ interface Option {
 
 const money = (cents: number) => `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
 
-/** Every option comes from product.ts: the screen never carries its own prices. */
-const OPTIONS: Option[] = product.plans.flatMap((pl) =>
+/** Every option comes from product.ts: the screen never carries its own prices. Plans not on sale are left out. */
+const OPTIONS: Option[] = plansOnSale().flatMap((pl) =>
   pl.prices.map((pr) => ({
     key: `${pl.id}:${pr.interval}`,
     plan: pl.id,

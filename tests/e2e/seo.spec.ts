@@ -34,14 +34,16 @@ test("programmatic job pages, the /jobs index and /about/data at 375", async ({ 
   await page.screenshot({ path: `${OUT}/about-data-375.png`, fullPage: true });
 });
 
-test("a job page carries JobPosting JSON-LD that links to the employer", async ({ page, request }) => {
+test("a job page carries JobPosting JSON-LD without leaking the metered apply link", async ({ page, request }) => {
   expect((await request.post("/api/dev/seed-jobs?pages=1")).ok()).toBeTruthy();
   await page.goto("/jobs/support/toronto");
   await page.locator("article a").first().click();
   await page.waitForURL(/\/job\/[0-9a-f]{20}$/);
   const ld = JSON.parse((await page.locator('script[type="application/ld+json"]').first().textContent())!);
   expect(ld["@type"]).toBe("JobPosting");
-  expect(ld.url).toMatch(/^https:\/\/boards\.greenhouse\.io\//);
+  // The apply link is what a daily open unlocks, so it must not sit in the public HTML (REVIEW P0-2)
+  expect(ld.url).toMatch(/\/job\/[0-9a-f]{20}$/);
+  expect(await page.content()).not.toMatch(/https?:\/\/(?!localhost)[^"\s]+\/jobs\/[^"\s]+/);
   expect(await page.locator('link[rel="canonical"]').getAttribute("href")).toMatch(/\/job\/[0-9a-f]{20}$/);
   expect(await page.locator('meta[name="robots"]').count()).toBe(0);
 });

@@ -37,6 +37,11 @@ export interface Plan {
   featured?: boolean;
   /** Days of trial. 0 = no trial (Straightpin: the Free plan is the trial). */
   trialDays: number;
+  /**
+   * False while the plan's features are not built: it is shown as "not on sale yet", has no buy button and
+   * Checkout refuses it (docs/REVIEW.md P0-1). Never sell a feature that does not exist.
+   */
+  onSale: boolean;
 }
 
 const slug = "straightpin";
@@ -91,6 +96,7 @@ export const product = {
       highlights: ["Browse all titles and companies", "5 job opens a day", "10 saved jobs", "Daily email digest"],
       cta: "Start free",
       trialDays: 0,
+      onSale: true,
     },
     {
       id: "weekly",
@@ -102,18 +108,20 @@ export const product = {
       highlights: ["Unlimited opens", "Up to 3 instant alerts", "Unlimited saves", "Ghost and repost signals"],
       cta: "Choose Weekly",
       trialDays: 0,
+      onSale: true,
     },
     {
       id: "monthly",
       name: "Monthly",
-      tagline: "Everything in Weekly, plus tracking",
+      tagline: "Everything in Weekly, for less per week",
       prices: [price("monthly", "month", 1099)],
       limits: { opens: UNLIMITED, saves: UNLIMITED },
       alertLimit: 5,
-      highlights: ["Everything in Weekly", "Up to 5 instant alerts", "Application tracker", "Follow companies"],
+      highlights: ["Everything in Weekly", "Up to 5 instant alerts", "About half the weekly price over a month"],
       cta: "Choose Monthly",
       featured: true,
       trialDays: 0,
+      onSale: true,
     },
     {
       id: "lifetime",
@@ -125,6 +133,7 @@ export const product = {
       highlights: ["Core plan forever, no Plus features", "First 1,000 buyers, then reviewed", "One time payment"],
       cta: "Get Lifetime",
       trialDays: 0,
+      onSale: true,
     },
     {
       id: "plus",
@@ -134,8 +143,9 @@ export const product = {
       limits: { opens: UNLIMITED, saves: UNLIMITED },
       alertLimit: 15,
       highlights: ["Everything in Monthly", "In browser resume match check", "Cover letter outline template", "Priority alerts, followed companies re-checked every 15 minutes"],
-      cta: "Choose Plus",
+      cta: "Not on sale yet",
       trialDays: 0,
+      onSale: false,
     },
   ] satisfies Plan[],
   /** Grace period after a failed payment (past_due keeps the plan, C-20) before limits fall to Free. */
@@ -157,6 +167,8 @@ export type Product = typeof product;
 export const plans: readonly Plan[] = product.plans;
 export const planById = (id: string): Plan | undefined => plans.find((p) => p.id === id);
 export const freePlan = plans.find((p) => p.prices.length === 0) ?? plans[0]!;
+/** Plans a customer can buy today (paid and on sale). */
+export const plansOnSale = (): Plan[] => plans.filter((p) => p.onSale && p.prices.length > 0);
 export const allLookupKeys = (): string[] => plans.flatMap((p) => p.prices.map((x) => x.lookupKey));
 export const planForLookupKey = (key: string | null | undefined): { plan: Plan; price: PlanPrice } | null => {
   if (!key) return null;

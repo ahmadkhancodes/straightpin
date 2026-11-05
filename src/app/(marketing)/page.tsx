@@ -119,7 +119,7 @@ export default function HomePage() {
                 Jobs straight from company careers pages. Half the price.
               </h1>
               <p className="title-2 mt-4 max-w-[680px] text-text-subtle">
-                We check thousands of company hiring pages every hour, drop staffing agency reposts, and show you when each job was really posted.
+                We check company hiring pages every hour, drop staffing agency reposts, and show you when each job was really posted.
               </p>
               <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
                 <ButtonLink href="#pick-field" size="lg">

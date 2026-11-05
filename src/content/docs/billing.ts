@@ -19,11 +19,11 @@ export const billing: DocPage = {
     },
     {
       heading: "Cancel in two taps",
-      body: ["Open Billing, then tap Cancel plan. Your plan stays active until the end of the period you paid for. We email a renewal reminder before every renewal, with the date and the amount."],
+      body: ["Open Account, tap Cancel plan, then confirm. Your plan stays active until the end of the period you paid for. We email a renewal reminder before every renewal, with the date and the amount."],
     },
     {
       heading: "Refunds",
-      body: [`Changed your mind within ${p.refundDays} days of a payment? Email ${p.supportEmail} and you get a full refund. No questions.`],
+      body: [`Changed your mind within ${p.refundDays} days of a payment? Tap Refund my last charge in Account, or email ${p.supportEmail}, and you get a full refund. No questions. It works once per customer and ends the paid plan straight away.`],
     },
     {
       heading: "Failed payments",

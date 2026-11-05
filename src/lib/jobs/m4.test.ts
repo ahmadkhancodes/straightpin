@@ -334,11 +334,12 @@ describe("programmatic pages", () => {
 
 describe("JobPosting JSON-LD", () => {
   const open = (over: Partial<JobDoc> = {}): JobDoc => ({ ...fixtureJobs(NOW)[0]!, firstSeenAt: NOW, lastSeenAt: NOW, closedAt: null, missCount: 0, postedAt: NOW, ...over }) as JobDoc;
-  it("links to the employer's apply page and uses the company's own posted date", () => {
+  it("points at our job page (never the employer's apply link) and uses the company's own posted date", () => {
     const j = open({ firstPublishedAt: new Date("2026-11-03T09:00:00Z"), firstSeenAt: new Date("2026-11-05T00:00:00Z"), applyUrl: "https://boards.greenhouse.io/acme/jobs/1", title: "Customer Support Specialist" });
     const ld = jobPostingLd(j)!;
     expect(ld["@type"]).toBe("JobPosting");
-    expect(ld.url).toBe("https://boards.greenhouse.io/acme/jobs/1");
+    expect(ld.url).toBe(`${product.url}/job/${encodeURIComponent(j.id)}`);
+    expect(ldScript(ld)).not.toContain("boards.greenhouse.io/acme/jobs/1");
     expect(ld.directApply).toBe(false);
     expect(ld.datePosted).toBe("2026-11-03");
     expect(ld.hiringOrganization).toEqual({ "@type": "Organization", name: j.employerName });

@@ -355,12 +355,26 @@ describe("digest and alerts", () => {
     await db.addSuppression({ email: "off@example.test", scope: "digest", reason: "unsubscribe" });
 
     const r = await runDigest(db, EIGHT_NY, send, unsub);
-    expect(r).toEqual({ considered: 4, sent: 1, skipped: 3 });
+    expect(r).toEqual({ considered: 4, sent: 1, skipped: 3, failed: 0 });
     expect(sent.map((m) => m.to)).toEqual(["ana@example.test"]);
     expect(sent[0]!.text).toContain("s=digest");
     const again = await runDigest(db, new Date(EIGHT_NY.getTime() + 60_000), send, unsub);
     expect(again.sent).toBe(0);
     expect((await db.getProfile("org1"))!.lastDigestAt).not.toBeNull();
+  });
+
+  it("one failed email does not stop the run for the next person, and is not marked sent (REVIEW P1-7)", async () => {
+    await db.upsertJobs(fixtureJobs(EIGHT_NY), EIGHT_NY);
+    await db.saveProfile(profile({ orgId: "orgA", email: "bounce@example.test" }));
+    await db.saveProfile(profile({ orgId: "orgB", email: "fine@example.test" }));
+    const flaky = async (m: Parameters<typeof send>[0]) => {
+      if (m.to === "bounce@example.test") throw new Error("provider down");
+      return send(m);
+    };
+    const r = await runDigest(db, EIGHT_NY, flaky, unsub);
+    expect(r).toMatchObject({ sent: 1, failed: 1 });
+    expect(sent.map((m) => m.to)).toEqual(["fine@example.test"]);
+    expect((await db.getProfile("orgA"))!.lastDigestAt).toBeNull();
   });
 
   it("sends no digest when nothing is new", async () => {
