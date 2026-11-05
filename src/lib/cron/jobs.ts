@@ -2,6 +2,8 @@ import { getDb } from "@/lib/db";
 import { runRenewalReminders } from "@/lib/billing/reminders";
 import { runAlerts, runDigest } from "@/lib/jobs/digest";
 import { politeFetcher, runCrawlTick } from "@/lib/jobs/crawlTick";
+import { runRetention } from "@/lib/jobs/retention";
+import { runSourceHealthCheck } from "@/lib/jobs/sourceHealth";
 import { retryDueDeliveries } from "@/lib/webhooks/outbound";
 
 /** Register cron jobs here. Each must be idempotent and finish well inside maxDuration (60 s). */
@@ -16,4 +18,8 @@ export const cronJobs: Record<string, () => Promise<unknown>> = {
   alerts: async () => runAlerts(await getDb(), new Date()),
   /** Hourly: weekly and monthly renewals get a reminder 3 days ahead, annual ones on the day. */
   "renewal-reminders": async () => runRenewalReminders(await getDb(), new Date()),
+  /** Daily: switches off sources that failed 5 crawls in a row. They show as disabled on /admin/crawl. */
+  "source-health": async () => runSourceHealthCheck(await getDb(), new Date()),
+  /** Daily: deletes closed jobs and old crawl records after the periods printed on /about/data. */
+  retention: async () => runRetention(await getDb(), new Date()),
 };

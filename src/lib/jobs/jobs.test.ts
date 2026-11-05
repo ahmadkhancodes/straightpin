@@ -184,7 +184,7 @@ describe("leases and the crawl tick", () => {
     await db.upsertEmployer({ name: "Oakfield", ats: "greenhouse", slug: "oakfield" }, NOW);
     const f = fakeFetcher({ [BOARD_URL]: { body: board } });
     // seeded boards are not in the fake fetcher: they 404 and are recorded as errors, the tick still completes
-    const run = await runCrawlTick({ db, fetcher: f, now: () => NOW, shardSize: 20, concurrency: 2 });
+    const run = await runCrawlTick({ db, fetcher: f, now: () => NOW, shardSize: 100, concurrency: 2 }); // larger than the seed list, so Oakfield is in the shard
     expect(run.employers).toBeGreaterThanOrEqual(1);
     expect(run.inserted).toBe(3);
     expect(run.errors.length).toBeGreaterThan(0);

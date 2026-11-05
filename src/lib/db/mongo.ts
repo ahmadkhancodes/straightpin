@@ -1,7 +1,8 @@
 import { MongoClient, type Collection, type Db as MongoDatabase, type Document } from "mongodb";
 import { mongoFilter } from "@/lib/jobs/query";
 import type { AgencyFlag } from "@/lib/classify/types";
-import type { EmployerDoc, JobDoc, SavedJob, SearchProfile, SourceRun } from "@/lib/jobs/types";
+import { CRAWL_RECORD_DAYS } from "@/lib/jobs/retention";
+import type { AlertRule, EmployerDoc, JobDoc, SavedJob, SearchProfile, SourceRun } from "@/lib/jobs/types";
 import { uuidv7 } from "@/lib/ids";
 import { DELIVERY_TTL_DAYS, type AuditEntry, type BillingAccount, type Db, type Entitlement, type LabelDoc, type RefundRecord, type Suppression, type WebhookDelivery, type WebhookEndpoint } from "./types";
 
@@ -366,7 +367,7 @@ export function createMongoDb(uri: string, dbName: string, app: string): Db {
       return (await col<Document>("jobs")).countDocuments({ ...mongoFilter({ ...q, includeAgency: true }, app), agencyFlag: "yes" });
     },
     async recordSourceRun(r) {
-      await (await col<Document>("source_runs")).insertOne({ _id: r.id as never, ...r, app, expireAt: new Date(r.finishedAt.getTime() + 30 * 864e5) });
+      await (await col<Document>("source_runs")).insertOne({ _id: r.id as never, ...r, app, expireAt: new Date(r.finishedAt.getTime() + CRAWL_RECORD_DAYS * 864e5) });
     },
     async listSourceRuns(limit) {
       return cleanAll<SourceRun & { expireAt?: Date }>(await (await col<Document>("source_runs")).find({ app }).sort({ startedAt: -1 }).limit(limit).toArray()) as SourceRun[];
@@ -409,15 +410,41 @@ export function createMongoDb(uri: string, dbName: string, app: string): Db {
       if (alerts !== undefined) f.alerts = alerts;
       return cleanAll<SearchProfile>(await (await col<Document>("search_profiles")).find(f).toArray());
     },
+    async listAlertRules(orgId) {
+      return cleanAll<AlertRule>(await (await col<Document>("alert_rules")).find({ app, orgId }).sort({ createdAt: 1, _id: 1 }).toArray());
+    },
+    async listAlertRulesByEmail(email) {
+      return cleanAll<AlertRule>(await (await col<Document>("alert_rules")).find({ app, email: email.toLowerCase() }).sort({ createdAt: 1, _id: 1 }).toArray());
+    },
+    async listActiveAlertRules() {
+      return cleanAll<AlertRule>(await (await col<Document>("alert_rules")).find({ app, active: true }).sort({ createdAt: 1, _id: 1 }).toArray());
+    },
+    async saveAlertRule(r) {
+      await (await col<Document>("alert_rules")).replaceOne({ _id: r.id as never }, { ...r, email: r.email.toLowerCase(), app }, { upsert: true });
+    },
+    async deleteAlertRule(orgId, id) {
+      return (await (await col<Document>("alert_rules")).deleteOne({ _id: id as never, app, orgId })).deletedCount > 0;
+    },
+    async purgeClosedJobs(before) {
+      const jobsCol = await col<Document>("jobs");
+      const ids = (await jobsCol.find({ app, closedAt: { $lt: before } }, { projection: { _id: 1 } }).toArray()).map((d) => String(d._id));
+      if (!ids.length) return 0;
+      await (await col<Document>("saved_jobs")).deleteMany({ app, jobId: { $in: ids } });
+      return (await jobsCol.deleteMany({ app, _id: { $in: ids as never[] } })).deletedCount;
+    },
+    async purgeSourceRuns(before) {
+      return (await (await col<Document>("source_runs")).deleteMany({ app, finishedAt: { $lt: before } })).deletedCount;
+    },
     async exportOrgData(orgId) {
       const [profile, savedJobs] = await Promise.all([this.getProfile(orgId), this.listSaved(orgId)]);
+      const alertRules = await this.listAlertRules(orgId);
       const [billingAccount, entitlement, endpoints, auditLog] = await Promise.all([
         this.getBillingAccount(orgId),
         this.getEntitlement(orgId),
         this.listWebhookEndpoints(orgId),
         this.listAudit(orgId, { limit: 200 }),
       ]);
-      return { profile, savedJobs, billingAccount, entitlement, webhookEndpoints: endpoints.map(({ secret: _s, ...rest }) => rest), auditLog };
+      return { profile, alertRules, savedJobs, billingAccount, entitlement, webhookEndpoints: endpoints.map(({ secret: _s, ...rest }) => rest), auditLog };
     },
     async deleteOrgData(orgId) {
       const d = await db();
@@ -427,6 +454,7 @@ export function createMongoDb(uri: string, dbName: string, app: string): Db {
       await d.collection("webhook_endpoints").deleteMany({ app, orgId });
       await d.collection("webhook_deliveries").deleteMany({ app, orgId });
       await d.collection("search_profiles").deleteOne({ _id: `${app}:${orgId}` as never });
+      await d.collection("alert_rules").deleteMany({ app, orgId });
       await d.collection("saved_jobs").deleteMany({ app, orgId });
       await d.collection("job_opens").deleteMany({ app, orgId });
     },
@@ -465,6 +493,10 @@ export async function ensureIndexes(uri: string, dbName: string) {
   await d.collection("entitlements").createIndex({ app: 1, isPaid: 1 });
   await d.collection("search_profiles").createIndex({ app: 1, digest: 1 });
   await d.collection("search_profiles").createIndex({ app: 1, alerts: 1 });
+  await d.collection("alert_rules").createIndex({ app: 1, orgId: 1, createdAt: 1 });
+  await d.collection("alert_rules").createIndex({ app: 1, active: 1 });
+  await d.collection("alert_rules").createIndex({ app: 1, email: 1 });
+  await d.collection("source_runs").createIndex({ app: 1, finishedAt: 1 });
   // Better Auth collections
   await d.collection("user").createIndex({ email: 1 }, { unique: true });
   await d.collection("session").createIndex({ token: 1 }, { unique: true });

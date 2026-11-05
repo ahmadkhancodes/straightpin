@@ -5,7 +5,7 @@
 
 import type { PlanId } from "@/config/product";
 import type { AgencyFlag, ClassifyInput } from "@/lib/classify/types";
-import type { EmployerDoc, EmployerSeed, JobDoc, JobQuery, JobUpsert, SavedJob, SearchProfile, SourceRun } from "@/lib/jobs/types";
+import type { EmployerDoc, EmployerSeed, JobDoc, JobQuery, JobUpsert, AlertRule, SavedJob, SearchProfile, SourceRun } from "@/lib/jobs/types";
 
 export type EntitlementStatus = "none" | "trialing" | "active" | "past_due" | "canceled" | "lifetime";
 
@@ -210,6 +210,21 @@ export interface Db {
   getProfile(orgId: string): Promise<SearchProfile | null>;
   saveProfile(p: SearchProfile): Promise<void>;
   listProfiles(filter: { digest?: boolean; alerts?: boolean }): Promise<SearchProfile[]>;
+
+  // alert rules (M4): several saved alerts per paid user, each with its own filters
+  /** Newest last (creation order). */
+  listAlertRules(orgId: string): Promise<AlertRule[]>;
+  listAlertRulesByEmail(email: string): Promise<AlertRule[]>;
+  /** Every active rule of every user. The cron applies the plan limit. */
+  listActiveAlertRules(): Promise<AlertRule[]>;
+  saveAlertRule(r: AlertRule): Promise<void>;
+  deleteAlertRule(orgId: string, id: string): Promise<boolean>;
+
+  // retention (M4). Both return how many rows they removed.
+  /** Delete jobs closed before `before`, and any saved-job rows that point at them. */
+  purgeClosedJobs(before: Date): Promise<number>;
+  /** Delete crawl run records finished before `before`. */
+  purgeSourceRuns(before: Date): Promise<number>;
 
   // privacy
   exportOrgData(orgId: string): Promise<Record<string, unknown>>;

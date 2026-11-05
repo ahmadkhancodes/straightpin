@@ -15,7 +15,15 @@ export interface EmployerDoc {
   careersUrl?: string;
   domain?: string;
   sicCode?: string;
-  status: "active" | "dead" | "blocked";
+  /** `disabled` = switched off by the source health check (see sourceHealth.ts); `dead` = the crawl itself gave up. */
+  status: "active" | "dead" | "blocked" | "disabled";
+  /** Why the health check disabled it, and when. */
+  disabledReason?: string;
+  disabledAt?: Date;
+  /** Set when an admin re-enables a source: crawl runs before this do not count towards the next disable. */
+  healthResetAt?: Date;
+  /** False for seed entries whose slug or careers site has not been confirmed against the live board yet. */
+  verified?: boolean;
   failCount: number;
   etag?: string;
   lastCrawledAt: Date | null;
@@ -24,7 +32,7 @@ export interface EmployerDoc {
   /** True for rows that came from the seed list (src/lib/jobs/sources.json). */
   seed: boolean;
 }
-export type EmployerSeed = Pick<EmployerDoc, "name" | "ats" | "slug"> & Partial<Pick<EmployerDoc, "region" | "careersUrl" | "domain" | "sicCode">>;
+export type EmployerSeed = Pick<EmployerDoc, "name" | "ats" | "slug"> & Partial<Pick<EmployerDoc, "region" | "careersUrl" | "domain" | "sicCode" | "verified">>;
 
 /** Collection `jobs`: facts, a short excerpt and a link to the employer's own page (D-001). */
 export interface JobDoc {
@@ -79,6 +87,8 @@ export interface JobQuery {
   /** Default false: staffing agency posts are hidden. */
   includeAgency?: boolean;
   firstSeenAfter?: Date;
+  /** Case insensitive text in the job's place or region (for example "toronto"). Any term matches. */
+  locationTerms?: string[];
   limit?: number;
   skip?: number;
 }
@@ -119,3 +129,19 @@ export interface SearchProfile {
 }
 
 export interface SavedJob { orgId: string; jobId: string; savedAt: Date }
+
+/** One saved instant alert (paid plans). Collection `alert_rules`. The count a user may keep is `alertLimit` in product.ts. */
+export interface AlertRule {
+  id: string;
+  orgId: string;
+  email: string;
+  field: FieldId;
+  country: Country;
+  /** Free text matched against the job's place, for example "Toronto". Empty = anywhere in the country. */
+  location: string;
+  /** Hourly pay floor. 0 = no floor. */
+  payFloor: number;
+  active: boolean;
+  createdAt: Date;
+  lastSentAt: Date | null;
+}

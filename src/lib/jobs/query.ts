@@ -11,6 +11,10 @@ export function matchesQuery(j: JobDoc, q: JobQuery): boolean {
   if (q.levels && !q.levels.includes(j.level)) return false;
   if (q.schedule && j.schedule !== q.schedule) return false;
   if (q.firstSeenAfter && j.firstSeenAt <= q.firstSeenAfter) return false;
+  if (q.locationTerms?.length) {
+    const place = `${j.location ?? ""} ${j.region ?? ""}`.toLowerCase();
+    if (!q.locationTerms.some((t) => place.includes(t.toLowerCase()))) return false;
+  }
   return true;
 }
 
@@ -20,7 +24,13 @@ export function mongoFilter(q: JobQuery, app: string): Record<string, unknown> {
   if (q.field) f.field = q.field;
   if (q.country) f.country = q.country;
   if (q.remoteTypes) f.remoteType = { $in: q.remoteTypes };
-  if (q.payFloor) f.$or = [{ payHourlyMax: null }, { payHourlyMax: { $gte: q.payFloor } }];
+  const and: Record<string, unknown>[] = [];
+  if (q.payFloor) and.push({ $or: [{ payHourlyMax: null }, { payHourlyMax: { $gte: q.payFloor } }] });
+  if (q.locationTerms?.length) {
+    const re = new RegExp(q.locationTerms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|"), "i");
+    and.push({ $or: [{ location: { $regex: re } }, { region: { $regex: re } }] });
+  }
+  if (and.length) f.$and = and;
   if (q.levels) f.level = { $in: q.levels };
   if (q.schedule) f.schedule = q.schedule;
   if (q.firstSeenAfter) f.firstSeenAt = { $gt: q.firstSeenAfter };

@@ -14,6 +14,8 @@ export interface SourceHealth {
   added: number;
   closed: number;
   lastError: string | null;
+  disabledReason: string | null;
+  verified: boolean | null;
 }
 
 export interface CrawlHealth {
@@ -29,7 +31,7 @@ export interface CrawlHealth {
 export function crawlHealth(employers: EmployerDoc[], runs: SourceRun[]): CrawlHealth {
   const by = new Map<string, SourceHealth>();
   for (const e of employers)
-    by.set(e.id, { employerId: e.id, name: e.name, ats: e.ats, status: e.status, runs: 0, ok: 0, successRate: null, lastCrawledAt: e.lastCrawledAt, added: 0, closed: 0, lastError: null });
+    by.set(e.id, { employerId: e.id, name: e.name, ats: e.ats, status: e.status, runs: 0, ok: 0, successRate: null, lastCrawledAt: e.lastCrawledAt, added: 0, closed: 0, lastError: null, disabledReason: e.disabledReason ?? null, verified: e.verified ?? null });
   const newestFirst = [...runs].sort((a, b) => b.startedAt.getTime() - a.startedAt.getTime());
   for (const r of newestFirst) {
     for (const b of r.boards ?? []) {

@@ -1,18 +1,401 @@
 {
-  "_note": "SEED DATA. A small starting list of public employer boards used to exercise the crawl in M2. It is not the production source list (the directory and board discovery come later) and a listed name does not mean the company endorses Straightpin. Remove or suppress any entry on request.",
+  "_note": "SEED DATA. A starting list of public employer boards across the six hiring system adapters plus career sites read through schema.org JobPosting JSON-LD. Every entry is `verified: false`: the slug or site was chosen from public knowledge and has not been confirmed against the live board yet. The daily source health check switches off any entry that keeps failing, and the admin crawl health page shows it. A listed name does not mean the company endorses Straightpin. Remove or suppress any entry on request.",
   "sources": [
-    { "name": "Airbnb", "ats": "greenhouse", "slug": "airbnb" },
-    { "name": "GitLab", "ats": "greenhouse", "slug": "gitlab" },
-    { "name": "Instacart", "ats": "greenhouse", "slug": "instacart" },
-    { "name": "Dropbox", "ats": "greenhouse", "slug": "dropbox" },
-    { "name": "Twilio", "ats": "greenhouse", "slug": "twilio" },
-    { "name": "Spotify", "ats": "lever", "slug": "spotify" },
-    { "name": "Palantir", "ats": "lever", "slug": "palantir" },
-    { "name": "Ramp", "ats": "ashby", "slug": "ramp" },
-    { "name": "Notion", "ats": "ashby", "slug": "notion" },
-    { "name": "Linear", "ats": "ashby", "slug": "linear" },
-    { "name": "Workable", "ats": "workable", "slug": "workable" },
-    { "name": "Recruitee", "ats": "recruitee", "slug": "recruitee" },
-    { "name": "Personio", "ats": "personio", "slug": "personio", "region": "eu" }
+    {
+      "name": "Airbnb",
+      "ats": "greenhouse",
+      "slug": "airbnb",
+      "verified": false
+    },
+    {
+      "name": "GitLab",
+      "ats": "greenhouse",
+      "slug": "gitlab",
+      "verified": false
+    },
+    {
+      "name": "Instacart",
+      "ats": "greenhouse",
+      "slug": "instacart",
+      "verified": false
+    },
+    {
+      "name": "Dropbox",
+      "ats": "greenhouse",
+      "slug": "dropbox",
+      "verified": false
+    },
+    {
+      "name": "Twilio",
+      "ats": "greenhouse",
+      "slug": "twilio",
+      "verified": false
+    },
+    {
+      "name": "Stripe",
+      "ats": "greenhouse",
+      "slug": "stripe",
+      "verified": false
+    },
+    {
+      "name": "Discord",
+      "ats": "greenhouse",
+      "slug": "discord",
+      "verified": false
+    },
+    {
+      "name": "Reddit",
+      "ats": "greenhouse",
+      "slug": "reddit",
+      "verified": false
+    },
+    {
+      "name": "Pinterest",
+      "ats": "greenhouse",
+      "slug": "pinterest",
+      "verified": false
+    },
+    {
+      "name": "Coinbase",
+      "ats": "greenhouse",
+      "slug": "coinbase",
+      "verified": false
+    },
+    {
+      "name": "Squarespace",
+      "ats": "greenhouse",
+      "slug": "squarespace",
+      "verified": false
+    },
+    {
+      "name": "Okta",
+      "ats": "greenhouse",
+      "slug": "okta",
+      "verified": false
+    },
+    {
+      "name": "Cloudflare",
+      "ats": "greenhouse",
+      "slug": "cloudflare",
+      "verified": false
+    },
+    {
+      "name": "Datadog",
+      "ats": "greenhouse",
+      "slug": "datadog",
+      "verified": false
+    },
+    {
+      "name": "Asana",
+      "ats": "greenhouse",
+      "slug": "asana",
+      "verified": false
+    },
+    {
+      "name": "Duolingo",
+      "ats": "greenhouse",
+      "slug": "duolingo",
+      "verified": false
+    },
+    {
+      "name": "Robinhood",
+      "ats": "greenhouse",
+      "slug": "robinhood",
+      "verified": false
+    },
+    {
+      "name": "Chime",
+      "ats": "greenhouse",
+      "slug": "chime",
+      "verified": false
+    },
+    {
+      "name": "Brex",
+      "ats": "greenhouse",
+      "slug": "brex",
+      "verified": false
+    },
+    {
+      "name": "Gusto",
+      "ats": "greenhouse",
+      "slug": "gusto",
+      "verified": false
+    },
+    {
+      "name": "Lyft",
+      "ats": "greenhouse",
+      "slug": "lyft",
+      "verified": false
+    },
+    {
+      "name": "Peloton",
+      "ats": "greenhouse",
+      "slug": "peloton",
+      "verified": false
+    },
+    {
+      "name": "Warby Parker",
+      "ats": "greenhouse",
+      "slug": "warbyparker",
+      "verified": false
+    },
+    {
+      "name": "Etsy",
+      "ats": "greenhouse",
+      "slug": "etsy",
+      "verified": false
+    },
+    {
+      "name": "Spotify",
+      "ats": "lever",
+      "slug": "spotify",
+      "verified": false
+    },
+    {
+      "name": "Palantir",
+      "ats": "lever",
+      "slug": "palantir",
+      "verified": false
+    },
+    {
+      "name": "Netflix",
+      "ats": "lever",
+      "slug": "netflix",
+      "verified": false
+    },
+    {
+      "name": "Plaid",
+      "ats": "lever",
+      "slug": "plaid",
+      "verified": false
+    },
+    {
+      "name": "Atlassian",
+      "ats": "lever",
+      "slug": "atlassian",
+      "verified": false
+    },
+    {
+      "name": "Zapier",
+      "ats": "lever",
+      "slug": "zapier",
+      "verified": false
+    },
+    {
+      "name": "Kraken",
+      "ats": "lever",
+      "slug": "kraken",
+      "verified": false
+    },
+    {
+      "name": "Wealthsimple",
+      "ats": "lever",
+      "slug": "wealthsimple",
+      "verified": false
+    },
+    {
+      "name": "Shopify",
+      "ats": "lever",
+      "slug": "shopify",
+      "verified": false
+    },
+    {
+      "name": "Ramp",
+      "ats": "ashby",
+      "slug": "ramp",
+      "verified": false
+    },
+    {
+      "name": "Notion",
+      "ats": "ashby",
+      "slug": "notion",
+      "verified": false
+    },
+    {
+      "name": "Linear",
+      "ats": "ashby",
+      "slug": "linear",
+      "verified": false
+    },
+    {
+      "name": "Deel",
+      "ats": "ashby",
+      "slug": "deel",
+      "verified": false
+    },
+    {
+      "name": "Vercel",
+      "ats": "ashby",
+      "slug": "vercel",
+      "verified": false
+    },
+    {
+      "name": "OpenAI",
+      "ats": "ashby",
+      "slug": "openai",
+      "verified": false
+    },
+    {
+      "name": "Retool",
+      "ats": "ashby",
+      "slug": "retool",
+      "verified": false
+    },
+    {
+      "name": "Mercury",
+      "ats": "ashby",
+      "slug": "mercury",
+      "verified": false
+    },
+    {
+      "name": "Faire",
+      "ats": "ashby",
+      "slug": "faire",
+      "verified": false
+    },
+    {
+      "name": "Rippling",
+      "ats": "ashby",
+      "slug": "rippling",
+      "verified": false
+    },
+    {
+      "name": "Workable",
+      "ats": "workable",
+      "slug": "workable",
+      "verified": false
+    },
+    {
+      "name": "Hotjar",
+      "ats": "workable",
+      "slug": "hotjar",
+      "verified": false
+    },
+    {
+      "name": "Remote.com",
+      "ats": "workable",
+      "slug": "remote",
+      "verified": false
+    },
+    {
+      "name": "Babbel",
+      "ats": "workable",
+      "slug": "babbel",
+      "verified": false
+    },
+    {
+      "name": "Bloomberg Beta",
+      "ats": "workable",
+      "slug": "bloomberg-beta",
+      "verified": false
+    },
+    {
+      "name": "Recruitee",
+      "ats": "recruitee",
+      "slug": "recruitee",
+      "verified": false
+    },
+    {
+      "name": "Bunq",
+      "ats": "recruitee",
+      "slug": "bunq",
+      "verified": false
+    },
+    {
+      "name": "Mollie",
+      "ats": "recruitee",
+      "slug": "mollie",
+      "verified": false
+    },
+    {
+      "name": "Pleo",
+      "ats": "recruitee",
+      "slug": "pleo",
+      "verified": false
+    },
+    {
+      "name": "Personio",
+      "ats": "personio",
+      "slug": "personio",
+      "region": "eu",
+      "verified": false
+    },
+    {
+      "name": "Celonis",
+      "ats": "personio",
+      "slug": "celonis",
+      "region": "eu",
+      "verified": false
+    },
+    {
+      "name": "Sennder",
+      "ats": "personio",
+      "slug": "sennder",
+      "region": "eu",
+      "verified": false
+    },
+    {
+      "name": "Trade Republic",
+      "ats": "personio",
+      "slug": "traderepublic",
+      "region": "eu",
+      "verified": false
+    },
+    {
+      "name": "CVS Health",
+      "ats": "jsonld",
+      "slug": "jobs.cvshealth.com",
+      "careersUrl": "https://jobs.cvshealth.com",
+      "verified": false
+    },
+    {
+      "name": "Target",
+      "ats": "jsonld",
+      "slug": "jobs.target.com",
+      "careersUrl": "https://jobs.target.com",
+      "verified": false
+    },
+    {
+      "name": "Walmart",
+      "ats": "jsonld",
+      "slug": "careers.walmart.com",
+      "careersUrl": "https://careers.walmart.com",
+      "verified": false
+    },
+    {
+      "name": "UnitedHealth Group",
+      "ats": "jsonld",
+      "slug": "careers.unitedhealthgroup.com",
+      "careersUrl": "https://careers.unitedhealthgroup.com",
+      "verified": false
+    },
+    {
+      "name": "Kaiser Permanente",
+      "ats": "jsonld",
+      "slug": "jobs.kaiserpermanente.org",
+      "careersUrl": "https://jobs.kaiserpermanente.org",
+      "verified": false
+    },
+    {
+      "name": "Humana",
+      "ats": "jsonld",
+      "slug": "careers.humana.com",
+      "careersUrl": "https://careers.humana.com",
+      "verified": false
+    },
+    {
+      "name": "Lowe's",
+      "ats": "jsonld",
+      "slug": "talent.lowes.com",
+      "careersUrl": "https://talent.lowes.com",
+      "verified": false
+    },
+    {
+      "name": "Home Depot",
+      "ats": "jsonld",
+      "slug": "careers.homedepot.com",
+      "careersUrl": "https://careers.homedepot.com",
+      "verified": false
+    }
   ]
 }

@@ -1,12 +1,14 @@
 import { effectivePlan } from "@/lib/billing/entitlement";
 import type { Db } from "@/lib/db/types";
 import { appUrl } from "@/lib/env";
-import { sendMail, unsubscribeUrl } from "@/lib/mail";
+import { manageUrl, sendMail, unsubscribeUrl } from "@/lib/mail";
 import type { MailMessage, SendResult } from "@/lib/mail";
 import { digestEmail, type DigestJob } from "@/lib/mail/templates";
 import { agencyReceipt } from "@/lib/classify/classify";
 import { answersFromProfile, queryFromAnswers, rankJobs } from "./matching";
-import type { JobDoc, SearchProfile } from "./types";
+import { alertLimitFor, ruleLabel, withinLimit } from "./alertRules";
+import { fieldLabel } from "./fields";
+import type { AlertRule, JobDoc, SearchProfile } from "./types";
 
 export const DIGEST_HOUR = 8;
 export const DIGEST_MAX_JOBS = 10;
@@ -36,7 +38,7 @@ const place = (j: JobDoc) => [j.remoteType === "remote" ? "Remote" : j.location,
 export function buildDigest(
   profile: SearchProfile,
   fresh: JobDoc[],
-  opts: { kind: "digest" | "alerts"; now: Date; unsubscribeUrl: string; total?: number; agencyHidden?: number; matchesUrl?: string },
+  opts: { kind: "digest" | "alerts"; now: Date; unsubscribeUrl: string; total?: number; agencyHidden?: number; matchesUrl?: string; manageUrl?: string; label?: string },
 ): MailMessage | null {
   if (fresh.length === 0) return null;
   const ranked = rankJobs(fresh, answersFromProfile(profile), opts.now);
@@ -49,6 +51,8 @@ export function buildDigest(
     jobs,
     moreUrl: opts.matchesUrl ?? `${appUrl()}/matches`,
     unsubscribeUrl: opts.unsubscribeUrl,
+    manageUrl: opts.manageUrl,
+    label: opts.label,
     receipt: opts.agencyHidden ? agencyReceipt(opts.agencyHidden) : undefined,
   });
   return { to: profile.email, subject: mail.subject, text: mail.text, html: mail.html, category: opts.kind, tags: { kind: opts.kind } };
@@ -59,7 +63,7 @@ export interface MailRunResult { considered: number; sent: number; skipped: numb
 const isPaid = async (db: Db, orgId: string, now: Date) => effectivePlan(await db.getEntitlement(orgId), now.getTime()).id !== "free";
 
 /** Hourly cron. Free users get one digest at 08:00 local; paid users get instant alerts instead. */
-export async function runDigest(db: Db, now: Date, send: SendFn = defaultSend, unsub: (email: string, scope: string) => Promise<string> = unsubscribeUrl): Promise<MailRunResult> {
+export async function runDigest(db: Db, now: Date, send: SendFn = defaultSend, unsub: (email: string, scope: string) => Promise<string> = unsubscribeUrl, manage: (email: string) => Promise<string> = manageUrl): Promise<MailRunResult> {
   const res: MailRunResult = { considered: 0, sent: 0, skipped: 0 };
   for (const p of await db.listProfiles({ digest: true })) {
     res.considered++;
@@ -71,7 +75,7 @@ export async function runDigest(db: Db, now: Date, send: SendFn = defaultSend, u
     const q = { ...queryFromAnswers(answersFromProfile(p)), firstSeenAfter: since };
     const [total, agencyHidden] = await Promise.all([db.countJobs(q), db.countAgencyHidden(q)]);
     const fresh = await db.queryJobs({ ...q, limit: 50 });
-    const msg = buildDigest(p, fresh, { kind: "digest", now, total, unsubscribeUrl: await unsub(p.email, "digest"), agencyHidden });
+    const msg = buildDigest(p, fresh, { kind: "digest", now, total, unsubscribeUrl: await unsub(p.email, "digest"), manageUrl: await manage(p.email), agencyHidden });
     if (msg) {
       await send(msg);
       res.sent++;
@@ -81,28 +85,57 @@ export async function runDigest(db: Db, now: Date, send: SendFn = defaultSend, u
   return res;
 }
 
-/** Hourly cron. Paid users with alerts on get the new matches since the last alert. */
-export async function runAlerts(db: Db, now: Date, send: SendFn = defaultSend, unsub: (email: string, scope: string) => Promise<string> = unsubscribeUrl): Promise<MailRunResult> {
+/** A rule as a profile, so the same ranking and email code serves quiz profiles and saved alerts. */
+const ruleAsProfile = (r: AlertRule, tz: string): SearchProfile => ({
+  orgId: r.orgId, email: r.email, field: r.field, country: r.country, remote: "any", payFloor: r.payFloor, level: "any", schedule: "any", tz,
+  digest: false, alerts: true, lastDigestAt: null, lastAlertAt: r.lastSentAt, updatedAt: r.createdAt,
+});
+
+/**
+ * Hourly cron. Paid users get the new matches since the last alert, once an hour at most, for each saved alert
+ * (up to the plan's number). An account with no saved alerts but the quiz alert switched on keeps one alert from its quiz answers.
+ */
+export async function runAlerts(db: Db, now: Date, send: SendFn = defaultSend, unsub: (email: string, scope: string) => Promise<string> = unsubscribeUrl, manage: (email: string) => Promise<string> = manageUrl): Promise<MailRunResult> {
   const res: MailRunResult = { considered: 0, sent: 0, skipped: 0 };
-  for (const p of await db.listProfiles({ alerts: true })) {
-    res.considered++;
-    if (!(await isPaid(db, p.orgId, now)) || (await db.isSuppressed(p.email, "alerts"))) {
-      res.skipped++;
-      continue;
-    }
-    if (p.lastAlertAt && now.getTime() - p.lastAlertAt.getTime() < 50 * 60_000) {
-      res.skipped++;
-      continue;
-    }
+  const byOrg = new Map<string, AlertRule[]>();
+  for (const r of await db.listActiveAlertRules()) byOrg.set(r.orgId, [...(byOrg.get(r.orgId) ?? []), r]);
+  const profiles = await db.listProfiles({ alerts: true });
+  const sendFor = async (p: SearchProfile, extra: { locationTerms?: string[]; label?: string }, save: (at: Date) => Promise<void>) => {
     const since = p.lastAlertAt ?? new Date(now.getTime() - HOUR);
-    const q = { ...queryFromAnswers(answersFromProfile(p)), firstSeenAfter: since };
+    const q = { ...queryFromAnswers(answersFromProfile(p)), ...(extra.locationTerms ? { locationTerms: extra.locationTerms } : {}), firstSeenAfter: since };
     const [total, fresh] = await Promise.all([db.countJobs(q), db.queryJobs({ ...q, limit: 50 })]);
-    const msg = buildDigest(p, fresh, { kind: "alerts", now, total, unsubscribeUrl: await unsub(p.email, "alerts") });
+    const msg = buildDigest(p, fresh, { kind: "alerts", now, total, unsubscribeUrl: await unsub(p.email, "alerts"), manageUrl: await manage(p.email), label: extra.label });
     if (msg) {
       await send(msg);
       res.sent++;
     } else res.skipped++;
-    await db.saveProfile({ ...p, lastAlertAt: now });
+    await save(now);
+  };
+  const eligible = async (orgId: string, email: string, last: Date | null) =>
+    (await alertLimitFor(db, orgId, now)) > 0 && !(await db.isSuppressed(email, "alerts")) && !(last && now.getTime() - last.getTime() < 50 * 60_000);
+
+  for (const [orgId, rules] of byOrg) {
+    const limit = await alertLimitFor(db, orgId, now);
+    const all = await db.listAlertRules(orgId); // creation order, including paused ones, so a pause does not shift which rules count
+    const allowed = new Set(withinLimit(all, limit).map((r) => r.id));
+    const profile = await db.getProfile(orgId);
+    for (const r of rules) {
+      res.considered++;
+      if (!allowed.has(r.id) || !(await eligible(orgId, r.email, r.lastSentAt))) {
+        res.skipped++;
+        continue;
+      }
+      await sendFor(ruleAsProfile(r, profile?.tz ?? "UTC"), { locationTerms: r.location ? [r.location] : undefined, label: ruleLabel(r, fieldLabel(r.field)) }, (at) => db.saveAlertRule({ ...r, lastSentAt: at }));
+    }
+  }
+  for (const p of profiles) {
+    if (byOrg.has(p.orgId) || (await db.listAlertRules(p.orgId)).length) continue;
+    res.considered++;
+    if (!(await eligible(p.orgId, p.email, p.lastAlertAt))) {
+      res.skipped++;
+      continue;
+    }
+    await sendFor(p, {}, (at) => db.saveProfile({ ...p, lastAlertAt: at }));
   }
   return res;
 }

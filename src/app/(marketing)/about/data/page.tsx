@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Section } from "@/components/ui/layout";
 import { product } from "@/config/product";
 import { EXCERPT_MAX } from "@/lib/crawl/normalize";
+import { retentionStatement } from "@/lib/jobs/retention";
 
 const title = "What we store about a job";
 const description = "Straightpin keeps facts, a short excerpt and a link to the employer's own page. Not the full posting. Here is the list.";
@@ -25,6 +26,7 @@ const facts = [
 ];
 
 export default function AboutDataPage() {
+  const retention = retentionStatement();
   return (
     <Section labelledBy="data-title">
       <h1 id="data-title" className="heading-3 md:heading-1 max-w-3xl text-text">{title}</h1>
@@ -49,6 +51,13 @@ export default function AboutDataPage() {
           <p className="body-3 mt-3 text-text-subtle">
             Every job has an Apply at company button that opens the employer&apos;s own page. You apply to the employer. We do not collect applications, and we do not get a copy of what you send.
           </p>
+        </section>
+        <section aria-labelledby="data-keep">
+          <h2 id="data-keep" className="heading-5 text-text">How long we keep it</h2>
+          <ul className="body-3 mt-3 grid grid-cols-1 list-disc gap-2 pl-5 text-text-subtle">
+            <li>{retention.closedJobs}</li>
+            <li>{retention.crawlRecords}</li>
+          </ul>
         </section>
         <section aria-labelledby="data-not">
           <h2 id="data-not" className="heading-5 text-text">What we do not keep</h2>

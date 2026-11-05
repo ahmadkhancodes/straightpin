@@ -29,6 +29,8 @@ export interface Plan {
   /** Empty for the free plan. */
   prices: PlanPrice[];
   limits: Record<MeterId, number>;
+  /** How many instant alerts (saved searches that email within the hour) the plan keeps. Free gets the daily digest instead. */
+  alertLimit: number;
   /** Short plain-text differences shown in the pricing table. */
   highlights: string[];
   cta: string;
@@ -85,6 +87,7 @@ export const product = {
       tagline: "Browse everything, no card",
       prices: [],
       limits: { opens: 5, saves: 10 },
+      alertLimit: 0,
       highlights: ["Browse all titles and companies", "5 job opens a day", "10 saved jobs", "Daily email digest"],
       cta: "Start free",
       trialDays: 0,
@@ -95,7 +98,8 @@ export const product = {
       tagline: "Pay by the week, cancel any time",
       prices: [price("weekly", "week", 499)],
       limits: { opens: UNLIMITED, saves: UNLIMITED },
-      highlights: ["Unlimited opens", "Instant alerts", "Unlimited saves", "Ghost and repost signals"],
+      alertLimit: 3,
+      highlights: ["Unlimited opens", "Up to 3 instant alerts", "Unlimited saves", "Ghost and repost signals"],
       cta: "Choose Weekly",
       trialDays: 0,
     },
@@ -105,7 +109,8 @@ export const product = {
       tagline: "Everything in Weekly, plus tracking",
       prices: [price("monthly", "month", 1099)],
       limits: { opens: UNLIMITED, saves: UNLIMITED },
-      highlights: ["Everything in Weekly", "Application tracker", "Follow companies"],
+      alertLimit: 5,
+      highlights: ["Everything in Weekly", "Up to 5 instant alerts", "Application tracker", "Follow companies"],
       cta: "Choose Monthly",
       featured: true,
       trialDays: 0,
@@ -116,6 +121,7 @@ export const product = {
       tagline: "One payment, core plan forever",
       prices: [price("lifetime", "once", 2399)],
       limits: { opens: UNLIMITED, saves: UNLIMITED },
+      alertLimit: 5,
       highlights: ["Core plan forever, no Plus features", "First 1,000 buyers, then reviewed", "One time payment"],
       cta: "Get Lifetime",
       trialDays: 0,
@@ -126,6 +132,7 @@ export const product = {
       tagline: "For a serious search",
       prices: [price("plus", "month", 1999), price("plus", "year", 9899)],
       limits: { opens: UNLIMITED, saves: UNLIMITED },
+      alertLimit: 15,
       highlights: ["Everything in Monthly", "In browser resume match check", "Cover letter outline template", "Priority alerts, followed companies re-checked every 15 minutes"],
       cta: "Choose Plus",
       trialDays: 0,

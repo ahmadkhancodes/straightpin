@@ -4,7 +4,7 @@ import { Container } from "@/components/ui/layout";
 
 const placeholder = /(\{\{[^}]+\}\})/g;
 
-/** Renders text, highlighting unresolved {{placeholders}} so they are visible before launch. */
+/** Renders text, highlighting unresolved double-brace placeholders so they are visible before launch. */
 function Text({ children }: { children: string }) {
   return (
     <>

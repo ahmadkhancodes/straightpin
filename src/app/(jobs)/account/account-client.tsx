@@ -24,7 +24,7 @@ interface Props {
 const money = (cents: number) => `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
 const day = (ms: number) => new Intl.DateTimeFormat("en-US", { dateStyle: "long", timeZone: "UTC" }).format(new Date(ms));
 
-type Step = "idle" | "confirm-cancel" | "confirm-refund";
+type Step = "idle" | "confirm-cancel" | "confirm-refund" | "confirm-delete";
 
 export function AccountClient(p: Props) {
   const router = useRouter();
@@ -50,6 +50,19 @@ export function AccountClient(p: Props) {
     setStep("idle");
     setDone(kind === "cancel" ? "cancelled" : "refunded");
     router.refresh();
+  }
+
+  async function deleteAccount() {
+    setBusy("delete");
+    setError(null);
+    const r = await api("/api/account", { method: "DELETE", body: { confirm: "delete my account" } });
+    setBusy(null);
+    if (!r.ok) {
+      setStep("idle");
+      setError(r.message);
+      return;
+    }
+    router.push("/?deleted=1");
   }
 
   const cancelling = p.cancelAtPeriodEnd || done === "cancelled";
@@ -125,6 +138,25 @@ export function AccountClient(p: Props) {
           ) : null}
         </section>
       ) : null}
+
+      <section aria-labelledby="data-h" className="flex flex-col gap-4 rounded-lg border border-border bg-surface p-4 sm:p-6">
+        <h2 id="data-h" className="title-2 text-text">Your data</h2>
+        <p className="body-6 text-text-subtle">Download everything we hold about you as one JSON file: your answers, saved jobs, alerts and billing records. Or delete your account. Deleting cancels any paid plan, removes your answers, saved jobs and alerts, and cannot be undone. Billing records we must keep for tax stay with our payment provider.</p>
+        <div className="flex flex-col gap-3">
+          <ButtonLink href="/api/account/export" variant="secondary" className="w-full sm:w-auto">Download my data</ButtonLink>
+          {step !== "confirm-delete" ? (
+            <Button variant="tertiary" onClick={() => setStep("confirm-delete")} className="w-full sm:w-auto">Delete my account</Button>
+          ) : (
+            <div role="group" aria-label="Confirm delete" className="flex flex-col gap-3 rounded-md border border-border-strong p-4">
+              <p className="body-5 text-text">Delete your account and everything in it? This cannot be undone.</p>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Button variant="danger" onClick={deleteAccount} loading={busy === "delete"}>Yes, delete my account</Button>
+                <Button variant="secondary" onClick={() => setStep("idle")}>Keep my account</Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 }
