@@ -11,3 +11,4 @@ Standing decisions are in docs/factory/BATCH1_PLAN.md (Mongo instead of Postgres
 - **D-006 Auth:** Better Auth email code/magic link + passkeys, instead of Auth.js (kit decision).
 - **D-007 Weight rule:** display uses Bricolage 600/700 (no 800) to respect the "no ultra bold" skill rule.
 - **D-008 Competitor note:** DirectRoles live hero is now indigo gradient (brief recorded blue). HiringCafe is behind a bot challenge and is not crawled or bypassed.
+- **D-009 Palette and mono (orchestrator review, 5 Nov 2026):** primary changed from teal #0F5C55 to pushpin tomato #B8381C (warm paper neutrals, dark mode #FF8A6B on #1A1512) so Straightpin is distinct from the other green/teal BufferSol products and friendlier for a consumer audience. Margin notes use ballpoint blue #2A4B9B so red keeps one job. Mono is now tiny metadata only (source host, first posted date); Caveat only for the "Old posting" note. All pairs checked AA.

@@ -9,9 +9,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Caveat:wght@600&family=JetBrains+Mono:wght@400;600&family=Public+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --board:#F3F4F1;--paper:#FFFFFF;--ink:#14201E;--ink-muted:#4F5D5A;--rule:#D5D9D3;
-  --brand:#0F5C55;--brand-hover:#0B4842;--brand-tint:#E3F1EE;--brand-on:#FFFFFF;
-  --highlight:#FFE45C;--marker:#C4321F;--success:#1E7B4F;--warn:#8A5A00;
+  --board:#F6F1E9;--paper:#FFFDF9;--ink:#1F1A17;--ink-muted:#5C524B;--rule:#DDD3C6;
+  --brand:#B8381C;--brand-hover:#8F2B14;--brand-tint:#FBE7DF;--brand-on:#FFFFFF;
+  --highlight:#FFE45C;--marker:#2A4B9B;--success:#1E7B4F;--warn:#8A5A00;
   --ease:cubic-bezier(0.22,1,0.36,1);
   --font-display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
   --font-body:"Public Sans",ui-sans-serif,system-ui,sans-serif;
@@ -19,16 +19,16 @@
   --font-hand:"Caveat",cursive;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]){
-  --board:#121614;--paper:#1B201E;--ink:#E8ECEA;--ink-muted:#A3AFAB;--rule:#2E3532;
-  --brand:#5FC2B5;--brand-hover:#7AD3C7;--brand-tint:#17302C;--brand-on:#0B1A18;
-  --highlight:#E9CF4A;--marker:#FF8A73;--success:#5BC48C;--warn:#E0A93B;}}
+  --board:#1A1512;--paper:#241D19;--ink:#F1EAE2;--ink-muted:#B5A99F;--rule:#3A302A;
+  --brand:#FF8A6B;--brand-hover:#FFA48A;--brand-tint:#3A211A;--brand-on:#2A0F08;
+  --highlight:#E9CF4A;--marker:#8FB0FF;--success:#5BC48C;--warn:#E0A93B;}}
 :root[data-theme=dark]{
-  --board:#121614;--paper:#1B201E;--ink:#E8ECEA;--ink-muted:#A3AFAB;--rule:#2E3532;
-  --brand:#5FC2B5;--brand-hover:#7AD3C7;--brand-tint:#17302C;--brand-on:#0B1A18;
-  --highlight:#E9CF4A;--marker:#FF8A73;--success:#5BC48C;--warn:#E0A93B;}
+  --board:#1A1512;--paper:#241D19;--ink:#F1EAE2;--ink-muted:#B5A99F;--rule:#3A302A;
+  --brand:#FF8A6B;--brand-hover:#FFA48A;--brand-tint:#3A211A;--brand-on:#2A0F08;
+  --highlight:#E9CF4A;--marker:#8FB0FF;--success:#5BC48C;--warn:#E0A93B;}
 *{box-sizing:border-box;margin:0}
+.grid>*,.stack>*,.list>*,.app>*,.notice,.tear{min-width:0}
 html{-webkit-text-size-adjust:100%}
-html,body{overflow-x:clip}
 body{background:var(--board);color:var(--ink);font:400 16px/24px var(--font-body);}
 a{color:inherit}
 :focus-visible{outline:2px solid var(--brand);outline-offset:2px}
@@ -44,7 +44,8 @@ a{color:inherit}
 .body-3{font:400 16px/24px var(--font-body);text-wrap:pretty}
 .body-6{font:400 14px/20px var(--font-body)}
 .button-md{font:700 16px/24px var(--font-body)}
-.caption-3{font:600 12px/16px var(--font-mono);letter-spacing:.02em}
+.caption-3{font:700 12px/16px var(--font-body);letter-spacing:.02em}
+.mono{font-family:var(--font-mono)}
 .muted{color:var(--ink-muted)}
 /* top bar */
 .bar{background:var(--paper);border-bottom:1px solid var(--rule);position:sticky;top:0;z-index:10}
@@ -52,7 +53,7 @@ a{color:inherit}
 .logo{display:flex;align-items:baseline;gap:8px;text-decoration:none}
 .logo b{font:700 24px/32px var(--font-display);letter-spacing:-.02em;position:relative}
 .logo b i{position:absolute;left:62%;top:27px;width:10px;height:8px;border:1.5px dashed var(--brand);border-top:0;background:var(--brand-tint)}
-.logo span{font:400 12px/16px var(--font-mono);color:var(--ink-muted)}
+.logo span{font:500 12px/16px var(--font-body);color:var(--ink-muted)}
 .nav{display:none;gap:24px}.nav a{text-decoration:none;color:var(--ink-muted);font:500 14px/20px var(--font-body)}
 .nav a[aria-current]{color:var(--ink);text-decoration:underline;text-decoration-color:var(--brand);text-underline-offset:8px;text-decoration-thickness:2px}
 @media(min-width:768px){.nav{display:flex}}
@@ -71,25 +72,26 @@ a{color:inherit}
 .hl{background:var(--highlight);color:#14201E;padding:0 4px;border-radius:2px}
 .cta-row{margin-top:24px;display:flex;flex-wrap:wrap;gap:16px 24px;align-items:center}
 .price{margin-top:16px;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline}
-.price strong{font:600 14px/20px var(--font-mono)}
+.price strong{font:700 16px/24px var(--font-body)}
 .counter{margin-top:24px;display:flex;align-items:center;gap:12px;padding-top:16px;border-top:1.5px dashed var(--rule);max-width:560px}
 .digits{display:inline-flex;gap:2px}
-.digits span{font:600 20px/28px var(--font-mono);background:var(--paper);border:1px solid var(--rule);border-radius:2px;padding:0 4px;min-width:20px;text-align:center}
+.digits span{font:700 24px/32px var(--font-display);background:var(--paper);border:1px solid var(--rule);border-radius:2px;padding:0 4px;min-width:20px;text-align:center}
 /* notice card */
 .notice{background:var(--paper);border:1px solid var(--rule);border-radius:2px;transition:box-shadow .3s var(--ease),transform .5s var(--ease)}
-.notice:hover{box-shadow:0 1px 0 var(--rule),0 6px 16px rgb(20 32 30/.08)}
+.notice:hover{box-shadow:0 1px 0 var(--rule),0 6px 16px rgb(31 26 23/.10)}
 .stack{display:grid;gap:12px;position:relative}
 .notice .body{padding:16px}
 .notice h3{font:600 18px/24px var(--font-display)}
 .company{margin-top:4px}
-.meta{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:12px;font:400 12px/16px var(--font-mono);color:var(--ink-muted)}
+.meta{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:12px;font:400 14px/20px var(--font-body);color:var(--ink-muted)}
+.meta .host{font:400 12px/16px var(--font-mono);align-self:center}
 .meta b{font-weight:600;color:var(--ink)}
 .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
 .note{font:600 18px/20px var(--font-hand);color:var(--marker);display:inline-flex;gap:4px;align-items:center}
 .note svg{width:16px;height:16px}
 .warn{color:var(--warn)}
 .tear{display:flex;width:100%;justify-content:space-between;align-items:center;min-height:48px;padding:8px 16px;background:var(--brand-tint);color:var(--brand);border:0;border-top:1.5px dashed var(--rule);font:700 14px/20px var(--font-body);cursor:pointer;border-radius:0 0 2px 2px;text-align:left;gap:8px}
-.tear span.h{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;font:600 12px/16px var(--font-mono);color:var(--ink-muted)}
+.tear span.h{font-family:var(--font-mono)!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;font:600 12px/16px var(--font-mono);color:var(--ink-muted)}
 .tear .t{white-space:nowrap;display:inline-flex;gap:8px;align-items:center;transition:transform .16s var(--ease)}
 .tear:hover .t{transform:translateX(4px)}
 .tear.torn .t{transform:translateX(6px)}
@@ -102,7 +104,7 @@ a{color:inherit}
 .chip{display:inline-flex;gap:8px;align-items:center;min-height:48px;padding:8px 16px;border-radius:9999px;border:1px solid var(--rule);background:var(--paper);font:500 14px/20px var(--font-body);cursor:pointer;color:var(--ink);transition:background-color .3s var(--ease),border-color .3s var(--ease)}
 .chip:hover{border-color:var(--brand)}
 .chip[aria-pressed=true]{background:var(--brand-tint);border-color:var(--brand);color:var(--brand)}
-.chip em{font:600 12px/16px var(--font-mono);font-style:normal;color:var(--ink-muted)}
+.chip em{font:700 12px/16px var(--font-body);font-style:normal;color:var(--ink-muted)}
 /* app screen */
 .section{padding:48px 0}
 .sec-head{display:grid;gap:8px;max-width:680px;margin-bottom:24px}
@@ -116,17 +118,17 @@ a{color:inherit}
 .receipt svg{flex:none;width:20px;height:20px;color:var(--brand)}
 .notice.sel{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand)}
 .locked{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;padding:12px 16px;opacity:.85}
-.locked .lk{font:600 12px/16px var(--font-mono);color:var(--ink-muted);display:inline-flex;gap:4px;align-items:center;white-space:nowrap}
+.locked .lk{font:600 12px/16px var(--font-body);color:var(--ink-muted);display:inline-flex;gap:4px;align-items:center;white-space:nowrap}
 .locked svg{width:16px;height:16px}
 .reader{display:none;padding:32px;background:var(--board)}
 @media(min-width:1120px){.reader{display:block}}
 .sheet{max-width:640px}
-.sheet h2{font:600 30px/36px var(--font-display);letter-spacing:-.01em;text-wrap:balance}
+.sheet h2{font:700 30px/36px var(--font-display);letter-spacing:-.01em;text-wrap:balance}
 .trust{display:grid;grid-template-columns:repeat(2,1fr);gap:0;margin-top:24px;border:1px solid var(--rule);border-radius:2px;background:var(--paper)}
 .trust div{padding:12px 16px;border-bottom:1px solid var(--rule)}
 .trust div:nth-child(odd){border-right:1px solid var(--rule)}
 .trust div:nth-last-child(-n+2){border-bottom:0}
-.trust dt{font:400 12px/16px var(--font-mono);color:var(--ink-muted)}
+.trust dt{font:500 12px/16px var(--font-body);color:var(--ink-muted)}
 .trust dd{font:600 16px/24px var(--font-body);margin-top:2px}
 .trust dd.mono{font:600 14px/20px var(--font-mono)}
 .desc{margin-top:24px;display:grid;gap:12px;color:var(--ink)}
@@ -249,21 +251,21 @@ footer{padding:32px 0 48px;border-top:1px solid var(--rule);margin-top:32px}
             <span class="hl caption-3">Direct to company</span>
             <h3 style="margin-top:8px">Customer Support Specialist</h3>
             <p class="company body-6 muted">Brightwell Home Health · Remote, US · $19 to $24 an hour</p>
-            <p class="meta"><span><b>Posted 2 days ago</b></span><span>Never reposted</span><span>jobs.lever.co</span></p>
+            <p class="meta"><span><b>Posted 2 days ago</b></span><span>Never reposted</span><span class="host">jobs.lever.co</span></p>
           </div>
         </article>
         <article class="notice">
           <div class="body">
             <h3>Member Care Representative</h3>
             <p class="company body-6 muted">Tidewater Credit Union · Remote, US · $18.50 an hour</p>
-            <p class="meta"><span><b>Posted 6 days ago</b></span><span>Never reposted</span><span>myworkdayjobs.com</span></p>
+            <p class="meta"><span><b>Posted 6 days ago</b></span><span>Never reposted</span><span class="host">myworkdayjobs.com</span></p>
           </div>
         </article>
         <article class="notice">
           <div class="body">
             <h3>Customer Support Associate, Evenings</h3>
             <p class="company body-6 muted">Pinecrest Pet Supply · Remote, US · $17 to $20 an hour</p>
-            <p class="meta"><span><b>Posted 19 days ago</b></span><span>Reposted once</span><span>jobs.ashbyhq.com</span></p>
+            <p class="meta"><span><b>Posted 19 days ago</b></span><span>Reposted once</span><span class="host">jobs.ashbyhq.com</span></p>
           </div>
         </article>
         <article class="notice locked">
@@ -273,7 +275,7 @@ footer{padding:32px 0 48px;border-top:1px solid var(--rule);margin-top:32px}
       </div>
       <div class="reader">
         <div class="sheet">
-          <p class="caption-3 muted">Brightwell Home Health</p>
+          <p class="body-6 muted" style="font-weight:700">Brightwell Home Health</p>
           <h2 style="margin-top:4px">Customer Support Specialist</h2>
           <p class="body-3 muted" style="margin-top:8px">Remote, United States · $19 to $24 an hour · Full time</p>
           <dl class="trust">
@@ -282,7 +284,7 @@ footer{padding:32px 0 48px;border-top:1px solid var(--rule);margin-top:32px}
             <div><dt>Last checked</dt><dd>14 min ago</dd></div>
             <div><dt>Source</dt><dd class="mono">jobs.lever.co</dd></div>
           </dl>
-          <svg class="spark" viewBox="0 0 640 40" width="100%" height="40" role="img" aria-label="New Customer support jobs per day, last 30 days: steady, 9 to 14 a day"><polyline fill="none" stroke="var(--brand)" stroke-width="1" points="0,26 24,22 48,28 72,20 96,24 120,18 144,22 168,16 192,24 216,20 240,14 264,22 288,18 312,24 336,12 360,20 384,16 408,22 432,14 456,18 480,10 504,20 528,16 552,22 576,12 600,18 640,14"/></svg>
+          <svg class="spark" viewBox="0 0 640 40" width="100%" height="40" role="img" aria-label="New Customer support jobs per day, last 30 days: steady, 9 to 14 a day"><polyline fill="none" stroke="var(--ink-muted)" stroke-width="1" points="0,26 24,22 48,28 72,20 96,24 120,18 144,22 168,16 192,24 216,20 240,14 264,22 288,18 312,24 336,12 360,20 384,16 408,22 432,14 456,18 480,10 504,20 528,16 552,22 576,12 600,18 640,14"/></svg>
           <p class="caption-3 muted">New Customer support jobs a day, last 30 days</p>
           <div class="desc">
             <p>Answer calls and chats from home health patients and their families, schedule visits, and keep notes in the shared case system.</p>
