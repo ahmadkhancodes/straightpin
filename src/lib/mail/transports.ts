@@ -3,7 +3,12 @@ import { log } from "@/lib/logger";
 import type { MailMessage, MailTransport, SendResult } from "./types";
 
 /** Dev/test/stub transport: keeps messages in memory and logs the subject (never the body). */
-export const outbox: (MailMessage & { from: string; id: string; at: Date })[] = [];
+type Boxed = MailMessage & { from: string; id: string; at: Date };
+declare global {
+  var __kitOutbox: Boxed[] | undefined;
+}
+/** Shared through globalThis: route bundles can load this module more than once, and the auth instance is cached across them. */
+export const outbox: Boxed[] = (globalThis.__kitOutbox ??= []);
 
 export function consoleTransport(): MailTransport {
   return {

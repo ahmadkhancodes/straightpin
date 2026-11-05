@@ -1,8 +1,9 @@
 import { MongoClient, type Collection, type Db as MongoDatabase, type Document } from "mongodb";
 import { mongoFilter } from "@/lib/jobs/query";
+import type { AgencyFlag } from "@/lib/classify/types";
 import type { EmployerDoc, JobDoc, SavedJob, SearchProfile, SourceRun } from "@/lib/jobs/types";
 import { uuidv7 } from "@/lib/ids";
-import { DELIVERY_TTL_DAYS, type AuditEntry, type BillingAccount, type Db, type Entitlement, type Suppression, type WebhookDelivery, type WebhookEndpoint } from "./types";
+import { DELIVERY_TTL_DAYS, type AuditEntry, type BillingAccount, type Db, type Entitlement, type LabelDoc, type RefundRecord, type Suppression, type WebhookDelivery, type WebhookEndpoint } from "./types";
 
 // Ported from trayo server/db/mongo.ts. Changes: global singleton client (Vercel), pool 10, Date TTLs,
 // stripe events recorded after success, no sync/family/anonymous. Use only from runtime = "nodejs" routes.
@@ -56,6 +57,85 @@ export function createMongoDb(uri: string, dbName: string, app: string): Db {
     },
     async findBillingAccountByCustomer(c) {
       return strip<BillingAccount>(await (await col<WithId<BillingAccount>>("billing_accounts")).findOne({ app, stripeCustomerId: c }));
+    },
+    async claimLifetime(orgId, cap) {
+      const claims = await col<Document>("lifetime_claims");
+      const counters = await col<Document>("counters");
+      const key = `${app}:${orgId}`;
+      if (await claims.findOne({ _id: key as never })) return { ok: true, sold: await this.lifetimeSold() };
+      // Atomic: the filter only matches while n < cap, so a full counter makes the upsert collide on _id (E11000) = sold out.
+      try {
+        const r = await counters.findOneAndUpdate({ _id: `${app}:lifetime` as never, n: { $lt: cap } }, { $inc: { n: 1 }, $set: { app } }, { upsert: true, returnDocument: "after" });
+        try {
+          await claims.insertOne({ _id: key as never, app, orgId, at: new Date() });
+        } catch (e) {
+          if ((e as { code?: number }).code !== 11000) throw e;
+          await counters.updateOne({ _id: `${app}:lifetime` as never }, { $inc: { n: -1 } }); // lost a race with ourselves: undo
+        }
+        return { ok: true, sold: Number(r?.n ?? 0) };
+      } catch (e) {
+        if ((e as { code?: number }).code === 11000) return { ok: false, sold: await this.lifetimeSold() };
+        throw e;
+      }
+    },
+    async releaseLifetime(orgId) {
+      const gone = await (await col<Document>("lifetime_claims")).deleteOne({ _id: `${app}:${orgId}` as never });
+      if (gone.deletedCount > 0) await (await col<Document>("counters")).updateOne({ _id: `${app}:lifetime` as never }, { $inc: { n: -1 } });
+    },
+    async lifetimeSold() {
+      return Number((await (await col<Document>("counters")).findOne({ _id: `${app}:lifetime` as never }))?.n ?? 0);
+    },
+    async reserveRefund(r) {
+      try {
+        await (await col<Document>("refunds")).insertOne({ _id: `${app}:${r.customerId}` as never, ...r, app });
+        return true;
+      } catch (e) {
+        if ((e as { code?: number }).code === 11000) return false;
+        throw e;
+      }
+    },
+    async releaseRefund(customerId) {
+      await (await col<Document>("refunds")).deleteOne({ _id: `${app}:${customerId}` as never });
+    },
+    async getRefund(customerId) {
+      return clean<RefundRecord>(await (await col<Document>("refunds")).findOne({ _id: `${app}:${customerId}` as never }));
+    },
+    async listEntitlements() {
+      const docs = await (await col<Document>("entitlements")).find({ app, isPaid: true, status: { $ne: "lifetime" } }).toArray();
+      return docs.map((d) => {
+        const { _id, app: _a, ...rest } = d;
+        return { orgId: String(_id), entitlement: rest as unknown as Entitlement };
+      });
+    },
+    async markReminder(key) {
+      try {
+        await (await col<Document>("reminders")).insertOne({ _id: `${app}:${key}` as never, app, expireAt: new Date(Date.now() + 40 * 864e5) });
+        return true;
+      } catch (e) {
+        if ((e as { code?: number }).code === 11000) return false;
+        throw e;
+      }
+    },
+    async setSuspended(orgId, on, by) {
+      const c = await col<Document>("suspensions");
+      if (on) await c.updateOne({ _id: `${app}:${orgId}` as never }, { $set: { app, orgId, by, at: new Date() } }, { upsert: true });
+      else await c.deleteOne({ _id: `${app}:${orgId}` as never });
+    },
+    async isSuspended(orgId) {
+      return !!(await (await col<Document>("suspensions")).findOne({ _id: `${app}:${orgId}` as never }, { projection: { _id: 1 } }));
+    },
+    async addLabel(l) {
+      await (await col<Document>("labels")).replaceOne({ _id: `${app}:${l.jobId}` as never }, { ...l, app }, { upsert: true });
+    },
+    async listLabels(limit = 5000) {
+      return cleanAll<LabelDoc>(await (await col<Document>("labels")).find({ app }).sort({ at: -1 }).limit(limit).toArray());
+    },
+    async listPendingAgency(limit) {
+      const docs = await (await col<Document>("jobs")).find({ app, closedAt: null, agencyFlag: "pending" }).sort({ postedAt: -1 }).limit(limit).toArray();
+      return docs.map((d) => ({ ...clean<JobDoc>(d)!, id: String(d._id) }) as JobDoc);
+    },
+    async setJobAgency(id, flag: AgencyFlag, score) {
+      await (await col<Document>("jobs")).updateOne({ _id: id as never, app }, { $set: { agencyFlag: flag, agencyScore: score } });
     },
     async getEntitlement(id) {
       const d = await (await col<WithId<Entitlement & { app: string }>>("entitlements")).findOne({ _id: id, app });
@@ -379,6 +459,10 @@ export async function ensureIndexes(uri: string, dbName: string) {
   await d.collection("source_runs").createIndex({ expireAt: 1 }, { expireAfterSeconds: 0 });
   await d.collection("job_opens").createIndex({ expireAt: 1 }, { expireAfterSeconds: 0 });
   await d.collection("saved_jobs").createIndex({ app: 1, orgId: 1, savedAt: -1 });
+  await d.collection("jobs").createIndex({ app: 1, agencyFlag: 1, closedAt: 1, postedAt: -1 });
+  await d.collection("labels").createIndex({ app: 1, at: -1 });
+  await d.collection("reminders").createIndex({ expireAt: 1 }, { expireAfterSeconds: 0 });
+  await d.collection("entitlements").createIndex({ app: 1, isPaid: 1 });
   await d.collection("search_profiles").createIndex({ app: 1, digest: 1 });
   await d.collection("search_profiles").createIndex({ app: 1, alerts: 1 });
   // Better Auth collections

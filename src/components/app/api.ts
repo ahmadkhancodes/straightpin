@@ -11,6 +11,14 @@ const MESSAGES: Record<string, string> = {
   rate_limited: "Too many attempts. Wait a minute and try again.",
   invalid_url: "Enter a full URL starting with https://.",
   invalid_body: "Some fields are missing or invalid.",
+  lifetime_sold_out: "Lifetime is sold out. The first 1,000 buyers have it. Monthly and Weekly are still open.",
+  refund_already_used: "You have already used your one refund.",
+  refund_window_closed: "The 7 day refund window has closed for your latest payment.",
+  nothing_to_cancel: "There is no subscription to cancel on this account.",
+  nothing_to_refund: "There is no paid plan to refund.",
+  no_charge: "We could not find a payment to refund.",
+  refund_failed: "The refund did not go through. Nothing was changed. Try again or email support.",
+  account_suspended: "This account is suspended. Email support if you think this is a mistake.",
   not_found: "That item no longer exists.",
 };
 

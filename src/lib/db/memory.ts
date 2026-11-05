@@ -1,7 +1,8 @@
 import { uuidv7 } from "@/lib/ids";
 import { byNewest, matchesQuery } from "@/lib/jobs/query";
 import type { EmployerDoc, JobDoc, SavedJob, SearchProfile, SourceRun } from "@/lib/jobs/types";
-import type { AuditEntry, BillingAccount, Db, Entitlement, Suppression, WebhookDelivery, WebhookEndpoint } from "./types";
+import type { AgencyFlag } from "@/lib/classify/types";
+import type { AuditEntry, BillingAccount, Db, Entitlement, LabelDoc, RefundRecord, Suppression, WebhookDelivery, WebhookEndpoint } from "./types";
 
 /** In-memory Db for tests, local dev and stub mode. Same semantics as the Mongo driver (dbContract.ts). */
 export function createMemoryDb(app: string, config: Record<string, string> = {}): Db {
@@ -21,6 +22,11 @@ export function createMemoryDb(app: string, config: Record<string, string> = {})
   const opens = new Set<string>();
   const saved = new Map<string, SavedJob>();
   const profiles = new Map<string, SearchProfile>();
+  const lifetime = new Set<string>();
+  const refunds = new Map<string, RefundRecord>();
+  const reminders = new Set<string>();
+  const suspended = new Set<string>();
+  const labels = new Map<string, LabelDoc>();
   const cfg = new Map(Object.entries(config));
   const clone = <T>(x: T): T => structuredClone(x);
   const sKey = (email: string, scope = "all") => `${email.toLowerCase()}|${scope}`;
@@ -45,6 +51,58 @@ export function createMemoryDb(app: string, config: Record<string, string> = {})
     },
     async setEntitlement(id, e) {
       ents.set(id, clone(e));
+    },
+    async claimLifetime(orgId, cap) {
+      if (lifetime.has(orgId)) return { ok: true, sold: lifetime.size };
+      if (lifetime.size >= cap) return { ok: false, sold: lifetime.size };
+      lifetime.add(orgId);
+      return { ok: true, sold: lifetime.size };
+    },
+    async releaseLifetime(orgId) {
+      lifetime.delete(orgId);
+    },
+    async lifetimeSold() {
+      return lifetime.size;
+    },
+    async reserveRefund(r) {
+      if (refunds.has(r.customerId)) return false;
+      refunds.set(r.customerId, clone(r));
+      return true;
+    },
+    async releaseRefund(customerId) {
+      refunds.delete(customerId);
+    },
+    async getRefund(customerId) {
+      const r = refunds.get(customerId);
+      return r ? clone(r) : null;
+    },
+    async listEntitlements() {
+      return [...ents].filter(([, e]) => e.isPaid && e.status !== "lifetime").map(([orgId, e]) => ({ orgId, entitlement: clone(e) }));
+    },
+    async markReminder(key) {
+      if (reminders.has(key)) return false;
+      reminders.add(key);
+      return true;
+    },
+    async setSuspended(orgId, on) {
+      if (on) suspended.add(orgId);
+      else suspended.delete(orgId);
+    },
+    async isSuspended(orgId) {
+      return suspended.has(orgId);
+    },
+    async addLabel(l) {
+      labels.set(l.jobId, clone(l));
+    },
+    async listLabels(limit = 5000) {
+      return [...labels.values()].sort((a, b) => b.at.getTime() - a.at.getTime()).slice(0, limit).map(clone);
+    },
+    async listPendingAgency(limit) {
+      return [...jobs.values()].filter((j) => !j.closedAt && j.agencyFlag === "pending").sort(byNewest).slice(0, limit).map(clone);
+    },
+    async setJobAgency(id, flag: AgencyFlag, score) {
+      const j = jobs.get(id);
+      if (j) jobs.set(id, { ...j, agencyFlag: flag, agencyScore: score });
     },
     async hasStripeEvent(id) {
       return events.has(id);

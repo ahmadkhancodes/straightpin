@@ -1,5 +1,5 @@
 import type Stripe from "stripe";
-import { planForLookupKey } from "@/config/product";
+import { planForLookupKey, product } from "@/config/product";
 import type { Db } from "@/lib/db/types";
 import { json } from "@/lib/http";
 import { log } from "@/lib/logger";
@@ -59,9 +59,17 @@ export async function handleStripeWebhook(rawBody: string, signature: string | n
     const plan = obj.metadata?.plan;
     const match = obj.metadata?.lookup_key ? planForLookupKey(obj.metadata.lookup_key) : null;
     if (obj.metadata?.app === app && obj.metadata?.mode === "lifetime" && obj.id && match) {
+      await db.claimLifetime(orgId, product.lifetimeCap); // a paid buyer is never turned away; this only keeps the count honest
       await db.setEntitlement(orgId, lifetimeEntitlement(match.plan.id, obj.id, now));
       await deps.onChange?.(orgId, event.type);
     } else if (plan) log.debug("pi_ignored", { code: "not_lifetime" });
+    await db.markStripeEvent(event.id, event.type);
+    return json({ received: true });
+  }
+
+  if (event.type === "checkout.session.expired") {
+    // An abandoned Lifetime checkout gives its slot back. A buyer who already paid keeps it.
+    if (obj.metadata?.app === app && obj.metadata?.mode === "lifetime" && prev?.status !== "lifetime") await db.releaseLifetime(orgId);
     await db.markStripeEvent(event.id, event.type);
     return json({ received: true });
   }
@@ -70,6 +78,7 @@ export async function handleStripeWebhook(rawBody: string, signature: string | n
     // C-27: a FULL refund ends the paid plan. Lifetime: drop it; subscription: cancel now. Partial refunds ignored.
     if (prev?.status === "lifetime" && prev.lifetimePaymentIntentId === obj.payment_intent) {
       await db.setEntitlement(orgId, { ...NONE(now), trialUsed: true });
+      await db.releaseLifetime(orgId);
       await db.markStripeEvent(event.id, event.type);
       await deps.onChange?.(orgId, event.type);
       return json({ received: true });

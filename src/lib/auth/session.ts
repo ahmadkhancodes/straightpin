@@ -86,3 +86,10 @@ export async function authApiKey(req: Request): Promise<{ orgId: string; keyId: 
   if (!r.valid || !r.key) throw new HttpError(401, "invalid_api_key");
   return { orgId: r.key.referenceId ?? r.key.userId ?? "", keyId: r.key.id };
 }
+
+/** Founder only (ADMIN_EMAILS). Pages: 404 for anyone else so the admin area is not discoverable. APIs: 404 as well. */
+export async function requireAdmin(): Promise<SessionUser> {
+  const s = await getSession();
+  if (!s || !isFounderAdmin(s.user.email)) throw new HttpError(404, "not_found");
+  return s.user;
+}

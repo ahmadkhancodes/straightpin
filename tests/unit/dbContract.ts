@@ -193,6 +193,63 @@ export function dbContract(name: string, make: () => Promise<Db>) {
       expect((await db.listSourceRuns(1))[0]!.id).toBe(id2);
     });
 
+    it("lifetime counter: claims are idempotent per org, capped, releasable", async () => {
+      const db = await make();
+      const r = Math.random().toString(36).slice(2);
+      expect(await db.claimLifetime(`a${r}`, 2)).toMatchObject({ ok: true });
+      expect(await db.claimLifetime(`a${r}`, 2)).toMatchObject({ ok: true }); // same org again: no second slot
+      const sold = await db.lifetimeSold();
+      expect(await db.claimLifetime(`b${r}`, sold + 1)).toMatchObject({ ok: true, sold: sold + 1 });
+      expect((await db.claimLifetime(`c${r}`, sold + 1)).ok).toBe(false);
+      await db.releaseLifetime(`b${r}`);
+      expect(await db.lifetimeSold()).toBe(sold);
+      expect((await db.claimLifetime(`c${r}`, sold + 1)).ok).toBe(true);
+      await db.releaseLifetime(`c${r}`);
+      await db.releaseLifetime(`a${r}`);
+    });
+
+    it("refund reservation is once per customer and can be released", async () => {
+      const db = await make();
+      const c = `cus_${Math.random()}`;
+      const rec = { customerId: c, orgId: "o", chargeId: "ch_1", amount: 100, by: "self" as const, at: new Date() };
+      expect(await db.reserveRefund(rec)).toBe(true);
+      expect(await db.reserveRefund(rec)).toBe(false);
+      expect((await db.getRefund(c))?.chargeId).toBe("ch_1");
+      await db.releaseRefund(c);
+      expect(await db.getRefund(c)).toBeNull();
+    });
+
+    it("reminders dedupe, suspensions toggle, paid entitlements list (no lifetime)", async () => {
+      const db = await make();
+      const k = `k${Math.random()}`;
+      expect(await db.markReminder(k)).toBe(true);
+      expect(await db.markReminder(k)).toBe(false);
+      const org = `org_${Math.random()}`;
+      await db.setSuspended(org, true, "f");
+      expect(await db.isSuspended(org)).toBe(true);
+      await db.setSuspended(org, false, "f");
+      expect(await db.isSuspended(org)).toBe(false);
+      await db.setEntitlement(`${org}_m`, { ...NONE(1), isPaid: true, status: "active", plan: "monthly", interval: "month", expiresAt: 5 });
+      await db.setEntitlement(`${org}_l`, { ...NONE(1), isPaid: true, status: "lifetime", plan: "lifetime" });
+      const ids = (await db.listEntitlements()).map((x) => x.orgId);
+      expect(ids).toContain(`${org}_m`);
+      expect(ids).not.toContain(`${org}_l`);
+    });
+
+    it("labels upsert by job and pending agency jobs can be settled", async () => {
+      const db = await make();
+      const [j] = fixtureJobs(NOW);
+      await db.upsertJobs([{ ...j!, agencyFlag: "pending", agencyScore: 0.5 }], NOW);
+      expect((await db.listPendingAgency(50)).some((x) => x.id === j!.id)).toBe(true);
+      const input = { title: j!.title, company: j!.employerName, excerpt: j!.excerpt };
+      await db.addLabel({ jobId: j!.id, label: "agency", input, by: "f", at: new Date(1) });
+      await db.addLabel({ jobId: j!.id, label: "direct", input, by: "f", at: new Date(2) });
+      expect((await db.listLabels()).filter((l) => l.jobId === j!.id).map((l) => l.label)).toEqual(["direct"]);
+      await db.setJobAgency(j!.id, "no", 0);
+      expect((await db.getJob(j!.id))?.agencyFlag).toBe("no");
+      expect((await db.listPendingAgency(50)).some((x) => x.id === j!.id)).toBe(false);
+    });
+
     it("config round trip", async () => {
       const db = await make();
       await db.setConfig("payments_enabled", "off");

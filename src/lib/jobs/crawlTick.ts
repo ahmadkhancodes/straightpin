@@ -87,6 +87,7 @@ export async function runCrawlTick(deps: TickDeps): Promise<SourceRun> {
     closed: outcomes.reduce((n, o) => n + o.closed, 0),
     agencyHidden: outcomes.reduce((n, o) => n + o.agencyHidden, 0),
     errors: outcomes.filter((o) => o.error).map((o) => ({ employerId: o.employerId, message: o.error! })),
+    boards: outcomes.map((o) => ({ employerId: o.employerId, ok: !o.error, inserted: o.inserted, closed: o.closed })),
     budgetHit,
   };
   await db.recordSourceRun(run);

@@ -1,5 +1,5 @@
 import type Stripe from "stripe";
-import { planById, type Interval, type PlanId } from "@/config/product";
+import { planById, product, type Interval, type PlanId } from "@/config/product";
 import type { Db } from "@/lib/db/types";
 import { HttpError } from "@/lib/http";
 import { findPrice } from "./catalog";
@@ -44,9 +44,13 @@ export async function createCheckoutSession(
     // Lifetime: one-time payment; the payment_intent.succeeded webhook grants it (metadata.mode = "lifetime").
     const ent0 = await db.getEntitlement(s.orgId);
     if (ent0?.status === "lifetime") throw new HttpError(409, "already_subscribed");
+    // Cap: an atomic counter in the DB. The slot is held for this org until the session expires or the payment lands.
+    const claim = await db.claimLifetime(s.orgId, product.lifetimeCap);
+    if (!claim.ok) throw new HttpError(409, "lifetime_sold_out");
     const meta1 = { app: db.app, plan, interval, mode: "lifetime", lookup_key: price.lookup_key ?? "", org_id: s.orgId, user_id: s.userId };
     const one = await stripe.checkout.sessions.create({
       mode: "payment",
+      expires_at: Math.floor(Date.now() / 1000) + 31 * 60,
       customer: customer.id,
       client_reference_id: s.orgId,
       line_items: [{ price: price.id, quantity: 1 }],
@@ -56,8 +60,14 @@ export async function createCheckoutSession(
       metadata: meta1,
       success_url: `${urls.success}${urls.success.includes("?") ? "&" : "?"}session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: urls.cancel,
+    }).catch(async (e: unknown) => {
+      await db.releaseLifetime(s.orgId);
+      throw e;
     });
-    if (!one.url) throw new HttpError(500, "no_checkout_url");
+    if (!one.url) {
+      await db.releaseLifetime(s.orgId);
+      throw new HttpError(500, "no_checkout_url");
+    }
     return { url: one.url };
   }
   const past = (await stripe.subscriptions.list({ customer: customer.id, status: "all", limit: 20 })).data.filter(
