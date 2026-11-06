@@ -45,6 +45,7 @@ export function fakeStripe(nowSec = () => 1_800_000_000) {
   const stripe = {
     charges: {
       list: async (p: { customer: string }) => ({ data: charges.filter((c) => c.customer === p.customer) }),
+      retrieve: async (id: string) => charges.find((c) => c.id === id) ?? { id, customer: null },
     },
     refunds: {
       create: async (p: { charge: string }, o?: { idempotencyKey?: string }) => {

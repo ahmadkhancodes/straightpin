@@ -1,5 +1,6 @@
 import { product, type MeterId } from "@/config/product";
 import { requireOrg } from "@/lib/auth/session";
+import { applyDisputeHold } from "@/lib/billing/disputes";
 import { computeEntitlement, effectivePlan } from "@/lib/billing/entitlement";
 import { getStripe } from "@/lib/billing/stripe";
 import { currentUsage } from "@/lib/billing/usage";
@@ -18,7 +19,7 @@ export const GET = withApi(async (req) => {
   if (new URL(req.url).searchParams.get("refresh") === "1" && stripe) {
     const acct = await db.getBillingAccount(ctx.org.id);
     if (acct?.stripeCustomerId) {
-      ent = await computeEntitlement(stripe, db.app, acct.stripeCustomerId, ent, Date.now());
+      ent = await applyDisputeHold(db, ctx.org.id, await computeEntitlement(stripe, db.app, acct.stripeCustomerId, ent, Date.now()), Date.now());
       await db.setEntitlement(ctx.org.id, ent);
     }
   }

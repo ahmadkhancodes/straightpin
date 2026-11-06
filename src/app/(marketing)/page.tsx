@@ -32,16 +32,16 @@ const PRICE_LINE = `Free to start. Then ${cents(monthly?.usd ?? 0)} a month, or 
 const heroJobs = [sampleJobs[0]!, sampleJobs[3]!, sampleJobs[5]!];
 
 const faq: FaqItem[] = [
-  { q: "Is this a scam?", a: `We show the price before you sign up, we refund any payment within ${product.refundDays} days, and we are not a recruiter and never take a cut of your pay. Every job links to the employer's own page, and you apply there as yourself.` },
+  { q: "Is this a scam?", a: `We show the price before you sign up, we refund your first payment within ${product.refundDays} days, and we are not a recruiter and never take a cut of your pay. Every job links to the employer's own page, and you apply there as yourself.` },
   { q: "Why pay to see jobs?", a: "Honestly, you do not have to. HiringCafe is free and has more jobs. We sell guided matching, alerts and the trust signals on every job: the first posted date, the repost count and the agency check. The free tier is real: 5 job opens a day, 10 saved jobs and a daily email." },
   { q: "How do you remove agencies?", a: "We compare each posting with known staffing agency patterns and flag the ones that match. Posts we remove are counted in a receipt at the top of your list. See How we check for the plain version." },
   { q: "How do you verify jobs?", a: "We read the company's own hiring page, check it again on a schedule, and show the website each job comes from and when we last checked it." },
   { q: "How is this different from Indeed or LinkedIn?", a: "Many jobs on the big boards come from staffing agencies or sit unfilled for months. We read company career pages directly. We do not say any other site's jobs are fake. We show dates and repost counts so you can judge." },
   { q: "Will you apply for me, or write my resume with AI?", a: "No, on purpose. Real jobs, you apply as yourself." },
-  { q: "What if I forget to cancel?", a: "We email a renewal reminder before every renewal, with the date and amount. Cancel in two taps from Billing. If you were charged and did not mean to be, ask within 7 days for a full refund." },
+  { q: "What if I forget to cancel?", a: "We email a renewal reminder before every renewal, with the date and amount. Cancel in two taps from Billing. If you were charged and did not mean to be, ask within 7 days of your first payment for a full refund." },
   { q: "Which countries?", a: "The United States now, plus Canada and the UK. Prices are in US dollars for now. Local prices at checkout come later." },
   { q: "Where do jobs come from?", a: "From employers' hiring systems and careers pages, which are public. We respect each site's robots.txt rules and ask for pages slowly." },
-  { q: "How do I get a refund?", a: `Email ${product.supportEmail} within ${product.refundDays} days of a payment. Full refund, no questions.` },
+  { q: "How do I get a refund?", a: `Email ${product.supportEmail} within ${product.refundDays} days of your first payment. Full refund, no questions.` },
 ];
 
 const steps: Step[] = [

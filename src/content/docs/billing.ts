@@ -23,7 +23,7 @@ export const billing: DocPage = {
     },
     {
       heading: "Refunds",
-      body: [`Changed your mind within ${p.refundDays} days of a payment? Tap Refund my last charge in Account, or email ${p.supportEmail}, and you get a full refund. No questions. It works once per customer and ends the paid plan straight away.`],
+      body: [`Changed your mind within ${p.refundDays} days of your first payment? Tap Refund my first payment in Account, or email ${p.supportEmail}, and you get a full refund. No questions. It covers the first payment only, works once per customer and ends the paid plan straight away.`],
     },
     {
       heading: "Failed payments",

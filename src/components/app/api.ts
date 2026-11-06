@@ -13,7 +13,7 @@ const MESSAGES: Record<string, string> = {
   invalid_body: "Some fields are missing or invalid.",
   lifetime_sold_out: "Lifetime is sold out. The first 1,000 buyers have it. Monthly and Weekly are still open.",
   refund_already_used: "You have already used your one refund.",
-  refund_window_closed: "The 7 day refund window has closed for your latest payment.",
+  refund_window_closed: "The 7 day refund window has closed for your first payment.",
   nothing_to_cancel: "There is no subscription to cancel on this account.",
   nothing_to_refund: "There is no paid plan to refund.",
   no_charge: "We could not find a payment to refund.",

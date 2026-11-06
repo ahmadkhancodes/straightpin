@@ -6,20 +6,22 @@ import type { MailMessage } from "@/lib/mail";
 import { renewalReminderEmail } from "@/lib/mail/templates";
 
 const DAY = 864e5;
-/** Weekly and monthly plans get the reminder this long before they renew. Annual plans get it on the day. */
+/** Weekly and monthly plans get the reminder this long before they renew. */
 export const REMINDER_LEAD_DAYS = 3;
+/** Annual plans: 21 days ahead, inside California's 15 to 45 day window and never under 14 (REVIEW P1-4). */
+export const ANNUAL_REMINDER_LEAD_DAYS = 21;
 
 /**
  * Pure scheduling rule. True when a reminder is due for this entitlement right now.
  *  - weekly / monthly: from 3 days before the renewal until it happens
- *  - annual: on the UTC day of the renewal, until it happens
+ *  - annual: from 21 days before the renewal until it happens
  * Cancelling plans, lifetime, trials and past-due plans never get one (nothing renews, or the card already failed).
  */
 export function reminderDue(e: Entitlement, now: number): boolean {
   if (!e.isPaid || e.status !== "active" || e.cancelAtPeriodEnd || !e.expiresAt || !e.interval) return false;
   if (e.expiresAt <= now) return false;
   if (e.interval === "week" || e.interval === "month") return e.expiresAt - now <= REMINDER_LEAD_DAYS * DAY;
-  if (e.interval === "year") return new Date(e.expiresAt).toISOString().slice(0, 10) === new Date(now).toISOString().slice(0, 10);
+  if (e.interval === "year") return e.expiresAt - now <= ANNUAL_REMINDER_LEAD_DAYS * DAY;
   return false;
 }
 

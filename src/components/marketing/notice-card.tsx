@@ -52,7 +52,6 @@ export function NoticeCard({ job, selected, showTear = true }: { job: SampleJob;
             if (typeof navigator !== "undefined") navigator.vibrate?.(10);
             window.setTimeout(() => setTorn(false), 600);
           }}
-          aria-label={`Apply at company, ${job.title} (sample notice, opens nothing)`}
           className="group flex min-h-12 w-full items-center justify-between gap-3 overflow-hidden border-t-[1.5px] border-dashed border-border bg-brand-tint px-4 py-2 text-left text-action focus-visible:focus-ring"
         >
           <span
@@ -65,6 +64,7 @@ export function NoticeCard({ job, selected, showTear = true }: { job: SampleJob;
             Apply at company
           </span>
           <span className="min-w-0 truncate font-mono text-xs text-text-subtle">{job.host}{job.path}</span>
+          <span className="sr-only">for {job.title} (sample notice, opens nothing)</span>
         </button>
       ) : null}
     </article>

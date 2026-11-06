@@ -50,7 +50,7 @@ export default async function UsersPage({ searchParams }: { searchParams: SP }) 
               <input type="hidden" name="orgId" value={orgId} />
               <input type="hidden" name="email" value={user.email} />
               <Button type="submit" name="action" value={suspended ? "unsuspend" : "suspend"} variant="secondary">{suspended ? "Lift suspension" : "Suspend account"}</Button>
-              <Button type="submit" name="action" value="refund" variant="danger" disabled={!ent?.isPaid || !!refund}>Refund latest payment</Button>
+              <Button type="submit" name="action" value="refund" variant="danger" disabled={!ent?.isPaid || !!refund}>Refund first payment</Button>
             </form>
           ) : <p className="body-6 text-text-subtle">This user has not finished setup, so there is no billing profile.</p>}
         </section>

@@ -46,5 +46,7 @@ Everything else (DB user via MongoDB connector, Stripe test products via connect
 ## Added in M5 (pre-launch review, see docs/REVIEW.md)
 13. **Make sure `BETTER_AUTH_SECRET` is set in Vercel Production** (a long random value). Email unsubscribe and manage links now refuse to sign without it in production.
     https://vercel.com/dashboard → project straightpin → Settings → Environment Variables
-14. **Decide on the refund rule** (optional): the code refunds the newest charge if it is under 7 days old, once per customer (D-038). The brief says the first charge only. To narrow it, say so and the build session changes `refundLatestCharge` and the policy text together.
-15. **Before switching Plus on:** ship its features, set `onSale: true` in `src/config/product.ts`, and move the annual renewal reminder to 15 to 45 days before renewal (REVIEW P1-4).
+14. **Refund rule: done, owner may still change it.** The code now follows the brief: the first charge only, 7 days, once per customer and verified email (D-044). Open question: a Lifetime buyer who first paid a Weekly plan more than 7 days ago gets no self-serve refund of the Lifetime payment. Say so if you want the window to run from the Lifetime charge instead.
+15. **Before switching Plus on:** ship its features, set `onSale: true` in `src/config/product.ts`, and move the annual renewal reminder to 15 to 45 days before renewal (REVIEW P1-4, done: reminder is now 21 days ahead for annual).
+16. **Add two events to the Stripe webhook endpoint:** `charge.dispute.created` and `charge.dispute.closed`. Without them the dispute handling never runs.
+    https://dashboard.stripe.com/test/webhooks (and the same in live mode before launch)
