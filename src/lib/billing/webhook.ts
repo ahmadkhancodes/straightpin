@@ -3,6 +3,7 @@ import { planForLookupKey, product } from "@/config/product";
 import type { Db } from "@/lib/db/types";
 import { json } from "@/lib/http";
 import { log } from "@/lib/logger";
+import { applyDisputeHold, handleDispute } from "./disputes";
 import { NONE, cancelAppSubscriptions, computeEntitlement, invoiceSubscriptionId, lifetimeEntitlement } from "./entitlement";
 
 // Ported from trayo server/handler.ts webhook(). Changes:
@@ -11,10 +12,11 @@ import { NONE, cancelAppSubscriptions, computeEntitlement, invoiceSubscriptionId
 //  - checkout.session.completed also triggers a recompute
 
 export interface WebhookDeps {
-  stripe: Pick<Stripe, "subscriptions" | "webhooks">;
+  stripe: Pick<Stripe, "subscriptions" | "webhooks" | "charges">;
   db: Db;
   secret: string;
   now?: () => number;
+  audit?: Parameters<typeof handleDispute>[0]["audit"];
   onChange?: (orgId: string, type: string) => Promise<void>;
 }
 
@@ -36,6 +38,13 @@ export async function handleStripeWebhook(rawBody: string, signature: string | n
     payment_intent?: string | null;
     refunded?: boolean;
   };
+  if (event.type === "charge.dispute.created" || event.type === "charge.dispute.closed") {
+    // Disputes carry no customer; the handler finds it through the charge.
+    const orgId = await handleDispute({ stripe, db, now: (deps.now ?? Date.now)(), audit: deps.audit }, event.type, event.data.object as never);
+    await db.markStripeEvent(event.id, event.type);
+    if (orgId) await deps.onChange?.(orgId, event.type);
+    return json({ received: true });
+  }
   let customerId = typeof obj.customer === "string" ? obj.customer : (obj.customer?.id ?? null);
   // Old (2022-11-15) and new invoice payloads keep the subscription in different places; fall back to it.
   if (!customerId && event.type.startsWith("invoice.")) {
@@ -60,7 +69,7 @@ export async function handleStripeWebhook(rawBody: string, signature: string | n
     const match = obj.metadata?.lookup_key ? planForLookupKey(obj.metadata.lookup_key) : null;
     if (obj.metadata?.app === app && obj.metadata?.mode === "lifetime" && obj.id && match) {
       await db.claimLifetime(orgId, product.lifetimeCap); // a paid buyer is never turned away; this only keeps the count honest
-      await db.setEntitlement(orgId, lifetimeEntitlement(match.plan.id, obj.id, now));
+      await db.setEntitlement(orgId, await applyDisputeHold(db, orgId, lifetimeEntitlement(match.plan.id, obj.id, now), now));
       await deps.onChange?.(orgId, event.type);
     } else if (plan) log.debug("pi_ignored", { code: "not_lifetime" });
     await db.markStripeEvent(event.id, event.type);
@@ -92,7 +101,8 @@ export async function handleStripeWebhook(rawBody: string, signature: string | n
     event.type === "checkout.session.completed" ||
     event.type === "charge.refunded";
   if (relevant) {
-    await db.setEntitlement(orgId, await computeEntitlement(stripe, app, customerId, prev?.status === "lifetime" ? prev : null, now));
+    const next = await computeEntitlement(stripe, app, customerId, prev?.status === "lifetime" ? prev : null, now);
+    await db.setEntitlement(orgId, await applyDisputeHold(db, orgId, next, now));
     await deps.onChange?.(orgId, event.type);
   }
   await db.markStripeEvent(event.id, event.type); // only after success

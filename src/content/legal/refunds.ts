@@ -4,14 +4,15 @@ import type { LegalDoc } from "./types";
 export const refunds: LegalDoc = {
   slug: "refunds",
   title: "Refund policy",
-  description: `${p.refundDays} day full refund, once per customer, and how to cancel in two taps.`,
+  description: `${p.refundDays} day full refund of your first payment, once per customer, and how to cancel in two taps.`,
   sections: [
     {
       id: "refund",
       title: `${p.refundDays} day refund`,
       body: [
-        `If you change your mind within ${p.refundDays} days of a payment, tap Refund my last charge in Account, or email ${p.supportEmail}, and we refund that payment in full. No questions. This covers Weekly, Monthly and Lifetime.`,
-        "Each customer can get this refund once. A refund ends the paid plan straight away and moves you to Free.",
+        `If you change your mind within ${p.refundDays} days of your first payment, tap Refund my first payment in Account, or email ${p.supportEmail}, and we refund that payment in full. No questions. This covers Weekly, Monthly and Lifetime.`,
+        "The refund is for your first payment only, not for later renewals. Each customer can get it once, and it is tied to the account and the verified email address, so signing up again does not give a second one. A refund ends the paid plan straight away and moves you to Free.",
+        "If a payment is disputed with your bank, the paid plan is switched off while the dispute is open. It comes back if the dispute is decided in our favour.",
         "Refunds go back to the card you paid with. Your bank may take a few days to show it.",
       ],
     },

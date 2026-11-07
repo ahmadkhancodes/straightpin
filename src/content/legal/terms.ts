@@ -48,7 +48,7 @@ export const terms: LegalDoc = {
       title: "Cancellation and refunds",
       body: [
         "You can cancel in two taps from Billing in the app. Your plan stays active until the end of the period you paid for.",
-        `Refunds: any payment is refunded in full if you ask within ${p.refundDays} days. See the refund policy.`,
+        `Refunds: your first payment is refunded in full if you ask within ${p.refundDays} days, once per customer. See the refund policy.`,
       ],
     },
     {

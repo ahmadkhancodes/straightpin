@@ -4,7 +4,7 @@ import { clearPriceCache } from "@/lib/billing/catalog";
 import { createCheckoutSession } from "@/lib/billing/checkout";
 import { effectivePlan } from "@/lib/billing/entitlement";
 import { cancelAtPeriodEnd, refundEligibility, refundLatestCharge } from "@/lib/billing/lifecycle";
-import { reminderDue, runRenewalReminders } from "@/lib/billing/reminders";
+import { ANNUAL_REMINDER_LEAD_DAYS, reminderDue, runRenewalReminders } from "@/lib/billing/reminders";
 import { handleStripeWebhook } from "@/lib/billing/webhook";
 import { labelGate, reviewJob } from "@/lib/classify/labels";
 import { createMemoryDb } from "@/lib/db/memory";
@@ -235,15 +235,18 @@ describe("renewal reminders", () => {
     expect(reminderDue(ent({ interval: "week", plan: "weekly", expiresAt: NOW - 1 }), NOW)).toBe(false);
   });
 
-  it("annual: only on the day of the renewal", () => {
-    const day = new Date(NOW).toISOString().slice(0, 10);
-    const later = new Date(`${day}T23:59:59Z`).getTime();
-    const early = new Date(`${day}T00:00:00Z`).getTime();
-    const now = Math.min(NOW, later - 1);
-    expect(reminderDue(ent({ plan: "plus", interval: "year", expiresAt: later }), now)).toBe(true);
-    expect(early).toBeLessThanOrEqual(now);
-    expect(reminderDue(ent({ plan: "plus", interval: "year", expiresAt: NOW + 2 * 864e5 }), NOW)).toBe(false);
-    expect(reminderDue(ent({ plan: "plus", interval: "year", expiresAt: NOW + 3 * 864e5 }), NOW)).toBe(false);
+  it("annual: due from 21 days before the renewal, never later than 14 days ahead, not earlier", () => {
+    const y = (days: number) => ent({ plan: "plus", interval: "year", expiresAt: NOW + days * 864e5 });
+    expect(reminderDue(y(22), NOW)).toBe(false);
+    expect(reminderDue(y(21), NOW)).toBe(true);
+    expect(reminderDue(y(15), NOW)).toBe(true);
+    expect(reminderDue(y(0.5), NOW)).toBe(true); // a late catch-up still sends before the renewal
+    expect(reminderDue(ent({ plan: "plus", interval: "year", expiresAt: NOW - 1 }), NOW)).toBe(false);
+    expect(ANNUAL_REMINDER_LEAD_DAYS).toBeGreaterThanOrEqual(14);
+  });
+
+  it("Plus stays off sale while annual reminders change", () => {
+    expect(product.plans.find((x) => x.id === "plus")?.onSale).toBe(false);
   });
 
   it("never for cancelling, past due, lifetime or free", () => {

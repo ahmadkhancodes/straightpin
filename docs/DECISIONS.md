@@ -70,3 +70,10 @@ Standing decisions are in docs/factory/BATCH1_PLAN.md (Mongo instead of Postgres
 - **D-041 JSON-LD `url`:** JobPosting `url` is our own job page, never the employer's apply link (that link is what a metered open unlocks). Supersedes the `url` part of D-036.
 - **D-042 Crawl redirects:** the transport never follows redirects. `fetchPolite` follows up to 5, and each hop goes through egress rules, the target host's robots.txt and its rate limit.
 - **D-043 Hero subhead:** "thousands of" is dropped from the brief's subhead until `/admin/crawl` shows that many active boards.
+
+## REVIEW P1 fixes (6 Nov 2026)
+- **D-044 Refund rule follows the brief (supersedes D-038):** only the customer's first successful charge for this app is refundable, and only within 7 days of it. Once per Stripe customer and per billing email (lowercased, kept as a base64url sha256 of `app:email` in `refunds`, so it outlives account deletion and holds nothing readable). Admins can still waive the window. Known edge: a Lifetime buyer whose first charge was an older Weekly payment gets no self-serve refund (MANUAL_STEPS 14).
+- **D-045 Disputes:** an open dispute switches the plan off whatever it was (subscription or Lifetime) and holds it off against later events and refreshes. Won restores it, lost keeps it off, cancels subscriptions and frees a Lifetime slot. Dispute records are kept after account deletion as a fraud trail. Needs the two dispute events on the Stripe webhook endpoint (MANUAL_STEPS 16).
+- **D-046 Annual reminder:** 21 days before renewal (California asks for 15 to 45), once per renewal date. Weekly and monthly stay at 3 days.
+- **D-047 Unsubscribe:** GET never writes. The confirm button POSTs with `confirm=1`; the RFC 8058 one-click POST is unchanged.
+- **D-048 Accessibility gate:** `tests/e2e/a11y.spec.ts` runs axe-core (already installed, no new dependency) on seven pages at 375 px in both themes and fails on serious or critical findings.

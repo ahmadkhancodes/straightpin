@@ -2,7 +2,7 @@ import { uuidv7 } from "@/lib/ids";
 import { byNewest, matchesQuery } from "@/lib/jobs/query";
 import type { AlertRule, EmployerDoc, JobDoc, SavedJob, SearchProfile, SourceRun } from "@/lib/jobs/types";
 import type { AgencyFlag } from "@/lib/classify/types";
-import type { AuditEntry, BillingAccount, Db, Entitlement, LabelDoc, RefundRecord, Suppression, WebhookDelivery, WebhookEndpoint } from "./types";
+import type { AuditEntry, BillingAccount, Db, DisputeRecord, Entitlement, LabelDoc, RefundRecord, Suppression, WebhookDelivery, WebhookEndpoint } from "./types";
 
 /** In-memory Db for tests, local dev and stub mode. Same semantics as the Mongo driver (dbContract.ts). */
 export function createMemoryDb(app: string, config: Record<string, string> = {}): Db {
@@ -25,6 +25,7 @@ export function createMemoryDb(app: string, config: Record<string, string> = {})
   const alertRules = new Map<string, AlertRule>();
   const lifetime = new Set<string>();
   const refunds = new Map<string, RefundRecord>();
+  const disputes = new Map<string, DisputeRecord>();
   const reminders = new Set<string>();
   const suspended = new Set<string>();
   const labels = new Map<string, LabelDoc>();
@@ -67,15 +68,22 @@ export function createMemoryDb(app: string, config: Record<string, string> = {})
     },
     async reserveRefund(r) {
       if (refunds.has(r.customerId)) return false;
+      if (r.emailHash && [...refunds.values()].some((x) => x.emailHash === r.emailHash)) return false;
       refunds.set(r.customerId, clone(r));
       return true;
     },
     async releaseRefund(customerId) {
       refunds.delete(customerId);
     },
-    async getRefund(customerId) {
-      const r = refunds.get(customerId);
+    async getRefund(customerId, emailHash) {
+      const r = refunds.get(customerId) ?? (emailHash ? [...refunds.values()].find((x) => x.emailHash === emailHash) : undefined);
       return r ? clone(r) : null;
+    },
+    async setDispute(d) {
+      disputes.set(d.id, clone(d));
+    },
+    async listDisputes(orgId) {
+      return [...disputes.values()].filter((d) => d.orgId === orgId).map(clone);
     },
     async listEntitlements() {
       return [...ents].filter(([, e]) => e.isPaid && e.status !== "lifetime").map(([orgId, e]) => ({ orgId, entitlement: clone(e) }));

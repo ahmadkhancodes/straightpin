@@ -104,6 +104,17 @@ export interface RefundRecord {
   amount: number;
   by: "self" | "admin";
   at: Date;
+  /** sha256 (base64url) of app + lowercased email. Kept after account deletion so a re-signup cannot refund again. */
+  emailHash?: string | null;
+}
+
+/** A card dispute. `saved` is the plan held before it was revoked, so a won dispute can give it back. */
+export interface DisputeRecord {
+  id: string;
+  orgId: string;
+  status: "open" | "won" | "lost";
+  saved: Entitlement | null;
+  at: Date;
 }
 
 export interface Db {
@@ -151,7 +162,11 @@ export interface Db {
   /** Insert only. False when this customer already had a refund (the once only rule). */
   reserveRefund(r: RefundRecord): Promise<boolean>;
   releaseRefund(customerId: string): Promise<void>;
-  getRefund(customerId: string): Promise<RefundRecord | null>;
+  /** The refund this customer, or (when given) this email hash, already used. */
+  getRefund(customerId: string, emailHash?: string | null): Promise<RefundRecord | null>;
+  /** Upsert by dispute id. Disputes survive account deletion (fraud trail). */
+  setDispute(d: DisputeRecord): Promise<void>;
+  listDisputes(orgId: string): Promise<DisputeRecord[]>;
   /** Paid, non lifetime plans (for renewal reminders). */
   listEntitlements(): Promise<{ orgId: string; entitlement: Entitlement }[]>;
   /** Insert only: true the first time a key is seen (reminder dedupe). */

@@ -11,7 +11,7 @@ export const money = (cents: number) =>
     minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
   }).format(cents / 100);
 
-const PROMISE = `Price shown before you sign up. Cancel in two taps. Changed your mind in ${product.refundDays} days? Full refund. No crossed out prices, no countdowns.`;
+const PROMISE = `Price shown before you sign up. Cancel in two taps. Changed your mind within ${product.refundDays} days of your first payment? Full refund. No crossed out prices, no countdowns.`;
 
 function PlanCard({ plan, price }: { plan: Plan; price: PlanPrice | null }) {
   const href = price ? `/sign-in?plan=${plan.id}&interval=${price.interval}` : "/sign-in";

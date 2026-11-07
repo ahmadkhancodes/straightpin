@@ -47,7 +47,7 @@ export const comparisons: CompareEntry[] = [
     sources: [{ label: "directroles.net, read 3 Nov 2026", url: "https://directroles.net" }],
     faq: [
       { q: `Is ${product.name} cheaper than directroles.net?`, a: `On 3 Nov 2026 directroles.net charged $21 a month, $10.50 a week or $47 once. ${product.name} charges ${monthly} a month, ${weekly} a week or ${lifetime} once.` },
-      { q: "Can I get a refund?", a: `Yes. ${product.name} refunds any payment within ${product.refundDays} days, no questions. directroles.net did not state a refund window when we checked.` },
+      { q: "Can I get a refund?", a: `Yes. ${product.name} refunds your first payment within ${product.refundDays} days, no questions. directroles.net did not state a refund window when we checked.` },
       { q: "Do you say their jobs are fake?", a: "No. Both sites point to jobs on the employer's own page. The difference is price, a refund, and the repost and old posting labels we add." },
     ],
   },

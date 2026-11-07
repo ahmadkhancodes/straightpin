@@ -118,12 +118,12 @@ export function AccountClient(p: Props) {
 
           {p.refund?.eligible ? (
             <div className="flex flex-col gap-3 border-t border-border pt-4">
-              <p className="body-6 text-text-subtle">Not for you? Get a full refund of your latest payment until {p.refund.until ? day(p.refund.until) : `${product.refundDays} days after you paid`}. Your plan turns off right away. One refund per customer.</p>
+              <p className="body-6 text-text-subtle">Not for you? Get a full refund of your first payment until {p.refund.until ? day(p.refund.until) : `${product.refundDays} days after you paid`}. Your plan turns off right away. One refund per customer, for your first payment only.</p>
               {step !== "confirm-refund" ? (
-                <Button variant="secondary" onClick={() => setStep("confirm-refund")} className="w-full sm:w-auto">Refund my last payment</Button>
+                <Button variant="secondary" onClick={() => setStep("confirm-refund")} className="w-full sm:w-auto">Refund my first payment</Button>
               ) : (
                 <div role="group" aria-label="Confirm refund" className="flex flex-col gap-3 rounded-md border border-border-strong p-4">
-                  <p className="body-5 text-text">Refund your latest payment and turn off {p.planName} now?</p>
+                  <p className="body-5 text-text">Refund your first payment and turn off {p.planName} now?</p>
                   <div className="flex flex-col gap-2 sm:flex-row">
                     <Button variant="danger" onClick={() => call("refund")} loading={busy === "refund"}>Yes, refund me</Button>
                     <Button variant="secondary" onClick={() => setStep("idle")}>Keep my plan</Button>
@@ -134,7 +134,7 @@ export function AccountClient(p: Props) {
           ) : p.refund?.reason === "used" ? (
             <p className="body-6 border-t border-border pt-4 text-text-subtle">You have used your one refund.</p>
           ) : p.refund?.reason === "window" ? (
-            <p className="body-6 border-t border-border pt-4 text-text-subtle">The {product.refundDays} day refund window for your latest payment has closed. <Link href="/legal/refunds" className="text-action underline underline-offset-4">Refund policy</Link></p>
+            <p className="body-6 border-t border-border pt-4 text-text-subtle">The {product.refundDays} day refund window for your first payment has closed. <Link href="/legal/refunds" className="text-action underline underline-offset-4">Refund policy</Link></p>
           ) : null}
         </section>
       ) : null}

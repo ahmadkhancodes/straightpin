@@ -8,7 +8,7 @@ import { enforceRateLimit, RULES } from "@/lib/security/ratelimit";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** Self serve 7 day refund of the latest charge, once per customer. Turns the plan off. */
+/** Self serve 7 day refund of the first charge, once per customer. Turns the plan off. */
 export const POST = withApi(async () => {
   const ctx = await requireOrg();
   requirePermission(ctx, "billing", "manage");

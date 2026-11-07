@@ -4,7 +4,7 @@ import type { AgencyFlag } from "@/lib/classify/types";
 import { CRAWL_RECORD_DAYS } from "@/lib/jobs/retention";
 import type { AlertRule, EmployerDoc, JobDoc, SavedJob, SearchProfile, SourceRun } from "@/lib/jobs/types";
 import { uuidv7 } from "@/lib/ids";
-import { DELIVERY_TTL_DAYS, type AuditEntry, type BillingAccount, type Db, type Entitlement, type LabelDoc, type RefundRecord, type Suppression, type WebhookDelivery, type WebhookEndpoint } from "./types";
+import { DELIVERY_TTL_DAYS, type AuditEntry, type BillingAccount, type Db, type DisputeRecord, type Entitlement, type LabelDoc, type RefundRecord, type Suppression, type WebhookDelivery, type WebhookEndpoint } from "./types";
 
 // Ported from trayo server/db/mongo.ts. Changes: global singleton client (Vercel), pool 10, Date TTLs,
 // stripe events recorded after success, no sync/family/anonymous. Use only from runtime = "nodejs" routes.
@@ -87,19 +87,46 @@ export function createMongoDb(uri: string, dbName: string, app: string): Db {
       return Number((await (await col<Document>("counters")).findOne({ _id: `${app}:lifetime` as never }))?.n ?? 0);
     },
     async reserveRefund(r) {
+      const refunds = await col<Document>("refunds");
+      const dup = (e: unknown) => (e as { code?: number }).code === 11000;
       try {
-        await (await col<Document>("refunds")).insertOne({ _id: `${app}:${r.customerId}` as never, ...r, app });
-        return true;
+        await refunds.insertOne({ _id: `${app}:${r.customerId}` as never, ...r, app });
       } catch (e) {
-        if ((e as { code?: number }).code === 11000) return false;
+        if (dup(e)) return false;
         throw e;
       }
+      if (r.emailHash) {
+        // Second key: the verified email, so a new Stripe customer for the same person is refused too.
+        try {
+          await refunds.insertOne({ _id: `${app}:email:${r.emailHash}` as never, ...r, app });
+        } catch (e) {
+          await refunds.deleteOne({ _id: `${app}:${r.customerId}` as never });
+          if (dup(e)) return false;
+          throw e;
+        }
+      }
+      return true;
     },
     async releaseRefund(customerId) {
-      await (await col<Document>("refunds")).deleteOne({ _id: `${app}:${customerId}` as never });
+      const refunds = await col<Document>("refunds");
+      const doc = await refunds.findOne({ _id: `${app}:${customerId}` as never });
+      await refunds.deleteOne({ _id: `${app}:${customerId}` as never });
+      if (doc?.emailHash) await refunds.deleteOne({ _id: `${app}:email:${doc.emailHash}` as never });
     },
-    async getRefund(customerId) {
-      return clean<RefundRecord>(await (await col<Document>("refunds")).findOne({ _id: `${app}:${customerId}` as never }));
+    async getRefund(customerId, emailHash) {
+      const refunds = await col<Document>("refunds");
+      const doc = (await refunds.findOne({ _id: `${app}:${customerId}` as never })) ?? (emailHash ? await refunds.findOne({ _id: `${app}:email:${emailHash}` as never }) : null);
+      return clean<RefundRecord>(doc);
+    },
+    async setDispute(d) {
+      await (await col<Document>("disputes")).replaceOne({ _id: `${app}:${d.id}` as never }, { ...d, app }, { upsert: true });
+    },
+    async listDisputes(orgId) {
+      const docs = await (await col<Document>("disputes")).find({ app, orgId }).toArray();
+      return docs.map((x) => {
+        const { _id, app: _a, ...rest } = x;
+        return rest as unknown as DisputeRecord;
+      });
     },
     async listEntitlements() {
       const docs = await (await col<Document>("entitlements")).find({ app, isPaid: true, status: { $ne: "lifetime" } }).toArray();
@@ -465,6 +492,7 @@ export function createMongoDb(uri: string, dbName: string, app: string): Db {
 export async function ensureIndexes(uri: string, dbName: string) {
   const d = (await mongoClient(uri)).db(dbName);
   await d.collection("billing_accounts").createIndex({ app: 1, stripeCustomerId: 1 }, { unique: true, partialFilterExpression: { stripeCustomerId: { $type: "string" } } });
+  await d.collection("disputes").createIndex({ app: 1, orgId: 1 });
   await d.collection("stripe_events").createIndex({ expireAt: 1 }, { expireAfterSeconds: 0 });
   await d.collection("rate_limits").createIndex({ expireAt: 1 }, { expireAfterSeconds: 0 });
   await d.collection("usage").createIndex({ app: 1, orgId: 1, period: 1 });

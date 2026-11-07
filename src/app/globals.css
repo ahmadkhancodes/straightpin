@@ -209,11 +209,12 @@
 /* Scroll reveal (rise 32px + fade, once). Reduced motion: opacity only. */
 .kit-reveal { opacity: 0; transform: translateY(32px); transition: opacity 700ms var(--ease-out-kit), transform 700ms var(--ease-out-kit); }
 .kit-reveal[data-visible="true"] { opacity: 1; transform: none; }
-.kit-word { opacity: 0.3; transition: opacity 500ms var(--ease-out-kit); }
-.kit-word[data-on="true"] { opacity: 1; }
+/* Words not read yet use the subtle text colour (contrast checked by axe), not a faded opacity. */
+.kit-word { color: var(--text-subtle); transition: color 500ms var(--ease-out-kit); }
+.kit-word[data-on="true"] { color: var(--text); }
 @media (prefers-reduced-motion: reduce) {
   .kit-reveal { transform: none; transition: opacity 300ms var(--ease-out-kit); }
-  .kit-word { opacity: 1; transition: none; }
+  .kit-word { color: var(--text); transition: none; }
   .digit-flip { animation: none !important; }
   *, *::before, *::after { animation-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
