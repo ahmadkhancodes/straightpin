@@ -75,7 +75,7 @@ export function resendTransport(apiKey: string, fetchFn: typeof fetch = fetch): 
     async send(msg): Promise<SendResult> {
       const payload = {
         from: msg.from, to: msg.to, subject: msg.subject, text: msg.text, html: msg.html,
-        reply_to: msg.replyTo, headers: msg.headers,
+        reply_to: msg.replyTo, headers: msg.headers && Object.keys(msg.headers).length > 0 ? msg.headers : undefined,
         tags: msg.tags ? Object.entries(msg.tags).map(([name, value]) => ({ name, value })) : undefined,
       };
       const sent = JSON.stringify(payload);
