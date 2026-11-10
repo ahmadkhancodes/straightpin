@@ -50,3 +50,7 @@ Everything else (DB user via MongoDB connector, Stripe test products via connect
 15. **Before switching Plus on:** ship its features, set `onSale: true` in `src/config/product.ts`, and move the annual renewal reminder to 15 to 45 days before renewal (REVIEW P1-4, done: reminder is now 21 days ahead for annual).
 16. **Add two events to the Stripe webhook endpoint:** `charge.dispute.created` and `charge.dispute.closed`. Without them the dispute handling never runs.
     https://dashboard.stripe.com/test/webhooks (and the same in live mode before launch)
+
+## Added in launch hardening (10 Nov 2026)
+17. **Run the Stripe test-mode pass once** (REVIEW P1-8): Checkout for Weekly, Monthly and Lifetime, cancel, refund, and a test dispute (card 4000 0000 0000 0259), with the webhook endpoint subscribed to every event in item 16. Confirm Stripe shows 200 for each delivery.
+18. **After launch, watch `lifetimeSold` against paid buyers** (REVIEW P1-10) in `/admin`. No code change needed unless it drifts.

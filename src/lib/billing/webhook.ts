@@ -92,7 +92,7 @@ export async function handleStripeWebhook(rawBody: string, signature: string | n
       await deps.onChange?.(orgId, event.type);
       return json({ received: true });
     }
-    await cancelAppSubscriptions(stripe, app, customerId);
+    await cancelAppSubscriptions(stripe, app, customerId, (event as { created?: number }).created);
   }
 
   const relevant =
@@ -105,6 +105,7 @@ export async function handleStripeWebhook(rawBody: string, signature: string | n
     await db.setEntitlement(orgId, await applyDisputeHold(db, orgId, next, now));
     await deps.onChange?.(orgId, event.type);
   }
+  else log.info("stripe_event_ignored", { type: event.type }); // unknown event: answer 200 so Stripe stops retrying
   await db.markStripeEvent(event.id, event.type); // only after success
   return json({ received: true });
 }

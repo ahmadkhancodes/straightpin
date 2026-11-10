@@ -266,7 +266,7 @@ describe("renewal reminders", () => {
     await db.addSuppression({ email: "b@x.test", scope: "renewals", reason: "unsubscribe" });
     const sent: MailMessage[] = [];
     const run = () => runRenewalReminders(db, new Date(NOW), async (m) => { sent.push(m); }, async (e, s) => `https://app.test/unsub?e=${e}&s=${s}`);
-    expect(await run()).toEqual({ considered: 3, sent: 1, skipped: 2 });
+    expect(await run()).toEqual({ considered: 3, sent: 1, skipped: 2, failed: 0 });
     expect(sent[0]).toMatchObject({ to: "a@x.test", category: "renewals" });
     expect(sent[0]!.text).toContain("unsub?e=a@x.test&s=renewals");
     expect(sent[0]!.text).toContain("$10.99 per month");

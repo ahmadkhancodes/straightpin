@@ -98,9 +98,11 @@ export function lifetimeEntitlement(plan: PlanId, piId: string, now: number): En
 }
 
 /** Cancel every live subscription of this app for the customer (account deletion, full refunds). */
-export async function cancelAppSubscriptions(stripe: Pick<Stripe, "subscriptions">, app: string, customerId: string) {
+export async function cancelAppSubscriptions(stripe: Pick<Stripe, "subscriptions">, app: string, customerId: string, createdBeforeSec?: number | null) {
   const subs = (await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 20 })).data;
   for (const s of subs) {
+    // A late or retried event must not cancel a subscription bought after the event happened.
+    if (createdBeforeSec && s.created && s.created > createdBeforeSec) continue;
     if (s.metadata?.app === app && ["active", "trialing", "past_due", "incomplete", "unpaid"].includes(s.status))
       await stripe.subscriptions.cancel(s.id);
   }

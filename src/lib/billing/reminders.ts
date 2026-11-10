@@ -1,6 +1,7 @@
 import { planById, intervalText, product } from "@/config/product";
 import type { Db, Entitlement } from "@/lib/db/types";
 import { appUrl } from "@/lib/env";
+import { log } from "@/lib/logger";
 import { sendMail, unsubscribeUrl } from "@/lib/mail";
 import type { MailMessage } from "@/lib/mail";
 import { renewalReminderEmail } from "@/lib/mail/templates";
@@ -25,7 +26,7 @@ export function reminderDue(e: Entitlement, now: number): boolean {
   return false;
 }
 
-export interface ReminderResult { considered: number; sent: number; skipped: number }
+export interface ReminderResult { considered: number; sent: number; skipped: number; failed: number }
 
 const money = (cents: number) => `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
 const dateText = (ms: number) => new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" }).format(new Date(ms));
@@ -37,7 +38,7 @@ export async function runRenewalReminders(
   send: (m: MailMessage) => Promise<unknown> = (m) => sendMail(m),
   unsub: (email: string, scope: string) => Promise<string> = unsubscribeUrl,
 ): Promise<ReminderResult> {
-  const res: ReminderResult = { considered: 0, sent: 0, skipped: 0 };
+  const res: ReminderResult = { considered: 0, sent: 0, skipped: 0, failed: 0 };
   for (const { orgId, entitlement: e } of await db.listEntitlements()) {
     res.considered++;
     if (!reminderDue(e, now.getTime())) { res.skipped++; continue; }
@@ -55,8 +56,14 @@ export async function runRenewalReminders(
       accountUrl: `${appUrl()}/account`,
       unsubscribeUrl: await unsub(acct.email, "renewals"),
     });
-    await send({ to: acct.email, subject: m.subject, text: m.text, html: m.html, category: "renewals", tags: { kind: "renewal-reminder", app: product.slug } });
-    res.sent++;
+    try {
+      await send({ to: acct.email, subject: m.subject, text: m.text, html: m.html, category: "renewals", tags: { kind: "renewal-reminder", app: product.slug } });
+      res.sent++;
+    } catch (e) {
+      // A rejected address or an outage loses this one reminder, never the run for everyone after it.
+      log.warn("reminder_send_failed", { message: (e as Error).message });
+      res.failed++;
+    }
   }
   return res;
 }
