@@ -38,7 +38,7 @@ export async function addAlertRule(db: Db, ctx: { orgId: string; email: string }
   const limit = await alertLimitFor(db, ctx.orgId, now);
   const have = (await db.listAlertRules(ctx.orgId)).length;
   if (have >= limit) {
-    return { ok: false, error: "limit", limit, message: limit === 0 ? "Instant alerts are on paid plans. Free plans get the daily digest." : `Your plan keeps ${limit} alerts and you have ${have}. Delete one to add another.` };
+    return { ok: false, error: "limit", limit, message: limit === 0 ? "saved alerts are on paid plans. Free plans get the daily digest." : `Your plan keeps ${limit} alerts and you have ${have}. Delete one to add another.` };
   }
   const rule: AlertRule = { id: uuidv7(), orgId: ctx.orgId, email: ctx.email.toLowerCase(), ...parsed.value, active: true, createdAt: now, lastSentAt: null };
   await db.saveAlertRule(rule);

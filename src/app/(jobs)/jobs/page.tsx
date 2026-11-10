@@ -3,6 +3,7 @@ import { Container } from "@/components/ui/layout";
 import { getDb } from "@/lib/db";
 import { FIELDS } from "@/lib/jobs/fields";
 import { generatePagesCached, MIN_JOBS_FOR_PAGE, pagePath } from "@/lib/jobs/seoPages";
+import { getCrawlStats, statsLine } from "@/lib/jobs/stats";
 import { pageMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -13,12 +14,14 @@ export const metadata = pageMetadata({
 });
 
 export default async function JobsIndexPage() {
+  const stats = await getCrawlStats();
   const combos = await generatePagesCached(await getDb()).catch(() => []);
   return (
     <Container className="max-w-3xl py-10 md:py-16">
       <h1 className="heading-3 md:heading-1 text-text">Jobs direct from company</h1>
       <p className="body-4 mt-4 text-text-subtle">Pick a field and a place. A page appears once at least {MIN_JOBS_FOR_PAGE} open jobs match, so every list here is real and current.</p>
-      {combos.length === 0 ? <p className="body-5 mt-8 text-text-subtle">Pages appear here once the first crawl has filled the job list.</p> : null}
+      <p className="body-6 mt-3 text-text" data-testid="crawl-stats">{statsLine(stats)}</p>
+      {combos.length === 0 ? <p className="body-5 mt-8 text-text-subtle">Pages appear here as soon as the crawl has filled the job list.</p> : null}
       {FIELDS.map((f) => {
         const rows = combos.filter((c) => c.field === f.id);
         return rows.length === 0 ? null : (

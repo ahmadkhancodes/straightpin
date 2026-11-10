@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cadence } from "@/config/product";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ShieldCheck } from "@phosphor-icons/react/dist/ssr";
@@ -102,7 +103,7 @@ export default async function MatchesPage({ searchParams }: { searchParams: Prom
         <div className="mt-8">
           <EmptyState
             title="No matches yet"
-            body="Nothing in the job database fits these answers right now. We check company pages every hour, so try a wider answer or check back soon."
+            body={`Nothing in the job database fits these answers right now. We check company pages ${cadence.checkPhrase}, so try a wider answer or check back soon.`}
             action={<Link href="/quiz" className={buttonClass("secondary")}>Change my answers</Link>}
           />
         </div>

@@ -211,7 +211,7 @@ export function createMemoryDb(app: string, config: Record<string, string> = {})
     async upsertEmployer(e, now, seed = false) {
       const id = e.ats === "jsonld" ? `jsonld:${e.slug}` : `${e.ats}:${e.slug}`;
       if (employers.has(id)) return false;
-      employers.set(id, { ...e, id, status: "active", failCount: 0, lastCrawledAt: null, nextCrawlAt: now, suppressed: false, seed });
+      employers.set(id, { ...e, id, status: e.status ?? "active", failCount: 0, lastCrawledAt: null, nextCrawlAt: now, suppressed: false, seed });
       return true;
     },
     async getEmployer(id) {

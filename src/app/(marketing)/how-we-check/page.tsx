@@ -4,7 +4,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { NoticeCard } from "@/components/marketing/notice-card";
 import { sampleJobs } from "@/content/sample-jobs";
 import { socialImages } from "@/lib/seo";
-import { product } from "@/config/product";
+import { cadence, product } from "@/config/product";
 
 const title = "How we check every job";
 const description = "Plain words on how Straightpin checks that a job comes from the employer's own page, whether it was reposted, and whether it looks old or agency run.";
@@ -24,6 +24,7 @@ const checks = [
     body: [
       "Companies post jobs in a hiring system (often called an ATS, the hiring system companies use) or on their own careers page. We read those pages directly. We do not copy listings from other job boards.",
       "Every job shows the website it came from, such as jobs.lever.co, and when we last checked it. The Apply at company tab opens that page, so you apply to the employer and not to us.",
+      `We read company hiring pages ${cadence.checkPhrase}, so a job that closed an hour ago can stay listed until the next crawl.`,
     ],
   },
   {
@@ -73,7 +74,7 @@ export default function HowWeCheckPage() {
       </Section>
       <Section tone="raised" labelledBy="example-title">
         <h2 id="example-title" className="heading-4 text-text">What you see on a job</h2>
-        <p className="body-3 mt-3 max-w-2xl text-text-subtle">Two sample notices. The companies are made up and not affiliated with Straightpin.</p>
+        <p className="body-3 mt-3 max-w-2xl text-text-subtle">Two illustrated notices. The companies are made up.</p>
         <div className="mt-8 grid max-w-3xl gap-4 md:grid-cols-2">
           <NoticeCard job={sampleJobs[0]!} />
           <NoticeCard job={sampleJobs[5]!} showTear={false} />

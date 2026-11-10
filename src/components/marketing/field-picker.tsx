@@ -18,9 +18,14 @@ function Counter({ value }: { value: number }) {
 }
 
 /** Hero companion: chips with sample counts, a live counter, and (when `withList`) the matches preview. */
-export function FieldPicker({ withList = false, headingId }: { withList?: boolean; headingId: string }) {
+export type RealCounts = Partial<Record<FieldId, { count: number; agencyHidden: number }>>;
+
+export function FieldPicker({ withList = false, headingId, real }: { withList?: boolean; headingId: string; /** Real counts from the job database. Without them the chips show clearly labelled example numbers. */ real?: RealCounts }) {
   const [field, setField] = useState<FieldId>("support");
-  const current = fieldById(field);
+  const base = fieldById(field);
+  const r = real?.[field];
+  const current = r ? { ...base, count: r.count, agencyRemoved: r.agencyHidden } : base;
+  const chipCount = (id: FieldId, fallback: number) => real?.[id]?.count ?? fallback;
   const jobs = jobsForField(field);
   return (
     <div>
@@ -37,15 +42,15 @@ export function FieldPicker({ withList = false, headingId }: { withList?: boolea
             )}
           >
             {f.label}
-            <span className="caption-3 tabular-nums text-text-subtle">{f.count}</span>
+            <span className="caption-3 tabular-nums text-text-subtle">{chipCount(f.id, f.count)}</span>
           </button>
         ))}
       </div>
       <p className="mt-4 flex items-center gap-3 border-t-[1.5px] border-dashed border-border pt-4" aria-live="polite">
         <Counter value={current.count} />
         <span className="body-6 text-text">
-          <b className="font-semibold">matches so far</b>{" "}
-          <span className="text-text-subtle">for {current.label}. {current.agencyRemoved} staffing agency posts removed. Sample numbers.</span>
+          <b className="font-semibold">matches {real ? "right now" : "so far"}</b>{" "}
+          <span className="text-text-subtle">for {current.label}. {current.agencyRemoved} staffing agency posts removed.{real ? "" : " Example numbers."}</span>
         </span>
       </p>
       <p className="mt-3">
@@ -59,7 +64,7 @@ export function FieldPicker({ withList = false, headingId }: { withList?: boolea
             <ShieldCheck size={20} weight="regular" aria-hidden className="mt-0.5 shrink-0 text-action" />
             <span>
               <b className="font-semibold">We removed {current.agencyRemoved} staffing agency posts from this list.</b>{" "}
-              <span className="text-text-subtle">Sample list.</span>
+              <span className="text-text-subtle">{real ? "Illustration." : "Example."}</span>
             </span>
           </p>
           <ul className="grid grid-cols-1 gap-3 lg:grid-cols-2">
@@ -67,7 +72,7 @@ export function FieldPicker({ withList = false, headingId }: { withList?: boolea
               <li key={j.id} className="min-w-0"><NoticeCard job={j} showTear={false} selected={i === 0} /></li>
             ))}
           </ul>
-          <p className="caption-2 text-text-subtle">Free: 5 job opens a day. Sample companies, not affiliated with Straightpin.</p>
+          <p className="caption-2 text-text-subtle">Free: 5 job opens a day. The notices below illustrate the layout; the companies are made up.</p>
         </div>
       ) : null}
     </div>

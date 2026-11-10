@@ -4,7 +4,7 @@ compatibility_date = "2026-10-01"
 
 [vars]
 APP_URL = "https://straightpin.buffersoltech.com"
-JOBS = "webhook-retries,crawl-tick"
+JOBS = "webhooks,crawl"
 HOURLY_JOBS = "digest,alerts,renewal-reminders"
 DAILY_JOBS = "source-health,retention"
 

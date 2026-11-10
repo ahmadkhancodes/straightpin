@@ -248,7 +248,7 @@ describe("retention", () => {
   });
   it("is registered as a daily cron job", () => {
     expect(readFileSync(path.join(ROOT, "infra/cron-worker/wrangler.toml"), "utf8")).toMatch(/DAILY_JOBS = ".*retention.*"/);
-    expect(readFileSync(path.join(ROOT, "src/lib/cron/jobs.ts"), "utf8")).toMatch(/retention:/);
+    expect(readFileSync(path.join(ROOT, "src/lib/cron/jobs.ts"), "utf8")).toMatch(/retention[,:]/);
   });
   it("account export includes saved alerts and deletion removes them", async () => {
     await db.saveAlertRule({ id: "r1", orgId: "o1", email: "a@b.test", field: "support", country: "US", location: "", payFloor: 0, active: true, createdAt: NOW, lastSentAt: null });

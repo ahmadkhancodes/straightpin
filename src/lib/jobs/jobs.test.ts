@@ -11,7 +11,7 @@ import { fieldOfTitle, hourlyEquivalent, levelOfTitle, scheduleOf } from "./fiel
 import { fixtureJobs, NOW } from "./fixtures";
 import { formatPay } from "./format";
 import { jobId } from "./ids";
-import { buildUpserts, ingestEmployer, MAX_FAILS, rulesOnlyClassifier } from "./ingest";
+import { buildUpserts, CRAWL_INTERVAL_MS, ingestEmployer, MAX_FAILS, rulesOnlyClassifier } from "./ingest";
 import { leaseShard, runCrawlTick, seedSources } from "./crawlTick";
 import { clearCountCache, liveCount, matchScore, parseAnswers, partialAnswers, queryFromAnswers, quizSchema, rankJobs } from "./matching";
 import { consumeOpen, saveJobFor, unsaveJobFor } from "./meters";
@@ -120,7 +120,7 @@ describe("ingestEmployer (upserts)", () => {
     expect(j.excerpt.length).toBeLessThanOrEqual(600);
     const after = (await db.getEmployer(e.id))!;
     expect(after.etag).toBe('W/"1"');
-    expect(after.nextCrawlAt.getTime()).toBe(later.getTime() + 3_600_000);
+    expect(after.nextCrawlAt.getTime()).toBe(later.getTime() + CRAWL_INTERVAL_MS);
   });
 
   it("closes a job missing on 2 crawls, and does not close anything on an empty answer", async () => {
@@ -190,6 +190,23 @@ describe("leases and the crawl tick", () => {
     expect(run.errors.length).toBeGreaterThan(0);
     expect((await db.listSourceRuns(1))[0]!.id).toBe(run.id);
     expect(await db.tryLease("greenhouse:oakfield", "someone", NOW, 1000)).toBe(true); // released
+  });
+
+  it("one invocation loops shards until the whole list is crawled", async () => {
+    for (let i = 0; i < 10; i++) await db.upsertEmployer({ name: `E${i}`, ats: "greenhouse", slug: `e${i}` }, NOW);
+    const run = await runCrawlTick({ db, fetcher: fakeFetcher({}), now: () => NOW, shardSize: 3, concurrency: 2 });
+    expect(run.employers).toBeGreaterThanOrEqual(10); // 10 added + the seed list, all in one call
+    expect(run.budgetHit).toBe(false);
+    expect(await db.dueEmployers(NOW, 500)).toHaveLength(0);
+  });
+
+  it("seeding switches disabled seed entries off, existing rows included", async () => {
+    await seedSources(db, NOW);
+    const ashby = (await db.listEmployers()).filter((e) => e.ats === "ashby");
+    expect(ashby.length).toBeGreaterThan(0);
+    expect(ashby.every((e) => e.status === "disabled" && /robots/.test(e.disabledReason ?? ""))).toBe(true);
+    const run = await runCrawlTick({ db, fetcher: fakeFetcher({}), now: () => NOW, shardSize: 100 });
+    expect(run.boards?.some((b) => b.employerId.startsWith("ashby:"))).toBe(false);
   });
 
   it("stops starting boards when the time budget is nearly spent", async () => {
@@ -345,6 +362,14 @@ describe("digest and alerts", () => {
     expect(buildDigest(profile(), [], { kind: "digest", now: EIGHT_NY, unsubscribeUrl: "u" })).toBeNull();
   });
 
+  it("daily mode: one run sends every due free digest whatever the time zone", async () => {
+    await db.upsertJobs(fixtureJobs(EIGHT_NY), EIGHT_NY);
+    await db.saveProfile(profile());
+    await db.saveProfile(profile({ orgId: "org4", email: "london@example.test", tz: "Europe/London" }));
+    const r = await runDigest(db, EIGHT_NY, send, unsub, undefined, true);
+    expect(r.sent).toBe(2);
+  });
+
   it("sends the free digest once a day at 08:00 local and not to paid or unsubscribed users", async () => {
     await db.upsertJobs(fixtureJobs(EIGHT_NY), EIGHT_NY);
     await db.saveProfile(profile());
@@ -354,11 +379,11 @@ describe("digest and alerts", () => {
     await db.setEntitlement("org2", { ...NONE(EIGHT_NY.getTime()), isPaid: true, status: "active", plan: "weekly", interval: "week", expiresAt: EIGHT_NY.getTime() + 86_400_000 });
     await db.addSuppression({ email: "off@example.test", scope: "digest", reason: "unsubscribe" });
 
-    const r = await runDigest(db, EIGHT_NY, send, unsub);
+    const r = await runDigest(db, EIGHT_NY, send, unsub, undefined, false); // hourly semantics: only profiles at 08:00 local
     expect(r).toEqual({ considered: 4, sent: 1, skipped: 3, failed: 0 });
     expect(sent.map((m) => m.to)).toEqual(["ana@example.test"]);
     expect(sent[0]!.text).toContain("s=digest");
-    const again = await runDigest(db, new Date(EIGHT_NY.getTime() + 60_000), send, unsub);
+    const again = await runDigest(db, new Date(EIGHT_NY.getTime() + 60_000), send, unsub, undefined, false);
     expect(again.sent).toBe(0);
     expect((await db.getProfile("org1"))!.lastDigestAt).not.toBeNull();
   });

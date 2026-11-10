@@ -32,7 +32,7 @@ export interface EmployerDoc {
   /** True for rows that came from the seed list (src/lib/jobs/sources.json). */
   seed: boolean;
 }
-export type EmployerSeed = Pick<EmployerDoc, "name" | "ats" | "slug"> & Partial<Pick<EmployerDoc, "region" | "careersUrl" | "domain" | "sicCode" | "verified">>;
+export type EmployerSeed = Pick<EmployerDoc, "name" | "ats" | "slug"> & Partial<Pick<EmployerDoc, "region" | "careersUrl" | "domain" | "sicCode" | "verified" | "status" | "disabledReason">>;
 
 /** Collection `jobs`: facts, a short excerpt and a link to the employer's own page (D-001). */
 export interface JobDoc {
@@ -130,7 +130,7 @@ export interface SearchProfile {
 
 export interface SavedJob { orgId: string; jobId: string; savedAt: Date }
 
-/** One saved instant alert (paid plans). Collection `alert_rules`. The count a user may keep is `alertLimit` in product.ts. */
+/** One saved saved alert (paid plans). Collection `alert_rules`. The count a user may keep is `alertLimit` in product.ts. */
 export interface AlertRule {
   id: string;
   orgId: string;

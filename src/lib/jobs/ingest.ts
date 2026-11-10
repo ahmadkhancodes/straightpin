@@ -10,11 +10,13 @@ import { normLocation } from "@/lib/crawl/normalize";
 import { ageDays, ghostScore, repostCount90d } from "@/lib/crawl/score/ghost";
 import type { Fetcher, NormalizedJob } from "@/lib/crawl/types";
 import type { Db } from "@/lib/db/types";
+import { cadence } from "@/config/product";
 import { fieldOfTitle, hourlyEquivalent, levelOfTitle, scheduleOf } from "./fields";
 import { jobId } from "./ids";
 import type { EmployerDoc, JobUpsert } from "./types";
 
-export const CRAWL_INTERVAL_MS = 60 * 60 * 1000;
+/** A board is due again this long after a good crawl; one daily run always finds it due (cadence in product.ts). */
+export const CRAWL_INTERVAL_MS = cadence.crawlEveryHours * 60 * 60 * 1000;
 export const MAX_FAILS = 3;
 /** Near duplicate threshold within one board crawl (brief: Jaccard 0.85). */
 const NEAR_DUP = 0.85;

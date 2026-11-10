@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cadence } from "@/config/product";
 import Link from "next/link";
 import { Container } from "@/components/ui/layout";
 import { Notice } from "@/components/ui/states";
@@ -39,7 +40,7 @@ export default async function ManageAlertsPage({ searchParams }: Props) {
           <li key={r.id} className="flex flex-col gap-3 rounded-sm border border-border bg-surface-raised p-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="title-4 text-text">{ruleLabel(r, fieldLabel(r.field))}</p>
-              <p className="caption-2 text-text-subtle">{r.active ? "On. New matches are emailed within the hour." : "Paused."}</p>
+              <p className="caption-2 text-text-subtle">{r.active ? `On. New matches are emailed ${cadence.alertPhrase}.` : "Paused."}</p>
             </div>
             <div className="flex gap-2">
               <form method="post" action="/api/alerts/manage">{hidden}<input type="hidden" name="id" value={r.id} /><input type="hidden" name="action" value={r.active ? "pause" : "resume"} /><button type="submit" className={btn}>{r.active ? "Pause" : "Turn on"}</button></form>
@@ -50,7 +51,7 @@ export default async function ManageAlertsPage({ searchParams }: Props) {
       </ul>
       {rules.length === 0 ? <p className="body-5 mt-8 text-text-subtle">You have no saved alerts.</p> : null}
       <div className="mt-10 flex flex-col gap-3 border-t border-border pt-6 sm:flex-row">
-        <form method="post" action="/api/alerts/manage">{hidden}<input type="hidden" name="action" value="stop-alerts" /><button type="submit" className={btn}>Stop all instant alerts</button></form>
+        <form method="post" action="/api/alerts/manage">{hidden}<input type="hidden" name="action" value="stop-alerts" /><button type="submit" className={btn}>Stop all saved alerts</button></form>
         <form method="post" action="/api/alerts/manage">{hidden}<input type="hidden" name="action" value="stop-digest" /><button type="submit" className={btn}>Stop the daily digest</button></form>
       </div>
       <p className="body-6 mt-6 text-text-subtle">Sign-in emails still arrive. To add or change an alert, <Link href="/sign-in?next=%2Falerts" className="text-action underline underline-offset-4">sign in</Link>.</p>

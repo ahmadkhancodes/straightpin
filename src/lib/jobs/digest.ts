@@ -7,6 +7,7 @@ import type { MailMessage, SendResult } from "@/lib/mail";
 import { digestEmail, type DigestJob } from "@/lib/mail/templates";
 import { agencyReceipt } from "@/lib/classify/classify";
 import { answersFromProfile, queryFromAnswers, rankJobs } from "./matching";
+import { cadence } from "@/config/product";
 import { alertLimitFor, ruleLabel, withinLimit } from "./alertRules";
 import { fieldLabel } from "./fields";
 import type { AlertRule, JobDoc, SearchProfile } from "./types";
@@ -80,12 +81,12 @@ export interface MailRunResult { considered: number; sent: number; skipped: numb
 
 const isPaid = async (db: Db, orgId: string, now: Date) => effectivePlan(await db.getEntitlement(orgId), now.getTime()).id !== "free";
 
-/** Hourly cron. Free users get one digest at 08:00 local; paid users get instant alerts instead. */
-export async function runDigest(db: Db, now: Date, send: SendFn = defaultSend, unsub: (email: string, scope: string) => Promise<string> = unsubscribeUrl, manage: (email: string) => Promise<string> = manageUrl): Promise<MailRunResult> {
+/** Free users get one digest a day (at 08:00 local when the job runs hourly, in the one daily run otherwise); paid users get alerts instead. */
+export async function runDigest(db: Db, now: Date, send: SendFn = defaultSend, unsub: (email: string, scope: string) => Promise<string> = unsubscribeUrl, manage: (email: string) => Promise<string> = manageUrl, anyHour: boolean = cadence.id === "daily"): Promise<MailRunResult> {
   const res: MailRunResult = { considered: 0, sent: 0, skipped: 0, failed: 0 };
   for (const p of await db.listProfiles({ digest: true })) {
     res.considered++;
-    if (!isDigestHour(p.tz, now) || (p.lastDigestAt && now.getTime() - p.lastDigestAt.getTime() < 20 * HOUR) || (await isPaid(db, p.orgId, now)) || (await db.isSuppressed(p.email, "digest"))) {
+    if ((!anyHour && !isDigestHour(p.tz, now)) || (p.lastDigestAt && now.getTime() - p.lastDigestAt.getTime() < 20 * HOUR) || (await isPaid(db, p.orgId, now)) || (await db.isSuppressed(p.email, "digest"))) {
       res.skipped++;
       continue;
     }
@@ -122,7 +123,7 @@ export async function runAlerts(db: Db, now: Date, send: SendFn = defaultSend, u
   for (const r of await db.listActiveAlertRules()) byOrg.set(r.orgId, [...(byOrg.get(r.orgId) ?? []), r]);
   const profiles = await db.listProfiles({ alerts: true });
   const sendFor = async (p: SearchProfile, extra: { locationTerms?: string[]; label?: string }, save: (at: Date) => Promise<void>) => {
-    const since = p.lastAlertAt ?? new Date(now.getTime() - HOUR);
+    const since = p.lastAlertAt ?? new Date(now.getTime() - (cadence.id === "daily" ? 24 : 1) * HOUR);
     const q = { ...queryFromAnswers(answersFromProfile(p)), ...(extra.locationTerms ? { locationTerms: extra.locationTerms } : {}), firstSeenAfter: since };
     const [total, fresh] = await Promise.all([db.countJobs(q), db.queryJobs({ ...q, limit: 50 })]);
     const msg = buildDigest(p, fresh, { kind: "alerts", now, total, unsubscribeUrl: await unsub(p.email, "alerts"), manageUrl: await manage(p.email), label: extra.label });

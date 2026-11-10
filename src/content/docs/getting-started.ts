@@ -1,4 +1,4 @@
-import { freePlan, product as p } from "@/config/product";
+import { cadence, freePlan, product as p } from "@/config/product";
 import type { DocPage } from "./types";
 
 export const gettingStarted: DocPage = {
@@ -22,6 +22,12 @@ export const gettingStarted: DocPage = {
       heading: "Open a job and apply at the company",
       body: [
         `Every job shows its first posted date, how many times it was reposted and the website it comes from. Free accounts can open ${freePlan.limits.opens} jobs a day and save ${freePlan.limits.saves}. Tap Apply at company and the employer's own page opens. You apply as yourself.`,
+      ],
+    },
+    {
+      heading: "How often jobs are checked",
+      body: [
+        `We read company hiring pages ${cadence.checkPhrase}. Every job shows when we last checked it. Free accounts get ${cadence.digestPhrase}; paid plans get saved alerts ${cadence.alertPhrase}.`,
       ],
     },
   ],

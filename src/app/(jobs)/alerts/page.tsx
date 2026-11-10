@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cadence } from "@/config/product";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { buttonClass } from "@/components/ui/button";
@@ -34,7 +35,7 @@ export default async function AlertsPage({ searchParams }: Props) {
     <Container className="max-w-2xl py-10 md:py-16">
       <h1 className="heading-3 text-text">Email alerts</h1>
       <p className="body-4 mt-2 text-text-subtle">
-        {paid ? "Your plan sends new matches within the hour." : "Free plans get one email a day at 8:00 in your time zone. Paid plans get alerts within the hour."} Every email has a one click unsubscribe.
+        {paid ? `Your plan sends new matches ${cadence.alertPhrase}.` : `Free plans get ${cadence.digestPhrase}. Paid plans get alerts ${cadence.alertPhrase}.`} Every email has a one click unsubscribe.
       </p>
       <form method="post" action="/api/profile" className="mt-8 flex flex-col gap-4">
         {QUIZ_STEPS.map((s) => <input key={s.key} type="hidden" name={s.key} value={String(a[s.key as keyof QuizAnswers])} />)}
@@ -44,9 +45,9 @@ export default async function AlertsPage({ searchParams }: Props) {
         <div><button type="submit" className={buttonClass("primary")}>Save settings</button></div>
       </form>
       <section aria-labelledby="rules-h" className="mt-12 border-t border-border pt-8">
-        <h2 id="rules-h" className="heading-5 text-text">Instant alerts</h2>
+        <h2 id="rules-h" className="heading-5 text-text">{cadence.alertName[0]!.toUpperCase() + cadence.alertName.slice(1)}s</h2>
         <p className="body-5 mt-2 text-text-subtle">
-          {paid ? `Your ${plan.name} plan keeps ${plan.alertLimit} saved alerts (${rules.length} used). Each one emails new matches within the hour, at most once an hour.` : "Instant alerts are on paid plans. Each one is a saved search, a field, a place and a pay floor, emailed within the hour."}
+          {paid ? `Your ${plan.name} plan keeps ${plan.alertLimit} saved alerts (${rules.length} used). Each one emails new matches ${cadence.alertPhrase}.` : `${cadence.alertName[0]!.toUpperCase() + cadence.alertName.slice(1)}s are on paid plans. Each one is a saved search, a field, a place and a pay floor, emailed ${cadence.alertPhrase}.`}
         </p>
         {sp.error === "limit" ? <p role="alert" className="body-6 mt-3 text-warning">You have used every alert on your plan. Delete one to add another.</p> : null}
         {sp.error === "invalid" ? <p role="alert" className="body-6 mt-3 text-warning">Check the field, country and pay floor and try again.</p> : null}
@@ -81,7 +82,7 @@ export default async function AlertsPage({ searchParams }: Props) {
           </form>
         ) : null}
       </section>
-      {!paid ? <p className="body-6 mt-6 text-text-subtle"><Link href="/pricing" className="text-action underline underline-offset-4">See plans</Link> for instant alerts.</p> : null}
+      {!paid ? <p className="body-6 mt-6 text-text-subtle"><Link href="/pricing" className="text-action underline underline-offset-4">See plans</Link> for saved alerts.</p> : null}
     </Container>
   );
 }
