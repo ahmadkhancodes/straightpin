@@ -75,3 +75,18 @@ describe("P1-6 unsubscribe needs a click", () => {
     expect(await db.isSuppressed("lee@x.test", "notification")).toBe(false);
   });
 });
+
+describe("social images and favicon", () => {
+  it("pageMetadata and the root layout carry og:image and twitter:image", async () => {
+    const { pageMetadata, ogImageUrl } = await import("@/lib/seo");
+    const m = pageMetadata({ title: "T", description: "D", path: "/x" });
+    expect(JSON.stringify(m.openGraph?.images)).toContain("/opengraph-image");
+    expect(JSON.stringify(m.twitter?.images)).toContain(ogImageUrl());
+    expect(ogImageUrl()).toMatch(/^https?:\/\//);
+  });
+  it("redirects /favicon.ico to /icon", async () => {
+    const cfg = (await import("../../next.config")).default;
+    const r = await cfg.redirects!();
+    expect(r).toContainEqual(expect.objectContaining({ source: "/favicon.ico", destination: "/icon" }));
+  });
+});

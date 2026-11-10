@@ -6,6 +6,7 @@ import { CompareTable } from "@/components/marketing/compare-table";
 import { Faq } from "@/components/marketing/faq";
 import { FinalCta } from "@/components/marketing/final-cta";
 import { comparisonBySlug, comparisons } from "@/content/compare";
+import { socialImages } from "@/lib/seo";
 import { product } from "@/config/product";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -22,7 +23,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: entry.title,
     description: entry.description,
     alternates: { canonical: `/compare/${entry.slug}` },
-    openGraph: { title: entry.title, description: entry.description, url: `/compare/${entry.slug}` },
+    openGraph: { title: entry.title, description: entry.description, url: `/compare/${entry.slug}`, ...socialImages().openGraph },
+    twitter: { title: entry.title, ...socialImages().twitter },
   };
 }
 

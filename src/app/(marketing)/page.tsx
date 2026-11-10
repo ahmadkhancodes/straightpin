@@ -1,3 +1,4 @@
+import { socialImages } from "@/lib/seo";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ShieldCheck } from "@phosphor-icons/react/dist/ssr";
@@ -21,7 +22,8 @@ export const metadata: Metadata = {
   title: { absolute: pageTitle },
   description: pageDescription,
   alternates: { canonical: "/" },
-  openGraph: { title: pageTitle, description: pageDescription, url: "/" },
+  openGraph: { title: pageTitle, description: pageDescription, url: "/", ...socialImages().openGraph },
+  twitter: { title: pageTitle, ...socialImages().twitter },
 };
 
 const monthly = planById("monthly")?.prices[0];
