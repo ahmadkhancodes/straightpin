@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Section } from "@/components/ui/layout";
+import { socialImages } from "@/lib/seo";
 import { product } from "@/config/product";
 import { EXCERPT_MAX } from "@/lib/crawl/normalize";
 import { retentionStatement } from "@/lib/jobs/retention";
@@ -12,7 +13,8 @@ export const metadata: Metadata = {
   title,
   description,
   alternates: { canonical: "/about/data" },
-  openGraph: { title: `${title} · ${product.fullName}`, description, url: "/about/data" },
+  openGraph: { title: `${title} · ${product.fullName}`, description, url: "/about/data", ...socialImages().openGraph },
+  twitter: { title: `${title} · ${product.fullName}`, ...socialImages().twitter },
 };
 
 const facts = [
