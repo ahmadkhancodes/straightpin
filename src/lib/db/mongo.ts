@@ -308,7 +308,7 @@ export function createMongoDb(uri: string, dbName: string, app: string): Db {
       const id = e.ats === "jsonld" ? `jsonld:${e.slug}` : `${e.ats}:${e.slug}`;
       const r = await (await col<Document>("employers")).updateOne(
         { _id: id as never },
-        { $setOnInsert: { ...e, id, app, status: "active", failCount: 0, lastCrawledAt: null, nextCrawlAt: now, suppressed: false, seed } },
+        { $setOnInsert: { ...e, id, app, status: e.status ?? "active", failCount: 0, lastCrawledAt: null, nextCrawlAt: now, suppressed: false, seed } },
         { upsert: true },
       );
       return r.upsertedCount > 0;

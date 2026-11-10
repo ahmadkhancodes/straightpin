@@ -3,6 +3,31 @@
  * KIT_COPY.md step 2: a new product edits this file (and the tokens in globals.css) and nothing else in src/lib.
  */
 
+/**
+ * THE crawl and alert cadence. Production is Vercel Hobby: one run of each scheduled job per day, 60 s per run.
+ * Every public sentence about "how often" reads from `cadence`, and a test fails if page copy disagrees.
+ * Flip to "hourly" only when a faster scheduler (VPS or Pro cron) really runs the jobs hourly.
+ */
+export const CADENCE: "daily" | "hourly" = "daily";
+const daily = CADENCE === "daily";
+export const cadence = {
+  id: CADENCE,
+  /** "We check company hiring pages ___." */
+  checkPhrase: daily ? "every day" : "every hour",
+  /** "Paid plans get alerts ___." */
+  alertPhrase: daily ? "once a day, with every new match since the last email" : "within the hour",
+  /** Short form for lists and cards. */
+  alertShort: daily ? "a daily email of new matches" : "an email within the hour of a new match",
+  /** Name of a paid saved search. */
+  alertName: daily ? "saved alert" : "instant alert",
+  /** Who the Free digest goes to and when. */
+  digestPhrase: daily ? "one email a day" : "one email a day at 8:00 in your time zone",
+  /** Shown instead of a "checked N min ago" claim when a job's last check is described. */
+  recheckPhrase: daily ? "re-checked first on every daily crawl" : "re-checked every 15 minutes",
+  /** Hours before one board is due again after a good crawl. */
+  crawlEveryHours: daily ? 20 : 1, // 20 not 24: Hobby cron time drifts, a board must be due at the next daily run
+} as const;
+
 export type PlanId = "free" | "weekly" | "monthly" | "lifetime" | "plus";
 /** "once" = one-time payment (Lifetime). */
 export type Interval = "week" | "month" | "year" | "once";
@@ -29,7 +54,7 @@ export interface Plan {
   /** Empty for the free plan. */
   prices: PlanPrice[];
   limits: Record<MeterId, number>;
-  /** How many instant alerts (saved searches that email within the hour) the plan keeps. Free gets the daily digest instead. */
+  /** How many saved alerts (saved searches that email new matches, see `cadence.alertPhrase`) the plan keeps. Free gets the daily digest instead. */
   alertLimit: number;
   /** Short plain-text differences shown in the pricing table. */
   highlights: string[];
@@ -105,7 +130,7 @@ export const product = {
       prices: [price("weekly", "week", 499)],
       limits: { opens: UNLIMITED, saves: UNLIMITED },
       alertLimit: 3,
-      highlights: ["Unlimited opens", "Up to 3 instant alerts", "Unlimited saves", "Ghost and repost signals"],
+      highlights: ["Unlimited opens", `Up to 3 ${cadence.alertName}s`, "Unlimited saves", "Ghost and repost signals"],
       cta: "Choose Weekly",
       trialDays: 0,
       onSale: true,
@@ -117,7 +142,7 @@ export const product = {
       prices: [price("monthly", "month", 1099)],
       limits: { opens: UNLIMITED, saves: UNLIMITED },
       alertLimit: 5,
-      highlights: ["Everything in Weekly", "Up to 5 instant alerts", "About half the weekly price over a month"],
+      highlights: ["Everything in Weekly", `Up to 5 ${cadence.alertName}s`, "About half the weekly price over a month"],
       cta: "Choose Monthly",
       featured: true,
       trialDays: 0,
@@ -142,7 +167,7 @@ export const product = {
       prices: [price("plus", "month", 1999), price("plus", "year", 9899)],
       limits: { opens: UNLIMITED, saves: UNLIMITED },
       alertLimit: 15,
-      highlights: ["Everything in Monthly", "In browser resume match check", "Cover letter outline template", "Priority alerts, followed companies re-checked every 15 minutes"],
+      highlights: ["Everything in Monthly", "In browser resume match check", "Cover letter outline template", `Priority alerts, followed companies ${cadence.recheckPhrase}`],
       cta: "Not on sale yet",
       trialDays: 0,
       onSale: false,

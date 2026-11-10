@@ -20,7 +20,15 @@ const MIN_REMAINING_MS = 12_000;
 /** Insert the seed list (insert only: existing rows keep their crawl state). */
 export async function seedSources(db: Db, now: Date): Promise<number> {
   let created = 0;
-  for (const s of sources.sources as EmployerSeed[]) if (await db.upsertEmployer(s, now, true)) created++;
+  for (const s of sources.sources as EmployerSeed[]) {
+    if (await db.upsertEmployer(s, now, true)) created++;
+    else if (s.status === "disabled") {
+      // Rows created before the seed said "disabled" (robots.txt reasons) are switched off too, once.
+      const id = s.ats === "jsonld" ? `jsonld:${s.slug}` : `${s.ats}:${s.slug}`;
+      const row = await db.getEmployer(id);
+      if (row && row.seed && row.status === "active" && !row.healthResetAt) await db.patchEmployer(id, { status: "disabled", disabledReason: s.disabledReason, disabledAt: now });
+    }
+  }
   return created;
 }
 
@@ -49,7 +57,7 @@ export interface TickDeps {
   concurrency?: number;
 }
 
-/** One cron invocation: seed, lease a shard, crawl within the time budget, release leases, record a source run. */
+/** One cron invocation: seed, then lease shards and crawl them until the time budget is spent, release leases, record a source run. */
 export async function runCrawlTick(deps: TickDeps): Promise<SourceRun> {
   const { db, fetcher } = deps;
   const clock = deps.now ?? (() => new Date());
@@ -57,24 +65,30 @@ export async function runCrawlTick(deps: TickDeps): Promise<SourceRun> {
   const t0 = clock();
   await seedSources(db, t0);
   const owner = uuidv7();
-  const shard = await leaseShard(db, owner, t0, deps.shardSize ?? SHARD_SIZE);
-  const queue = [...shard];
   const outcomes: EmployerOutcome[] = [];
   let budgetHit = false;
-  const worker = async () => {
-    for (;;) {
-      const remaining = budget - (clock().getTime() - t0.getTime());
-      const next = queue.shift();
-      if (!next) return;
-      if (remaining < MIN_REMAINING_MS) { budgetHit = true; await db.releaseLease(next.id, owner); continue; }
-      try {
-        outcomes.push(await ingestEmployer({ db, fetcher, now: clock(), classify: deps.classify }, next));
-      } finally {
-        await db.releaseLease(next.id, owner);
+  const left = () => budget - (clock().getTime() - t0.getTime());
+  // Lease, crawl, repeat until the list is covered or the budget is spent. A lease is held per employer, so an
+  // overlapping invocation takes other employers; a crashed run's leases expire after LEASE_TTL_MS.
+  for (;;) {
+    if (left() < MIN_REMAINING_MS) { budgetHit = true; break; }
+    const shard = await leaseShard(db, owner, clock(), deps.shardSize ?? SHARD_SIZE);
+    if (shard.length === 0) break;
+    const queue = [...shard];
+    const worker = async () => {
+      for (;;) {
+        const next = queue.shift();
+        if (!next) return;
+        if (left() < MIN_REMAINING_MS) { budgetHit = true; await db.releaseLease(next.id, owner); continue; }
+        try {
+          outcomes.push(await ingestEmployer({ db, fetcher, now: clock(), classify: deps.classify }, next));
+        } finally {
+          await db.releaseLease(next.id, owner);
+        }
       }
-    }
-  };
-  await Promise.all(Array.from({ length: Math.min(deps.concurrency ?? CONCURRENCY, shard.length) }, worker));
+    };
+    await Promise.all(Array.from({ length: Math.min(deps.concurrency ?? CONCURRENCY, shard.length) }, worker));
+  }
   const run: SourceRun = {
     id: uuidv7(),
     kind: "crawl-tick",

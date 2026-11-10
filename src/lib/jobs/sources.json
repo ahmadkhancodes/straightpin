@@ -1,5 +1,5 @@
 {
-  "_note": "SEED DATA. A starting list of public employer boards across the six hiring system adapters plus career sites read through schema.org JobPosting JSON-LD. Every entry is `verified: false`: the slug or site was chosen from public knowledge and has not been confirmed against the live board yet. The daily source health check switches off any entry that keeps failing, and the admin crawl health page shows it. A listed name does not mean the company endorses Straightpin. Remove or suppress any entry on request.",
+  "_note": "SEED DATA. A starting list of public employer boards across the six hiring system adapters plus career sites read through schema.org JobPosting JSON-LD. Every entry is `verified: false`: the slug or site was chosen from public knowledge and has not been confirmed against the live board yet. The daily source health check switches off any entry that keeps failing, and the admin crawl health page shows it. A listed name does not mean the company endorses Straightpin. Remove or suppress any entry on request. Ashby entries are `status: disabled` with the reason: Ashby's robots.txt disallows its job board API and Straightpin honours robots.txt, so they are never crawled.",
   "sources": [
     {
       "name": "Airbnb",
@@ -203,61 +203,81 @@
       "name": "Ramp",
       "ats": "ashby",
       "slug": "ramp",
-      "verified": false
+      "verified": false,
+      "status": "disabled",
+      "disabledReason": "robots.txt disallows the Ashby job board API, so Straightpin does not crawl it"
     },
     {
       "name": "Notion",
       "ats": "ashby",
       "slug": "notion",
-      "verified": false
+      "verified": false,
+      "status": "disabled",
+      "disabledReason": "robots.txt disallows the Ashby job board API, so Straightpin does not crawl it"
     },
     {
       "name": "Linear",
       "ats": "ashby",
       "slug": "linear",
-      "verified": false
+      "verified": false,
+      "status": "disabled",
+      "disabledReason": "robots.txt disallows the Ashby job board API, so Straightpin does not crawl it"
     },
     {
       "name": "Deel",
       "ats": "ashby",
       "slug": "deel",
-      "verified": false
+      "verified": false,
+      "status": "disabled",
+      "disabledReason": "robots.txt disallows the Ashby job board API, so Straightpin does not crawl it"
     },
     {
       "name": "Vercel",
       "ats": "ashby",
       "slug": "vercel",
-      "verified": false
+      "verified": false,
+      "status": "disabled",
+      "disabledReason": "robots.txt disallows the Ashby job board API, so Straightpin does not crawl it"
     },
     {
       "name": "OpenAI",
       "ats": "ashby",
       "slug": "openai",
-      "verified": false
+      "verified": false,
+      "status": "disabled",
+      "disabledReason": "robots.txt disallows the Ashby job board API, so Straightpin does not crawl it"
     },
     {
       "name": "Retool",
       "ats": "ashby",
       "slug": "retool",
-      "verified": false
+      "verified": false,
+      "status": "disabled",
+      "disabledReason": "robots.txt disallows the Ashby job board API, so Straightpin does not crawl it"
     },
     {
       "name": "Mercury",
       "ats": "ashby",
       "slug": "mercury",
-      "verified": false
+      "verified": false,
+      "status": "disabled",
+      "disabledReason": "robots.txt disallows the Ashby job board API, so Straightpin does not crawl it"
     },
     {
       "name": "Faire",
       "ats": "ashby",
       "slug": "faire",
-      "verified": false
+      "verified": false,
+      "status": "disabled",
+      "disabledReason": "robots.txt disallows the Ashby job board API, so Straightpin does not crawl it"
     },
     {
       "name": "Rippling",
       "ats": "ashby",
       "slug": "rippling",
-      "verified": false
+      "verified": false,
+      "status": "disabled",
+      "disabledReason": "robots.txt disallows the Ashby job board API, so Straightpin does not crawl it"
     },
     {
       "name": "Workable",

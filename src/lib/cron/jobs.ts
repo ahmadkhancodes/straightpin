@@ -1,4 +1,5 @@
 import { getDb } from "@/lib/db";
+import { log } from "@/lib/logger";
 import { runRenewalReminders } from "@/lib/billing/reminders";
 import { runAlerts, runDigest } from "@/lib/jobs/digest";
 import { politeFetcher, runCrawlTick } from "@/lib/jobs/crawlTick";
@@ -6,20 +7,45 @@ import { runRetention } from "@/lib/jobs/retention";
 import { runSourceHealthCheck } from "@/lib/jobs/sourceHealth";
 import { retryDueDeliveries } from "@/lib/webhooks/outbound";
 
-/** Register cron jobs here. Each must be idempotent and finish well inside maxDuration (60 s). */
+/** Run steps one after another; one failing step is recorded and does not stop the next. */
+async function sequence(steps: Record<string, () => Promise<unknown>>): Promise<Record<string, unknown>> {
+  const out: Record<string, unknown> = {};
+  for (const [name, fn] of Object.entries(steps)) {
+    try {
+      out[name] = await fn();
+    } catch (e) {
+      log.error("cron_step_failed", { step: name, message: (e as Error).message });
+      out[name] = { error: "step_failed" };
+    }
+  }
+  return out;
+}
+
+const crawl = async () => runCrawlTick({ db: await getDb(), fetcher: politeFetcher() });
+const sourceHealth = async () => runSourceHealthCheck(await getDb(), new Date());
+const retention = async () => runRetention(await getDb(), new Date());
+const digest = async () => runDigest(await getDb(), new Date());
+const alerts = async () => runAlerts(await getDb(), new Date());
+const renewals = async () => runRenewalReminders(await getDb(), new Date());
+const webhooks = () => retryDueDeliveries({ limit: 100 });
+
+/**
+ * Register cron jobs here. Each must be idempotent. Production is Vercel Hobby: two daily entries in vercel.json,
+ * 60 s each (maxDuration), so each entry folds the jobs that must run at least daily:
+ * - `crawl-tick` (first): the crawl loops leased shards for about 40 s, then the source health check and retention.
+ * - `webhook-retries` (second): webhook retries, then the email jobs (digest, alerts, renewal reminders), which use the crawl's fresh jobs.
+ * The single jobs stay callable by name for a faster scheduler (infra/cron-worker) and for manual runs.
+ */
 export const cronJobs: Record<string, () => Promise<unknown>> = {
-  "webhook-retries": () => retryDueDeliveries({ limit: 100 }),
+  "crawl-tick": async () => sequence({ crawl, "source-health": sourceHealth, retention }),
+  "webhook-retries": async () => sequence({ webhooks, digest, alerts, "renewal-reminders": renewals }),
   heartbeat: async () => ({ at: new Date().toISOString() }),
-  /** Every few minutes: leases a shard of the source list and crawls it within a 40 s budget. */
-  "crawl-tick": async () => runCrawlTick({ db: await getDb(), fetcher: politeFetcher() }),
-  /** Hourly: free users whose local time is 08:00 get their daily digest. */
-  digest: async () => runDigest(await getDb(), new Date()),
-  /** Hourly: paid users get new matches since their last alert. */
-  alerts: async () => runAlerts(await getDb(), new Date()),
-  /** Hourly: weekly and monthly renewals get a reminder 3 days ahead, annual ones on the day. */
-  "renewal-reminders": async () => runRenewalReminders(await getDb(), new Date()),
-  /** Daily: switches off sources that failed 5 crawls in a row. They show as disabled on /admin/crawl. */
-  "source-health": async () => runSourceHealthCheck(await getDb(), new Date()),
-  /** Daily: deletes closed jobs and old crawl records after the periods printed on /about/data. */
-  retention: async () => runRetention(await getDb(), new Date()),
+  /** Single jobs. */
+  crawl,
+  webhooks,
+  digest,
+  alerts,
+  "renewal-reminders": renewals,
+  "source-health": sourceHealth,
+  retention,
 };
