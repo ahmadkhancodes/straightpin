@@ -77,3 +77,4 @@ Standing decisions are in docs/factory/BATCH1_PLAN.md (Mongo instead of Postgres
 - **D-046 Annual reminder:** 21 days before renewal (California asks for 15 to 45), once per renewal date. Weekly and monthly stay at 3 days.
 - **D-047 Unsubscribe:** GET never writes. The confirm button POSTs with `confirm=1`; the RFC 8058 one-click POST is unchanged.
 - **D-048 Accessibility gate:** `tests/e2e/a11y.spec.ts` runs axe-core (already installed, no new dependency) on seven pages at 375 px in both themes and fails on serious or critical findings.
+- **D-049 Auto indexes:** the Mongo driver runs `ensureIndexes` once per instance in the background after the first connection (skipped in `next build` and for the memory driver, never awaited, conflicts and errors logged scrubbed). `npm run db:indexes` still works and throws on errors.
