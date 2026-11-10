@@ -82,7 +82,7 @@ export const terms: LegalDoc = {
       id: "liability",
       title: "Limit of liability",
       body: [
-        `To the extent the law allows, our total liability for any claim is limited to {{liability cap}}. We are not liable for indirect or consequential loss, such as lost profit. Nothing here limits liability that cannot be limited by law.`,
+        `To the extent the law allows, our total liability for any claim is limited to the fees you paid us in the 12 months before the claim arose. We are not liable for indirect or consequential loss, such as lost profit. Nothing here limits liability that cannot be limited by law.`,
       ],
     },
     {
