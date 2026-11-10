@@ -37,6 +37,17 @@ export function consoleTransport(): MailTransport {
   };
 }
 
+/** First 120 characters of a provider body for diagnosis, with addresses, links and token-like strings removed. */
+function scrubSnippet(raw: string): string {
+  return raw
+    .slice(0, 120)
+    .replace(/https?:\/\/\S+/gi, "[link]")
+    .replace(/[^\s@<>"']+@[^\s@<>"']+/g, "[address]")
+    .replace(/\bre_[A-Za-z0-9_]+/g, "[key]")
+    .replace(/(token|key|secret)=[^\s&"]+/gi, "$1=[redacted]")
+    .replace(/[A-Za-z0-9_-]{32,}/g, "[token]");
+}
+
 /** Transactional provider adapter (Resend REST over fetch, no SDK). */
 export function resendTransport(apiKey: string, fetchFn: typeof fetch = fetch): MailTransport {
   return {
@@ -57,8 +68,16 @@ export function resendTransport(apiKey: string, fetchFn: typeof fetch = fetch): 
         const reason = typeof err.name === "string" && /^[a-z_]{1,48}$/.test(err.name) ? err.name : undefined;
         throw new MailSendError(`mail_send_failed_${res.status}`, res.status, reason);
       }
-      const body = (await res.json().catch(() => ({}))) as { id?: string };
-      return { id: body.id ?? uuidv7(), provider: "resend", accepted: true };
+      // A 2xx without Resend's string id is not a send (a proxy page, a stub, an error payload with a 2xx).
+      // Never fabricate an id: that once made a lost sign-in email look delivered in the logs.
+      const raw = await res.text().catch(() => "");
+      let id: unknown;
+      try { id = (JSON.parse(raw) as { id?: unknown } | null)?.id; } catch { id = undefined; }
+      if (typeof id !== "string" || !id) {
+        log.error("resend_no_id", { status: res.status, contentType: res.headers.get("content-type") ?? "", body: scrubSnippet(raw) });
+        throw new MailSendError("mail_send_failed_no_id", res.status, "resend_no_id");
+      }
+      return { id, provider: "resend", accepted: true };
     },
   };
 }

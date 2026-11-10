@@ -148,7 +148,7 @@ describe("mail transport selection in production", () => {
     let auth = "";
     vi.stubGlobal("fetch", async (_u: string, init: RequestInit) => {
       auth = new Headers(init.headers).get("authorization") ?? "";
-      return new Response("{}");
+      return new Response(JSON.stringify({ id: "re_ok" }));
     });
     await sendMail(msg);
     expect(auth).toBe("Bearer re_abc");
