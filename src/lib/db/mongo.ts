@@ -27,7 +27,11 @@ type WithId<T> = T & { _id: string };
 
 export function createMongoDb(uri: string, dbName: string, app: string): Db {
   let dbp: Promise<MongoDatabase> | null = null;
-  const db = () => (dbp ??= mongoClient(uri).then((c) => c.db(dbName)));
+  const db = () =>
+    (dbp ??= mongoClient(uri).then((c) => {
+      void ensureIndexesOnce(`${uri}|${dbName}`, async () => c.db(dbName));
+      return c.db(dbName);
+    }));
   const col = async <T extends Document>(name: string) => (await db()).collection<T>(name) as unknown as Collection<T>;
   const strip = <T>(d: (T & { _id?: unknown; app?: string }) | null): T | null => {
     if (!d) return null;
@@ -488,9 +492,58 @@ export function createMongoDb(uri: string, dbName: string, app: string): Db {
   };
 }
 
-/** Indexes, created once by scripts/ensure-indexes.ts (never per cold start). TTLs are on Date fields. */
+/** Manual run (npm run db:indexes): errors throw. TTLs are on Date fields. */
 export async function ensureIndexes(uri: string, dbName: string) {
-  const d = (await mongoClient(uri)).db(dbName);
+  return createIndexes((await mongoClient(uri)).db(dbName));
+}
+
+type IndexDb = Pick<MongoDatabase, "collection">;
+declare global {
+  var __kitIndexes: Map<string, Promise<void>> | undefined;
+}
+
+const scrub = (m: string) => m.replace(/mongodb(\+srv)?:\/\/\S+/gi, "mongodb://***");
+
+/**
+ * Creates the indexes once per server instance, in the background (never awaited by callers, never at build).
+ * createIndex is idempotent and safe across concurrent instances. Conflicts (code 85/86: same keys, other options)
+ * and any other failure are logged scrubbed and skipped; the next cold start retries.
+ */
+export function ensureIndexesOnce(key: string, getDb: () => Promise<IndexDb>): Promise<void> | undefined {
+  if (process.env.NEXT_PHASE === "phase-production-build") return undefined;
+  const memo = (globalThis.__kitIndexes ??= new Map());
+  const had = memo.get(key);
+  if (had) return had;
+  const run = (async () => {
+    try {
+      const d = await getDb();
+      const lenient: IndexDb = {
+        collection: ((name: string) => {
+          const c = d.collection(name);
+          return {
+            createIndex: async (...a: Parameters<typeof c.createIndex>) => {
+              try {
+                return await c.createIndex(...a);
+              } catch (e) {
+                const err = e as { code?: number; message?: string };
+                const kind = err.code === 85 || err.code === 86 ? "index conflict" : "index error";
+                console.warn(`[db] ${kind} on ${name}: ${scrub(String(err.message ?? e)).slice(0, 200)}`);
+                return "";
+              }
+            },
+          };
+        }) as unknown as IndexDb["collection"],
+      };
+      await createIndexes(lenient);
+    } catch (e) {
+      console.warn(`[db] ensureIndexes failed: ${scrub(String((e as Error)?.message ?? e)).slice(0, 200)}`);
+    }
+  })();
+  memo.set(key, run);
+  return run;
+}
+
+async function createIndexes(d: IndexDb) {
   await d.collection("billing_accounts").createIndex({ app: 1, stripeCustomerId: 1 }, { unique: true, partialFilterExpression: { stripeCustomerId: { $type: "string" } } });
   await d.collection("disputes").createIndex({ app: 1, orgId: 1 });
   await d.collection("stripe_events").createIndex({ expireAt: 1 }, { expireAfterSeconds: 0 });
