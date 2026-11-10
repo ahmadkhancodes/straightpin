@@ -20,7 +20,8 @@ const button = (href: string, label: string) =>
   `<p style="margin:24px 0"><a href="${esc(href)}" style="display:inline-block;padding:12px 16px;background:#181818;color:#ffffff;border-radius:6px;text-decoration:none;font-weight:600">${esc(label)}</a></p>`;
 
 export function magicLinkEmail(url: string) {
-  const subject = `Sign in to ${product.name}`;
+  // Not "Sign in to <name>": that exact subject never reached the inbox in testing (any other subject did).
+  const subject = `Your ${product.name} sign-in link`;
   const text = `Use this link to sign in to ${product.name}. It works once and expires in 10 minutes.\n\n${url}\n\nIf you did not ask for this, you can ignore this email.`;
   const html = layout(subject, `<h1 style="margin:0 0 8px;font-size:20px">Sign in to ${esc(product.name)}</h1>
 <p style="margin:0;font-size:14px;line-height:20px;color:#404040">This link works once and expires in 10 minutes.</p>
