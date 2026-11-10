@@ -2,6 +2,17 @@ import { uuidv7 } from "@/lib/ids";
 import { log } from "@/lib/logger";
 import type { MailMessage, MailTransport, SendResult } from "./types";
 
+/**
+ * A send that failed or was skipped. `message` is our own constant (never provider text, which can echo the address);
+ * `status` is the provider HTTP status and `reason` a short machine code, both safe to log.
+ */
+export class MailSendError extends Error {
+  constructor(message: string, readonly status?: number, readonly reason?: string) {
+    super(message);
+    this.name = "MailSendError";
+  }
+}
+
 /** Dev/test/stub transport: keeps messages in memory and logs the subject (never the body). */
 type Boxed = MailMessage & { from: string; id: string; at: Date };
 declare global {
@@ -40,7 +51,12 @@ export function resendTransport(apiKey: string, fetchFn: typeof fetch = fetch): 
           tags: msg.tags ? Object.entries(msg.tags).map(([name, value]) => ({ name, value })) : undefined,
         }),
       });
-      if (!res.ok) throw new Error(`mail_send_failed_${res.status}`);
+      if (!res.ok) {
+        // Resend errors look like {statusCode, name: "validation_error", message}. Keep only the name: the message can contain the address.
+        const err = (await res.json().catch(() => ({}))) as { name?: unknown };
+        const reason = typeof err.name === "string" && /^[a-z_]{1,48}$/.test(err.name) ? err.name : undefined;
+        throw new MailSendError(`mail_send_failed_${res.status}`, res.status, reason);
+      }
       const body = (await res.json().catch(() => ({}))) as { id?: string };
       return { id: body.id ?? uuidv7(), provider: "resend", accepted: true };
     },
@@ -55,7 +71,17 @@ export function smtpTransport(): MailTransport {
   return {
     name: "smtp",
     async send() {
-      throw new Error("smtp_transport_not_configured");
+      throw new MailSendError("smtp_transport_not_configured", undefined, "smtp_not_configured");
+    },
+  };
+}
+
+/** Stands in for a provider that is selected but cannot work (missing key). Every send throws, so the failure is logged, never silent. */
+export function misconfiguredTransport(name: string, reason: string): MailTransport {
+  return {
+    name,
+    async send() {
+      throw new MailSendError("mail_provider_misconfigured", undefined, reason);
     },
   };
 }

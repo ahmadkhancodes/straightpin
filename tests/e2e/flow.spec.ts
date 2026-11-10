@@ -9,12 +9,19 @@ test("magic link sign-in, org, billing state, api key, cron guard", async ({ pag
   expect(start.ok()).toBeTruthy();
 
   const box = await (await request.get(`/api/dev/outbox?to=${encodeURIComponent(email)}`)).json();
+  expect(box.messages).toHaveLength(1); // sign-in sends exactly one email to a first-time address
   const link = /https?:\/\/\S+magic-link\/verify\S+/.exec(box.messages.at(-1).text)?.[0];
   expect(link).toBeTruthy();
   await page.goto(link!);
 
   const session = await (await page.request.get("/api/auth/get-session")).json();
   expect(session.user.email).toBe(email);
+
+  // A returning address gets exactly one more sign-in email.
+  const again = await request.post("/api/auth/sign-in/magic-link", { data: { email, callbackURL: "/app" }, headers: origin });
+  expect(await again.json()).toEqual({ status: true });
+  const box2 = await (await request.get(`/api/dev/outbox?to=${encodeURIComponent(email)}`)).json();
+  expect(box2.messages).toHaveLength(2);
 
   const org = await page.request.post("/api/auth/organization/create", { data: { name: "Harbor Studio", slug: `harbor-${Date.now()}` }, headers: origin });
   expect(org.ok()).toBeTruthy();

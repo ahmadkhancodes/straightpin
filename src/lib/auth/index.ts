@@ -7,7 +7,7 @@ import { apiKey } from "@better-auth/api-key";
 import { product } from "@/config/product";
 import { appName, appUrl, dbDriver, env, isProd } from "@/lib/env";
 import { log } from "@/lib/logger";
-import { sendMail } from "@/lib/mail";
+import { mailErrorFields, sendMail } from "@/lib/mail";
 import { inviteEmail, magicLinkEmail } from "@/lib/mail/templates";
 import { isDisposableEmail } from "@/lib/security/disposable";
 import { ac, roles } from "./roles";
@@ -51,13 +51,21 @@ async function database(): Promise<BetterAuthOptions["database"]> {
   return mongodbAdapter(client.db(e.MONGODB_DB ?? appName(e)), { client, transaction: false });
 }
 
-/** Sign-in and invite mail: a provider rejection is logged, never thrown, so the route answers like a success and leaks nothing. */
+/**
+ * Sign-in and invite mail: a failed or skipped send is logged at error (reason + provider status, no address or link)
+ * and never thrown, so the route answers like a success and leaks nothing to the client.
+ */
 export async function sendAuthMail(m: { to: string; subject: string; text: string; html: string }, event: string): Promise<boolean> {
   try {
-    await sendMail({ ...m, category: "transactional" });
+    const r = await sendMail({ ...m, category: "transactional" });
+    if (!r.accepted) {
+      log.error(event, { reason: r.suppressed ? "suppressed" : "not_accepted", provider: r.provider });
+      return false;
+    }
+    log.info("auth_mail_sent", { kind: event.replace(/_send_failed$/, ""), provider: r.provider, id: r.id });
     return true;
   } catch (e) {
-    log.warn(event, { message: (e as Error).message });
+    log.error(event, mailErrorFields(e));
     return false;
   }
 }
