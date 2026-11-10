@@ -26,7 +26,12 @@ export function localHour(tz: string, now: Date): number {
     return now.getUTCHours();
   }
 }
-export const isDigestHour = (tz: string, now: Date, hour = DIGEST_HOUR) => localHour(tz, now) === hour;
+/** Catch-up window: a digest that failed at 08:00 is retried by the hourly run until this many hours later (REVIEW P1-7). */
+export const DIGEST_CATCHUP_HOURS = 3;
+export const isDigestHour = (tz: string, now: Date, hour = DIGEST_HOUR) => {
+  const h = localHour(tz, now);
+  return h >= hour && h < hour + DIGEST_CATCHUP_HOURS;
+};
 
 export type SendFn = (msg: MailMessage) => Promise<SendResult>;
 export const defaultSend: SendFn = (m) => sendMail(m);

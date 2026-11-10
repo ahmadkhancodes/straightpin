@@ -6,6 +6,7 @@ import { passkey } from "@better-auth/passkey";
 import { apiKey } from "@better-auth/api-key";
 import { product } from "@/config/product";
 import { appName, appUrl, dbDriver, env, isProd } from "@/lib/env";
+import { log } from "@/lib/logger";
 import { sendMail } from "@/lib/mail";
 import { inviteEmail, magicLinkEmail } from "@/lib/mail/templates";
 import { isDisposableEmail } from "@/lib/security/disposable";
@@ -48,6 +49,17 @@ async function database(): Promise<BetterAuthOptions["database"]> {
   const { mongoClient } = await import("@/lib/db/mongo");
   const client = await mongoClient(e.MONGODB_URI!);
   return mongodbAdapter(client.db(e.MONGODB_DB ?? appName(e)), { client, transaction: false });
+}
+
+/** Sign-in and invite mail: a provider rejection is logged, never thrown, so the route answers like a success and leaks nothing. */
+export async function sendAuthMail(m: { to: string; subject: string; text: string; html: string }, event: string): Promise<boolean> {
+  try {
+    await sendMail({ ...m, category: "transactional" });
+    return true;
+  } catch (e) {
+    log.warn(event, { message: (e as Error).message });
+    return false;
+  }
 }
 
 export function createAuth(db: BetterAuthOptions["database"]) {
@@ -93,7 +105,8 @@ export function createAuth(db: BetterAuthOptions["database"]) {
         disableSignUp: false,
         sendMagicLink: async ({ email, url }) => {
           const m = magicLinkEmail(url);
-          await sendMail({ to: email, ...m, category: "transactional" });
+          // A provider rejection (bad address, rate limit) must not 500 or leak; the response stays the same as a success.
+          await sendAuthMail({ to: email, ...m }, "magic_link_send_failed");
         },
       }),
       twoFactor({ issuer: product.name, skipVerificationOnEnable: false }),
@@ -107,7 +120,7 @@ export function createAuth(db: BetterAuthOptions["database"]) {
         sendInvitationEmail: async (data) => {
           const url = `${base}/accept-invite/${data.id}`;
           const m = inviteEmail({ orgName: data.organization.name, inviter: data.inviter.user.name || data.inviter.user.email, url, role: data.role });
-          await sendMail({ to: data.email, ...m, category: "transactional" });
+          await sendAuthMail({ to: data.email, ...m }, "invite_send_failed");
         },
       }),
       apiKey({
