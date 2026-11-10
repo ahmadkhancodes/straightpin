@@ -48,29 +48,72 @@ function scrubSnippet(raw: string): string {
     .replace(/[A-Za-z0-9_-]{32,}/g, "[token]");
 }
 
+const EMAIL_RE = /[^\s@<>"',;:()\[\]\\]+@[^\s@<>"',;()\[\]\\]+/g;
+
+/** Domain part only of an address ("Name <a@b.c>" or "a@b.c"); never the local part. */
+export function addressDomain(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const m = v.match(/@([^\s@<>"',;]+)>?\s*$/);
+  return m ? m[1].toLowerCase() : null;
+}
+
+/** TEMPORARY diagnostic: strings over 40 chars cut, anything address-like replaced by <email>. */
+export function scrubValue(v: unknown): unknown {
+  if (typeof v === "string") {
+    const t = v.replace(EMAIL_RE, "<email>").replace(/\bre_[A-Za-z0-9_]+/g, "<key>");
+    return t.length > 40 ? `${t.slice(0, 40)}...` : t;
+  }
+  if (Array.isArray(v)) return v.map(scrubValue);
+  if (v && typeof v === "object") return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, scrubValue(x)]));
+  return v;
+}
+
 /** Transactional provider adapter (Resend REST over fetch, no SDK). */
 export function resendTransport(apiKey: string, fetchFn: typeof fetch = fetch): MailTransport {
   return {
     name: "resend",
     async send(msg): Promise<SendResult> {
+      const payload = {
+        from: msg.from, to: msg.to, subject: msg.subject, text: msg.text, html: msg.html,
+        reply_to: msg.replyTo, headers: msg.headers,
+        tags: msg.tags ? Object.entries(msg.tags).map(([name, value]) => ({ name, value })) : undefined,
+      };
+      const sent = JSON.stringify(payload);
       const res = await fetchFn("https://api.resend.com/emails", {
         method: "POST",
         headers: { authorization: `Bearer ${apiKey}`, "content-type": "application/json" },
-        body: JSON.stringify({
-          from: msg.from, to: msg.to, subject: msg.subject, text: msg.text, html: msg.html,
-          reply_to: msg.replyTo, headers: msg.headers,
-          tags: msg.tags ? Object.entries(msg.tags).map(([name, value]) => ({ name, value })) : undefined,
-        }),
+        body: sent,
       });
+      const raw = await res.text().catch(() => "");
+      // TODO(remove): temporary delivery diagnostic, see docs/PROGRESS.md.
+      try {
+        const body = JSON.parse(sent) as Record<string, unknown>;
+        let reply: unknown;
+        try { reply = scrubValue(JSON.parse(raw)); } catch { reply = scrubValue(raw); }
+        log.info("resend_request_shape", {
+          status: res.status,
+          keys: Object.keys(body),
+          toType: typeof body.to,
+          toCount: Array.isArray(body.to) ? body.to.length : null,
+          fromDomain: addressDomain(body.from),
+          toDomains: (Array.isArray(body.to) ? body.to : [body.to]).map(addressDomain),
+          headerNames: body.headers && typeof body.headers === "object" ? Object.keys(body.headers) : [],
+          tagCount: Array.isArray(body.tags) ? body.tags.length : 0,
+          hasReplyTo: body.reply_to !== undefined,
+          replyToDomain: addressDomain(body.reply_to),
+          htmlLength: typeof body.html === "string" ? body.html.length : 0,
+          textLength: typeof body.text === "string" ? body.text.length : 0,
+          reply,
+        });
+      } catch { /* diagnostics must never break a send */ }
       if (!res.ok) {
         // Resend errors look like {statusCode, name: "validation_error", message}. Keep only the name: the message can contain the address.
-        const err = (await res.json().catch(() => ({}))) as { name?: unknown };
+        const err = (() => { try { return JSON.parse(raw) as { name?: unknown } | null ?? {}; } catch { return {} as { name?: unknown }; } })();
         const reason = typeof err.name === "string" && /^[a-z_]{1,48}$/.test(err.name) ? err.name : undefined;
         throw new MailSendError(`mail_send_failed_${res.status}`, res.status, reason);
       }
       // A 2xx without Resend's string id is not a send (a proxy page, a stub, an error payload with a 2xx).
       // Never fabricate an id: that once made a lost sign-in email look delivered in the logs.
-      const raw = await res.text().catch(() => "");
       let id: unknown;
       try { id = (JSON.parse(raw) as { id?: unknown } | null)?.id; } catch { id = undefined; }
       if (typeof id !== "string" || !id) {
