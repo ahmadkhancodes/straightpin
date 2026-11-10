@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Section } from "@/components/ui/layout";
 import { PricingTable } from "@/components/marketing/pricing-table";
 import { Faq } from "@/components/marketing/faq";
+import { socialImages } from "@/lib/seo";
 import { product } from "@/config/product";
 
 const title = "Pricing";
@@ -11,7 +12,8 @@ export const metadata: Metadata = {
   title,
   description,
   alternates: { canonical: "/pricing" },
-  openGraph: { title: `${title} · ${product.fullName}`, description, url: "/pricing" },
+  openGraph: { title: `${title} · ${product.fullName}`, description, url: "/pricing", ...socialImages().openGraph },
+  twitter: { title: `${title} · ${product.fullName}`, ...socialImages().twitter },
 };
 
 const billingFaq = [

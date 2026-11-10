@@ -3,6 +3,7 @@ import { Section } from "@/components/ui/layout";
 import { ButtonLink } from "@/components/ui/button";
 import { NoticeCard } from "@/components/marketing/notice-card";
 import { sampleJobs } from "@/content/sample-jobs";
+import { socialImages } from "@/lib/seo";
 import { product } from "@/config/product";
 
 const title = "How we check every job";
@@ -12,7 +13,8 @@ export const metadata: Metadata = {
   title,
   description,
   alternates: { canonical: "/how-we-check" },
-  openGraph: { title: `${title} · ${product.fullName}`, description, url: "/how-we-check" },
+  openGraph: { title: `${title} · ${product.fullName}`, description, url: "/how-we-check", ...socialImages().openGraph },
+  twitter: { title: `${title} · ${product.fullName}`, ...socialImages().twitter },
 };
 
 const checks = [

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Section } from "@/components/ui/layout";
+import { socialImages } from "@/lib/seo";
 import { product } from "@/config/product";
 import { USER_AGENT } from "@/lib/crawl/types";
 import { EXCERPT_MAX } from "@/lib/crawl/normalize";
@@ -13,7 +14,8 @@ export const metadata: Metadata = {
   title,
   description,
   alternates: { canonical: "/bot" },
-  openGraph: { title: `${title} · ${product.fullName}`, description, url: "/bot" },
+  openGraph: { title: `${title} · ${product.fullName}`, description, url: "/bot", ...socialImages().openGraph },
+  twitter: { title: `${title} · ${product.fullName}`, ...socialImages().twitter },
 };
 
 const code = "rounded-sm bg-surface-raised px-1 font-mono text-sm text-text";
