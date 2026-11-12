@@ -45,7 +45,7 @@ test("quiz -> matches -> job detail, with live counts, tags and the employer lin
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Customer Support Specialist");
   await expect(page.getByText("First posted by the company")).toBeVisible();
   await expect(page.getByText("boards.greenhouse.io").first()).toBeVisible();
-  const apply = page.locator('form[action$="/open"]');
+  const apply = page.locator("article");
   await expect(apply.getByRole("button", { name: /Apply at company/ })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
 

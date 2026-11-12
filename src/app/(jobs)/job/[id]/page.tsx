@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, BookmarkSimple } from "@phosphor-icons/react/dist/ssr";
+import { BookmarkSimple } from "@phosphor-icons/react/dist/ssr";
 import { isDirect, OldPostingNote } from "@/components/jobs/job-card";
 import { buttonClass } from "@/components/ui/button";
 import { Container } from "@/components/ui/layout";
+import { ApplyButton } from "./apply-button";
+import { product } from "@/config/product";
 import { Notice } from "@/components/ui/states";
 import { getOrgContext } from "@/lib/auth/session";
 import { ageDays, ghostSignals } from "@/lib/crawl/score/ghost";
@@ -13,6 +15,7 @@ import { jobPostingLd, ldScript } from "@/lib/jobs/jobPostingLd";
 import { pageMetadata } from "@/lib/seo";
 import { checkedAgo, formatPay, placeOf, postedInfo, repostText } from "@/lib/jobs/format";
 
+const FREE = product.plans[0]!.limits;
 export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
 
@@ -49,10 +52,10 @@ export default async function JobPage({ params, searchParams }: Props) {
       {ld ? <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldScript(ld) }} /> : null}
       <p><Link href="/matches" className="body-6 text-text-subtle underline underline-offset-4 focus-visible:focus-ring">Back to matches</Link></p>
       {sp.limit === "opens" ? (
-        <div className="mt-6"><Notice tone="warning" title="You have used today's free job opens">Free plans open 5 jobs a day. It resets at midnight UTC. <Link href="/pricing" className="text-action underline underline-offset-4">See plans</Link></Notice></div>
+        <div className="mt-6"><Notice tone="warning" title="You have used today's free job opens">Free plans open {FREE.opens} jobs a day. It resets at midnight UTC. <Link href="/pricing" className="text-action underline underline-offset-4">See plans</Link></Notice></div>
       ) : null}
       {sp.limit === "saves" ? (
-        <div className="mt-6"><Notice tone="warning" title="Your saved list is full">Free plans keep 10 saved jobs. Remove one in <Link href="/saved" className="text-action underline underline-offset-4">Saved</Link> or <Link href="/pricing" className="text-action underline underline-offset-4">see plans</Link>.</Notice></div>
+        <div className="mt-6"><Notice tone="warning" title="Your saved list is full">Free plans keep {FREE.saves} saved jobs. Remove one in <Link href="/saved" className="text-action underline underline-offset-4">Saved</Link> or <Link href="/pricing" className="text-action underline underline-offset-4">see plans</Link>.</Notice></div>
       ) : null}
 
       <article className="mt-6 rounded-sm border border-border bg-surface-raised">
@@ -79,12 +82,7 @@ export default async function JobPage({ params, searchParams }: Props) {
         {closed ? (
           <p className="border-t-[1.5px] border-dashed border-border bg-brand-tint px-6 py-4 body-6 text-text">The company has taken this job down.</p>
         ) : (
-          <form method="post" action={`/api/jobs/${job.id}/open`} target="_blank" className="border-t-[1.5px] border-dashed border-border">
-            <button type="submit" className="group flex min-h-12 w-full items-center justify-between gap-3 bg-brand-tint px-6 py-3 text-left text-action focus-visible:focus-ring">
-              <span className="button-md inline-flex items-center gap-2 whitespace-nowrap transition-transform duration-tear ease-out-kit motion-reduce:transition-none group-hover:translate-x-1"><ArrowRight size={20} weight="regular" aria-hidden />Apply at company</span>
-              <span className="hidden min-w-0 truncate font-mono text-xs text-text-subtle sm:block">{job.sourceHost}</span>
-            </button>
-          </form>
+          <ApplyButton jobId={job.id} host={job.sourceHost} />
         )}
       </article>
 

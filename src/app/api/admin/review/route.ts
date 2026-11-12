@@ -13,7 +13,7 @@ export async function POST(req: Request) {
   try {
     assertSameOrigin(req);
     const admin = await requireAdmin();
-    const form = await req.formData();
+    const form = await req.formData().catch(() => new FormData());
     const jobId = String(form.get("jobId") ?? "");
     const label = String(form.get("label") ?? "");
     if (label !== "agency" && label !== "direct") throw new HttpError(400, "invalid_input");

@@ -39,6 +39,7 @@ export default async function AlertsPage({ searchParams }: Props) {
       </p>
       <form method="post" action="/api/profile" className="mt-8 flex flex-col gap-4">
         {QUIZ_STEPS.map((s) => <input key={s.key} type="hidden" name={s.key} value={String(a[s.key as keyof QuizAnswers])} />)}
+        {sp.settings === "saved" ? <p role="status" className="body-6 text-text">{profile.digest ? "Settings saved. The daily email is on." : "Settings saved. The daily email is off."}</p> : null}
         <label className="caption-1 flex flex-col gap-1 text-text-subtle">Daily digest
           <select name="digest" defaultValue={profile.digest ? "on" : "off"} className={field}><option value="on">On</option><option value="off">Off</option></select>
         </label>

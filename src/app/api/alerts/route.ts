@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     const ctx = await getOrgContext();
     if (!ctx) return Response.redirect(`${appUrl()}/sign-in?next=${encodeURIComponent("/alerts")}`, 303);
     const db = await getDb();
-    const form = await req.formData();
+    const form = await req.formData().catch(() => new FormData());
     const action = String(form.get("action") ?? "add");
     if (action === "add") {
       const r = await addAlertRule(db, { orgId: ctx.org.id, email: ctx.user.email }, { field: form.get("field"), country: form.get("country"), location: form.get("location"), payFloor: form.get("payFloor") }, new Date());
