@@ -4,6 +4,7 @@ import { buttonClass } from "@/components/ui/button";
 import { Container } from "@/components/ui/layout";
 import { ErrorState } from "@/components/ui/states";
 import { PROBLEMS } from "@/lib/security/guard";
+import { isSafePath } from "@/lib/security/safe-url";
 
 export const metadata: Metadata = { title: "Something went wrong", robots: { index: false } };
 
@@ -11,7 +12,7 @@ export const metadata: Metadata = { title: "Something went wrong", robots: { ind
 export default async function ProblemPage({ searchParams }: { searchParams: Promise<{ code?: string; back?: string }> }) {
   const q = await searchParams;
   const p = PROBLEMS[q.code ?? ""] ?? PROBLEMS.server_error!;
-  const back = q.back && /^\/[^/\\]/.test(q.back) ? q.back : "/";
+  const back = isSafePath(q.back) ? q.back : "/";
   return (
     <Container className="py-12 md:py-16">
       <div className="max-w-xl">

@@ -5,13 +5,14 @@ import { appUrl } from "@/lib/env";
 import { assertSameOrigin, HttpError, json } from "@/lib/http";
 import { failure, limitRequest } from "@/lib/security/guard";
 import { RULES } from "@/lib/security/ratelimit";
+import { isSafePath } from "@/lib/security/safe-url";
 import { saveJobFor, unsaveJobFor } from "@/lib/jobs/meters";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const schema = z.object({ jobId: z.string().min(1).max(64), action: z.enum(["save", "unsave"]).default("save"), next: z.string().optional() });
-const safeNext = (n: string | undefined, fallback: string) => (n && /^\/[^/\\]/.test(n) ? n : fallback);
+const safeNext = (n: string | undefined, fallback: string) => (isSafePath(n) ? n : fallback);
 
 /** POST /api/saved {jobId, action}. Free plan: 10 saves. Works as a plain form post (303 back) or JSON. */
 export async function POST(req: Request) {
