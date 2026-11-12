@@ -29,6 +29,7 @@ export default async function SavedPage() {
       <p className="kicker text-text-subtle">Your list</p>
       <h1 className="heading-3 md:heading-2 mt-3 text-text">Saved jobs</h1>
       <p className="body-6 figures mt-3 text-text-subtle">{usage ? `${usage.used} of ${usage.limit >= 1_000_000 ? "unlimited" : usage.limit} saved.` : null}</p>
+      {saved.length > 0 ? <p className="mt-3"><a href="/api/saved/export" download className={buttonClass("tertiary", "sm")}>Download as spreadsheet (CSV)</a></p> : null}
       </header>
       {saved.length === 0 ? (
         <div className="mt-8"><EmptyState title="Nothing saved yet" body="Open a job from your matches and press Save. It waits here with its posted date, so you can come back and apply at the company." action={<Link href="/matches" className={buttonClass("primary")}>See my matches</Link>} visual={<div className="w-full max-w-xl" aria-label="Example of a saved job"><p className="kicker mb-2 text-text-subtle">Example</p><div className="border-y border-rule"><NoticeCard job={sampleJobs[0]!} showTear={false} framed={false} /></div></div>} /></div>

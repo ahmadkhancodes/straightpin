@@ -1,7 +1,9 @@
 import { getOrgContext } from "@/lib/auth/session";
 import { getDb } from "@/lib/db";
 import { appUrl } from "@/lib/env";
-import { assertSameOrigin, HttpError, json } from "@/lib/http";
+import { assertSameOrigin, HttpError } from "@/lib/http";
+import { failure, limitRequest } from "@/lib/security/guard";
+import { RULES } from "@/lib/security/ratelimit";
 import { addAlertRule } from "@/lib/jobs/alertRules";
 
 export const runtime = "nodejs";
@@ -15,6 +17,7 @@ export async function POST(req: Request) {
     assertSameOrigin(req);
     const ctx = await getOrgContext();
     if (!ctx) return Response.redirect(`${appUrl()}/sign-in?next=${encodeURIComponent("/alerts")}`, 303);
+    await limitRequest(req, "alerts", RULES.userAction, ctx.org.id);
     const db = await getDb();
     const form = await req.formData().catch(() => new FormData());
     const action = String(form.get("action") ?? "add");
@@ -30,7 +33,6 @@ export async function POST(req: Request) {
     else throw new HttpError(400, "invalid_input");
     return back("?saved=1");
   } catch (e) {
-    if (e instanceof HttpError) return json({ error: e.code }, e.status);
-    throw e;
+    return failure(e, { wantsJson: false, back: "/alerts", route: "/api/alerts" });
   }
 }

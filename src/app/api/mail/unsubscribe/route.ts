@@ -1,4 +1,7 @@
 import { getDb } from "@/lib/db";
+import { HttpError } from "@/lib/http";
+import { limitRequest } from "@/lib/security/guard";
+import { RULES } from "@/lib/security/ratelimit";
 import { safeEqual } from "@/lib/ids";
 import { unsubscribeToken } from "@/lib/mail";
 
@@ -19,6 +22,10 @@ async function apply(url: URL) {
   return true;
 }
 
+async function allowed(req: Request) {
+  try { await limitRequest(req, "unsub", RULES.publicSigned); return true; } catch (e) { if (e instanceof HttpError) return false; throw e; }
+}
+
 const esc = (v: string) => v.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 const page = (body: string, status: number) =>
   new Response(`<!doctype html><html lang="en"><meta name="viewport" content="width=device-width"><title>Unsubscribe</title><body style="font-family:system-ui;max-width:560px;margin:64px auto;padding:0 16px"><main>${body}<p><a href="/">Back to the site</a></p></main></body></html>`, {
@@ -33,6 +40,7 @@ const BAD = "<h1>This link is not valid</h1><p>Use the link from your most recen
  * The confirm button on the GET page posts here too, with `confirm=1`, and gets a page back instead of plain text.
  */
 export async function POST(req: Request) {
+  if (!(await allowed(req))) return new Response("Too many requests", { status: 429, headers: { "retry-after": "60" } });
   const ok = await apply(new URL(req.url));
   const form = await req.formData().catch(() => null);
   if (form?.get("confirm") === "1") return page(ok ? DONE : BAD, ok ? 200 : 400);
@@ -41,6 +49,7 @@ export async function POST(req: Request) {
 
 /** Humans get a confirm button. A GET never unsubscribes: mail scanners prefetch links (REVIEW P1-6). */
 export async function GET(req: Request) {
+  if (!(await allowed(req))) return page("<h1>Too many requests</h1><p>Wait a minute and open the link again.</p>", 429);
   const url = new URL(req.url);
   const p = valid(url);
   if (!p || !safeEqual(p.t, await unsubscribeToken(p.e, p.s))) return page(BAD, 400);

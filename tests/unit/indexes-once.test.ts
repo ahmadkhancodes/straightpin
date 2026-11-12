@@ -68,3 +68,13 @@ describe("getDb", () => {
     vi.resetModules();
   });
 });
+
+describe("index coverage for the hot paths", () => {
+  it("covers lookups by user and e-mail, the retention sweeps and rate limit expiry", async () => {
+    const f = fakeDb();
+    await ensureIndexesOnce("coverage", async () => f.db);
+    for (const c of ["member", "session", "account", "invitation", "saved_jobs", "job_opens", "rate_limits", "jobs", "alert_rules", "search_profiles", "usage", "stripe_events"]) {
+      expect(f.calls, c).toContain(c);
+    }
+  });
+});

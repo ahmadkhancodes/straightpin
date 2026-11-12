@@ -3,6 +3,8 @@ import { getOrgContext } from "@/lib/auth/session";
 import { getDb } from "@/lib/db";
 import { appUrl } from "@/lib/env";
 import { assertSameOrigin, HttpError, json } from "@/lib/http";
+import { failure, limitRequest } from "@/lib/security/guard";
+import { RULES } from "@/lib/security/ratelimit";
 import { parseAnswers, quizSchema } from "@/lib/jobs/matching";
 import type { SearchProfile } from "@/lib/jobs/types";
 
@@ -41,6 +43,7 @@ export async function POST(req: Request) {
   const type = req.headers.get("content-type") ?? "";
   try {
     assertSameOrigin(req);
+    await limitRequest(req, "profile", RULES.userAction, (await getOrgContext())?.org.id);
     if (type.includes("application/json")) {
       const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
       const a = quizSchema.safeParse(body);
@@ -58,7 +61,6 @@ export async function POST(req: Request) {
     return Response.redirect(`${appUrl()}${form.has("digest") ? "/alerts?settings=saved" : "/matches?saved=1"}`, 303);
   } catch (e) {
     if (e instanceof HttpError && e.status === 401 && !type.includes("application/json")) return Response.redirect(`${appUrl()}/sign-in?next=${encodeURIComponent("/quiz")}`, 303);
-    if (e instanceof HttpError) return json({ error: e.code }, e.status);
-    return json({ error: "invalid_input" }, 400);
+    return failure(e instanceof HttpError ? e : new HttpError(400, "invalid_input"), { wantsJson: type.includes("application/json"), back: "/quiz", route: "/api/profile" });
   }
 }

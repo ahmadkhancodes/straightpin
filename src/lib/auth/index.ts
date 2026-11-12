@@ -9,6 +9,7 @@ import { appName, appUrl, dbDriver, env, isProd } from "@/lib/env";
 import { log } from "@/lib/logger";
 import { mailErrorFields, sendMail } from "@/lib/mail";
 import { inviteEmail, magicLinkEmail } from "@/lib/mail/templates";
+import { mayMail, RULES } from "@/lib/security/ratelimit";
 import { isDisposableEmail } from "@/lib/security/disposable";
 import { ac, roles } from "./roles";
 
@@ -84,9 +85,12 @@ export function createAuth(db: BetterAuthOptions["database"]) {
     session: {
       expiresIn: 60 * 60 * 24 * 30,
       updateAge: 60 * 60 * 24,
-      cookieCache: { enabled: true, maxAge: 300 },
+      cookieCache: { enabled: true, maxAge: 60 },
     },
-    rateLimit: { enabled: true, window: 60, max: 60, storage: "database" },
+    rateLimit: {
+      enabled: true, window: 60, max: 60, storage: "database",
+      customRules: { "/sign-in/magic-link": { window: 600, max: 15 }, "/magic-link/verify": { window: 600, max: 30 } },
+    },
     emailAndPassword: { enabled: false },
     socialProviders:
       e.GOOGLE_CLIENT_ID && e.GOOGLE_CLIENT_SECRET
@@ -112,6 +116,10 @@ export function createAuth(db: BetterAuthOptions["database"]) {
         expiresIn: 600,
         disableSignUp: false,
         sendMagicLink: async ({ email, url }) => {
+          if (!(await mayMail("magic", email, RULES.authEmail))) {
+            log.warn("magic_link_throttled", { route: "auth" });
+            return;
+          }
           const m = magicLinkEmail(url);
           // A provider rejection (bad address, rate limit) must not 500 or leak; the response stays the same as a success.
           await sendAuthMail({ to: email, ...m }, "magic_link_send_failed");
@@ -126,6 +134,10 @@ export function createAuth(db: BetterAuthOptions["database"]) {
         allowUserToCreateOrganization: true,
         invitationExpiresIn: 60 * 60 * 24 * 7,
         sendInvitationEmail: async (data) => {
+          if (!(await mayMail("invite-from", data.inviter.user.id, RULES.invite)) || !(await mayMail("invite-to", data.email, RULES.authEmail))) {
+            log.warn("invite_throttled", { route: "auth" });
+            return;
+          }
           const url = `${base}/accept-invite/${data.id}`;
           const m = inviteEmail({ orgName: data.organization.name, inviter: data.inviter.user.name || data.inviter.user.email, url, role: data.role });
           await sendAuthMail({ to: data.email, ...m }, "invite_send_failed");

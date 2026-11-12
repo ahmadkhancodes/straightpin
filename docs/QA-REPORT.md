@@ -27,9 +27,10 @@ Method: real production build (`next start`, memory driver, e-mail outbox, conso
 9. Empty or non-form POST to `/api/saved`, `/api/profile`, `/api/alerts`, admin routes threw a 500; treated as empty input.
 10. Two stale tests fixed (support address is now contact@buffersoltech.com; the landing tap-target test was failing on main).
 
+## Battle hardening round (12 Nov 2026)
+Added: saved jobs CSV download (formula-safe, no apply links), first-run "Get started" checklist on `/app`, `/problem` page for failed form posts, rate limits and per-inbox mail caps, Apply link page without JavaScript, health route with no details, extra indexes. Tests: `tests/unit/battle.test.ts` (tenant isolation across saved, alerts, manage links, opens and export; guessed ids; rate limits; database down; huge and hostile input; double submit; concurrent Apply; CSV; log scrubbing; health), `tests/unit/csp-audit.test.ts` (CSP vs every origin in the source, secrets grep of `.next/static`), `tests/e2e/qa/hardening.spec.ts` (CSP violation sweep, CSV, checklist, problem page, no-JS Apply, headers, stale session). Closed from the list below: the 400-character e-mail and raw JSON on failed form posts.
+
 ## Open
 - **P2, intermittent:** React hydration error #418 on the first `/sign-in` load after a server start, only in some sequences; not reproducible in isolation and the SSR/DOM `main` markup is identical. The crawl spec ignores exactly this error on /sign-in. Needs a look with a dev build.
 - **P2, design call:** a job seeker must "Name your organization" after the first sign-in, and `/app` is organization-shaped. Consider auto-creating a personal workspace.
-- **P3:** plain form posts that fail validation (e.g. delete of an unknown alert) show raw JSON instead of a page.
-- **P3:** a 400-character e-mail local part is accepted by the sign-in form (the server only rejects it at send time).
 - Not testable locally: real Stripe checkout return and portal (stub mode answers 503 `billing_unavailable`), real mail delivery, passkeys and authenticator setup.

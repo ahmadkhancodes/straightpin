@@ -39,12 +39,8 @@ test("magic link sign-in, org, billing state, api key, cron guard", async ({ pag
   const co = await page.request.post("/api/billing/checkout", { data: { plan: "monthly", interval: "month" }, headers: origin });
   expect([200, 503]).toContain(co.status());
 
-  const key = await page.request.post("/api/auth/api-key/create", { data: { name: "ci", organizationId: orgId }, headers: origin });
-  expect(key.ok()).toBeTruthy();
-  const apiKey = (await key.json()).key as string;
-  const me = await request.get("/api/v1/me", { headers: { "x-api-key": apiKey } });
-  expect(await me.json()).toEqual({ orgId });
-  expect((await request.get("/api/v1/me", { headers: { "x-api-key": "nope" } })).status()).toBe(401);
+  // Kit routes that are not part of the product are gone
+  for (const gone of ["/api/v1/me", "/api/webhooks", "/api/webhooks/deliveries"]) expect((await request.get(gone)).status(), gone).toBe(404);
 
   expect((await request.post("/api/cron/heartbeat")).status()).toBe(401);
   expect((await request.post("/api/cron/heartbeat", { headers: { authorization: "Bearer e2e-cron" } })).ok()).toBeTruthy();

@@ -18,7 +18,7 @@ export function SignInForm({ callbackURL, expiredLink }: { callbackURL: string; 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     const value = email.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+    if (value.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
       setError("Enter a valid email address, like name@company.com.");
       return;
     }
