@@ -47,7 +47,7 @@ Vercel cron stays a once-a-day backstop only.
 Verify the sending domain in Resend (SPF, DKIM, DMARC). Send one digest, one instant alert and one renewal reminder to a real inbox; check the unsubscribe and "Change or delete your alerts" links work without login. Watch bounce under 2 percent and complaints under 0.1 percent.
 
 ## 9. Release gate (M5)
-Lighthouse 90+, axe on every page, Playwright 375 and 1440 light and dark in `docs/qa/`, design scorecard, Opus review of the diff, then deploy and run `scripts/vercel-keep-latest-3.sh straightpin`.
+Lighthouse 90+, axe on every page, Playwright 375 and 1440 light in `docs/qa/`, design scorecard, Opus review of the diff, then deploy and run `scripts/vercel-keep-latest-3.sh straightpin`.
 
 ## 10. First 100 users (from the brief, in order)
 1. Week 1: short screen-recorded videos of a real remote job that is missing from the big boards (TikTok, Reels, Shorts; 3 a day for 30 days). Show the first posted date and the direct link. No claim that anyone else's jobs are fake.

@@ -192,7 +192,7 @@ The repo ships only a pass/fail checklist (Strategy, Visual, Content and ship). 
 | 4. Structure and rhythm | Sections follow Section 4; layout varies (not 3 equal cards); tagline reveal present; objections and risk reversal handled |
 | 5. Typography | Only scale steps and named styles; one family; hierarchy readable by squinting; no orphans; line breaks at meaningful points |
 | 6. Spacing and radius | Only token spacing; consistent section rhythm; nested radii follow the formula; aligned shared Y in card rows |
-| 7. Color and contrast | One accent; flat surfaces; hero-text gradient only; 4.5:1 body, 3:1 large and UI; works in dark/light as designed |
+| 7. Color and contrast | One accent; flat surfaces; hero-text gradient only; 4.5:1 body, 3:1 large and UI; works as designed (light only) |
 | 8. Motion and states | Correct curve, transform/opacity only, reduced-motion handled; hover/focus/active/loading/empty/error all present |
 | 9. Content honesty | No invented facts (placeholders marked), no banned words, specific names and numbers, sentence case |
 | 10. Responsive and ship | At 375: no horizontal scroll, text not clipped, 44px targets, CTA visible in first screen; ship list complete |

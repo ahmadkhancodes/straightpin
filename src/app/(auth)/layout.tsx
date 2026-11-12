@@ -1,7 +1,6 @@
 import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { ThemeToggle } from "@/components/theme";
 import { product } from "@/config/product";
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
@@ -9,7 +8,6 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
     <div className="flex min-h-dvh flex-col bg-surface">
       <header className="flex items-center justify-between px-4 py-4 sm:px-6 lg:px-10">
         <Link href="/" className="heading-6 inline-flex min-h-11 items-center text-text focus-visible:focus-ring">{product.name}</Link>
-        <ThemeToggle />
       </header>
       <main id="main" className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:px-10">
         <div className="flex w-full max-w-md flex-col gap-8 lg:ml-24">{children}</div>

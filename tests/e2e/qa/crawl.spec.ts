@@ -53,9 +53,8 @@ for (const vp of [{ width: 375, height: 812 }, { width: 1440, height: 900 }]) {
     expect(bad).toEqual([]);
   });
 
-  test(`signed in: every app page and link (${vp.width}px, dark)`, async ({ page, request }) => {
+  test(`signed in: every app page and link (${vp.width}px)`, async ({ page, request }) => {
     await page.setViewportSize(vp);
-    await page.emulateMedia({ colorScheme: "dark" });
     await signInViaUi(page, request);
     await firstJobId(page, request);
     const bad = watch(page);

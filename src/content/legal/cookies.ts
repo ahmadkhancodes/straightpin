@@ -22,7 +22,6 @@ export const cookies: LegalDoc = {
             rows: [
               ["Session cookie that keeps you signed in", "Up to 30 days, or until you sign out"],
               ["Security tokens for sign in and payments", "Short lived, minutes to hours"],
-              ["Theme preference, stored locally in your browser", "Until you clear it"],
             ],
           },
         },

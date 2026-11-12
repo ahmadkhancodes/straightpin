@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
-import { ThemeToggle } from "@/components/theme";
 import { product } from "@/config/product";
 import { isFounderAdmin, requireUser } from "@/lib/auth/session";
 
@@ -27,7 +26,6 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             <Link key={href} href={href!} className="inline-flex min-h-11 items-center body-6 text-text-subtle transition-colors duration-300 hover:text-text focus-visible:focus-ring">{label}</Link>
           ))}
         </nav>
-        <ThemeToggle />
       </header>
       <nav aria-label="Admin sections" className="flex gap-4 overflow-x-auto border-b border-border px-4 md:hidden">
         {[["/admin", "Overview"], ["/admin/crawl", "Crawl"], ["/admin/review", "Review"], ["/admin/users", "Users"]].map(([href, label]) => (

@@ -18,24 +18,24 @@ Each job is a paper notice on a calm board. The apply action is a perforated tea
 ## 4. Palette (hex tokens, role names)
 Flat surfaces only. No background gradients. One accent: **pushpin tomato** (saturation about 73%). Changed 5 Nov 2026 on orchestrator review: the first draft was teal, the fourth dark green in the BufferSol batch; this is the only consumer product, so it is warmer and friendlier, with warm paper neutrals, and the margin notes use ballpoint blue so red keeps one job (actions).
 
-| Token | Light | Dark ("Night board") | Use |
-|---|---|---|---|
-| `--color-board` | #F6F1E9 | #1A1512 | page background (warm paper) |
-| `--color-paper` | #FFFDF9 | #241D19 | notice cards, sheets |
-| `--color-ink` | #1F1A17 | #F1EAE2 | text (15:1 on board) |
-| `--color-ink-muted` | #5C524B | #B5A99F | secondary text (6.8:1 / 7.2:1) |
-| `--color-rule` | #DDD3C6 | #3A302A | borders, perforation |
-| `--color-brand` | #B8381C (pushpin tomato) | #FF8A6B | actions, links, focus. White on brand 5.8:1; brand on board 5.2:1; dark ink #2A0F08 on dark brand 7.8:1 |
-| `--color-brand-hover` | #8F2B14 | #FFA48A | white on hover 8.3:1 |
-| `--color-brand-tint` | #FBE7DF | #3A211A | selected chips, tear off tab fill |
-| `--color-brand-on` | #FFFFFF | #2A0F08 | text on brand |
-| `--color-highlight` | #FFE45C | #E9CF4A | highlighter behind "Direct to company" and "New today" only; text on it is ink #14201E in both modes |
-| `--color-marker` | #2A4B9B (ballpoint blue) | #8FB0FF | margin notes and agency/ghost callouts, always icon + word (8:1) |
-| `--color-success` | #1E7B4F | #5BC48C | |
-| `--color-warn` | #8A5A00 | #E0A93B | old posting (>30 days), 5.8:1 |
-| `--color-error` | #B42318 | #FF8478 | errors only, never confused with brand because it is always paired with an icon and message |
+| Token | Light | Use |
+|---|---|---|
+| `--color-board` | #F6F1E9 | page background (warm paper) |
+| `--color-paper` | #FFFDF9 | notice cards, sheets |
+| `--color-ink` | #1F1A17 | text (15:1 on board) |
+| `--color-ink-muted` | #5C524B | secondary text (6.8:1 / 7.2:1) |
+| `--color-rule` | #DDD3C6 | borders, perforation |
+| `--color-brand` | #B8381C (pushpin tomato) | actions, links, focus. White on brand 5.8:1; brand on board 5.2:1; dark ink #2A0F08 on dark brand 7.8:1 |
+| `--color-brand-hover` | #8F2B14 | white on hover 8.3:1 |
+| `--color-brand-tint` | #FBE7DF | selected chips, tear off tab fill |
+| `--color-brand-on` | #FFFFFF | text on brand |
+| `--color-highlight` | #FFE45C | highlighter behind "Direct to company" and "New today" only; text on it is ink #14201E in both modes |
+| `--color-marker` | #2A4B9B (ballpoint blue) | margin notes and agency/ghost callouts, always icon + word (8:1) |
+| `--color-success` | #1E7B4F | |
+| `--color-warn` | #8A5A00 | old posting (>30 days), 5.8:1 |
+| `--color-error` | #B42318 | errors only, never confused with brand because it is always paired with an icon and message |
 
-Two layer model: primitives (ramp) and semantic roles above; components use only roles. Dark mode: via `[data-theme=dark]` and `prefers-color-scheme`; never pure #000.
+Two layer model: primitives (ramp) and semantic roles above; components use only roles. Light only: there is no dark mode (D-052).
 
 ## 5. Typography
 Fonts self hosted at build via `next/font/google` (no runtime font CDN).
@@ -62,7 +62,6 @@ The skill's Part B is one fixed look. These deviations are deliberate, from the 
 | Skill rule | Our choice | Why |
 |---|---|---|
 | One typeface, whitelist Geist/Manrope/Poppins | Bricolage Grotesque + Public Sans, mono for data, Caveat margin notes | Brief mandates; the notice concept needs a distinctive display face; Geist/Manrope would read as "dev tool", which is exactly what this ICP distrusts |
-| Dark backgrounds only from a 6 value list | Night board #121614 / paper #1B201E | Warm green black fits the brand; documented above |
 | Hero heading gradient text #000 to #666 | Solid ink. No gradient at all | A gradient on text reads as "AI template" to scam wary seekers; keeping the skill's no gradient spirit |
 | Floating translucent blurred pill nav | Solid paper top bar (desktop), bottom tab bar (app, mobile) | Mobile first job tool; tab bar is the pattern the ICP already uses in Indeed/LinkedIn. Marketing page keeps a compact top bar |
 | Banned word "unlock" | UI says "open" (free opens: 5 a day). Internal collection still `unlocks` | Avoids filler and is more honest ("open a job" = spend one view) |

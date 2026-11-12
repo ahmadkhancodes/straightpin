@@ -1,6 +1,6 @@
 # Design QA scorecard (M1-B, re-graded in M2, 5 Nov 2026)
 
-Method: DESIGN_PLAYBOOK §9. Screenshots in `docs/qa/` (`/`, `/pricing`, `/compare/directroles`, `/how-we-check`, `/sign-in`; 375 and 1440, light and dark; from `npm run build && npm start`). Self graded. M2: I now also looked at `/pricing`, `/how-we-check`, `/quiz`, `/matches` and `/job/[id]` at 375 light by eye (screenshots regenerated in `docs/qa/`, now including quiz, matches and job). Fixed from that look: duplicated "Remote, Remote" in the place line, a truncated pay option in the filter, a job with no company date being called "posted today", and the apply tab wrapping beside the host on narrow screens.
+Method: DESIGN_PLAYBOOK §9. Screenshots in `docs/qa/` (`/`, `/pricing`, `/compare/directroles`, `/how-we-check`, `/sign-in`; 375 and 1440, light; from `npm run build && npm start`). Self graded. M2: I now also looked at `/pricing`, `/how-we-check`, `/quiz`, `/matches` and `/job/[id]` at 375 light by eye (screenshots regenerated in `docs/qa/`, now including quiz, matches and job). Fixed from that look: duplicated "Remote, Remote" in the place line, a truncated pay option in the filter, a job with no company date being called "posted today", and the apply tab wrapping beside the host on narrow screens.
 
 | # | Category | Score | Worst problem |
 |---|---|---|---|

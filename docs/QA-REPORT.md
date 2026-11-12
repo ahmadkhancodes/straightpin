@@ -3,7 +3,7 @@
 Method: real production build (`next start`, memory driver, e-mail outbox, console mail) driven by Playwright as the ICP (a job seeker): signed out, new free user, user at the free limits. Specs: `tests/e2e/qa/` (apply, crawl, journeys). Unit regressions: `tests/unit/{auth-error,copy-limits,proxy-escape}.test.ts`. Not deployed.
 
 ## Journeys covered
-- Visitor: landing, pricing, compare, how-we-check, docs, legal, /bot, /about/data, /jobs, quiz, matches: every page at 375 and 1440, signed out and signed in (dark), every internal link followed, console/page errors, failed requests, horizontal scroll, accessible names, pointer cursor.
+- Visitor: landing, pricing, compare, how-we-check, docs, legal, /bot, /about/data, /jobs, quiz, matches: every page at 375 and 1440, signed out and signed in, every internal link followed, console/page errors, failed requests, horizontal scroll, accessible names, pointer cursor.
 - Visitor tries Save / Apply on a job: sent to sign in and returned to the job.
 - Sign in with the e-mail link (form -> outbox -> link -> onboarding); empty, malformed, padded, hostile and very long addresses; reused/expired link notice.
 - Onboarding: empty, HTML/unicode organization name (rendered as text).

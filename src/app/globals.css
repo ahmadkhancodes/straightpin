@@ -3,7 +3,7 @@
 /*
  * Universal kit tokens (docs/factory/DESIGN_PLAYBOOK.md §3, §5, §6).
  * PLACEHOLDER THEME: deliberately plain greys + one muted accent. Each product replaces ONLY the
- * values in the two `:root` blocks below (from its docs/DESIGN.md). Components reference role tokens only.
+ * values in the `:root` block below (from its docs/DESIGN.md). Components reference role tokens only.
  */
 :root {
   --font-sans-family: var(--font-kit-sans), ui-sans-serif, system-ui, sans-serif;
@@ -27,7 +27,7 @@
   --accent-500: #b8381c; /* pushpin tomato */
   --accent-600: #8f2b14;
 
-  /* role tokens: light */
+  /* role tokens (light only) */
   --surface: var(--n-50); /* board */
   --surface-raised: var(--n-0); /* paper */
   --surface-sunken: var(--n-100);
@@ -57,38 +57,6 @@
   --shadow-color: 20 15 12;
   color-scheme: light;
 }
-
-:root[data-theme="dark"] {
-  --surface: #1a1512; /* night board */
-  --surface-raised: #241d19;
-  --surface-sunken: #120e0c;
-  --surface-inverse: #f1eae2;
-  --text: #f1eae2;
-  --text-subtle: #b5a99f;
-  --text-muted: #9a8e84;
-  --text-inverse: #1a1512;
-  --border: #3a302a;
-  --border-strong: #4d4039;
-  --action: #ff8a6b;
-  --action-hover: #ffa48a;
-  --action-text: #2a0f08;
-  --focus: #ff8a6b;
-  --success: #5bc48c;
-  --success-surface: #13261c;
-  --warning: #e0a93b;
-  --warning-surface: #2a210e;
-  --danger: #ff8478;
-  --danger-surface: #2c1513;
-  --brand-tint: #3a211a;
-  --highlight: #e9cf4a;
-  --marker: #8fb0ff;
-  --hero-from: #f1eae2;
-  --hero-to: #f1eae2;
-  --shadow-color: 0 0% 0%;
-  color-scheme: dark;
-}
-
-@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 @theme inline {
   --font-sans: var(--font-sans-family);
