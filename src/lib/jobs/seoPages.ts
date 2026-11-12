@@ -218,15 +218,19 @@ export function pageDescription(field: FieldId, loc: LocationDef, s: PageStats):
 export const pageCanonical = (field: FieldId, loc: Pick<LocationDef, "slug">) => `${product.url}${pagePath(field, loc)}`;
 
 const CACHE_MS = 5 * 60_000;
-let cached: { at: number; db: Db; min: number; value: Promise<PageCombo[]> } | null = null;
+type PagesCache = { at: number; db: Db; min: number; value: Promise<PageCombo[]> } | null;
+// On globalThis so every route bundle in one server instance shares (and can clear) the same cache.
+const holder = globalThis as unknown as { __straightpinPages?: { v: PagesCache } };
+const box = (holder.__straightpinPages ??= { v: null });
 
 /** generatePages with a short per instance cache: /jobs and the sitemap both call it and it costs 8 x 33 count queries. */
 export function generatePagesCached(db: Db, min = MIN_JOBS_FOR_PAGE, now = Date.now()): Promise<PageCombo[]> {
-  if (cached && cached.db === db && cached.min === min && now - cached.at < CACHE_MS) return cached.value;
+  const c = box.v;
+  if (c && c.db === db && c.min === min && now - c.at < CACHE_MS) return c.value;
   const value = generatePages(db, min);
-  cached = { at: now, db, min, value };
-  value.catch(() => { if (cached?.value === value) cached = null; });
+  box.v = { at: now, db, min, value };
+  value.catch(() => { if (box.v?.value === value) box.v = null; });
   return value;
 }
 
-export const clearPagesCache = () => { cached = null; };
+export const clearPagesCache = () => { box.v = null; };

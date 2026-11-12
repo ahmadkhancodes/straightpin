@@ -7,7 +7,7 @@ type Variant = "primary" | "secondary" | "tertiary" | "danger";
 type Size = "sm" | "md" | "lg";
 
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-md whitespace-nowrap select-none transition-[background-color,color,border-color,opacity,transform] duration-300 ease-out-kit active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 aria-busy:cursor-progress focus-visible:focus-ring";
+  "inline-flex items-center justify-center gap-2 rounded-md max-w-full text-center whitespace-normal min-[400px]:whitespace-nowrap select-none transition-[background-color,color,border-color,opacity,transform] duration-300 ease-out-kit active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 aria-busy:cursor-progress focus-visible:focus-ring";
 const variants: Record<Variant, string> = {
   // Primary = the Help Wanted sign: signal yellow, ink text, ink edge (docs/design-brief.md §5).
   primary: "border border-rule bg-highlight text-on-highlight hover:bg-signal-hover",

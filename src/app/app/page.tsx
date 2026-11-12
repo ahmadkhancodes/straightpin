@@ -51,9 +51,9 @@ export default async function OverviewPage() {
         <Panel title="Get started" description={`${steps.filter((x) => x.done).length} of ${steps.length} done. It takes about two minutes.`}>
           <ol className="flex flex-col divide-y divide-border border-y border-border">
             {steps.map((x) => (
-              <li key={x.id} className="flex min-h-11 items-center gap-3 py-2">
+              <li key={x.id} className="flex min-h-11 items-center gap-3">
                 <span aria-hidden className={x.done ? "text-success" : "text-text-subtle"}>{x.done ? "✓" : "○"}</span>
-                {x.done ? <span className="body-6 text-text-subtle line-through">{x.label}<span className="sr-only"> (done)</span></span> : <Link href={x.href} className="body-6 text-action underline underline-offset-4">{x.label}</Link>}
+                {x.done ? <span className="body-6 text-text-subtle line-through">{x.label}<span className="sr-only"> (done)</span></span> : <Link href={x.href} className="body-6 flex min-h-11 flex-1 items-center text-action underline underline-offset-4">{x.label}</Link>}
               </li>
             ))}
           </ol>

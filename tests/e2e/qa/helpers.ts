@@ -35,3 +35,26 @@ export async function finishOnboarding(page: Page, name = "QA Studio") {
 }
 
 export const ownIp = (page: Page) => page.context().setExtraHTTPHeaders({ "x-forwarded-for": `10.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}.${1 + Math.floor(Math.random() * 250)}` });
+
+/**
+ * Chromium builds used on CI runners can crash the opener tab when a real popup is opened from a click, so the
+ * specs that exercise "Apply at company" swap `window.open` for a stand-in window that records where it is sent.
+ * Read the result with `popupState(page)`.
+ */
+export async function stubPopup(page: Page) {
+  await page.addInitScript(() => {
+    const w = window as unknown as { __popup: { opened: number; closed: boolean; href: string | null } };
+    w.__popup = { opened: 0, closed: false, href: null };
+    window.open = ((url?: string | URL) => {
+      w.__popup.opened++;
+      w.__popup.href = url ? String(url) : null;
+      return {
+        opener: window,
+        get closed() { return w.__popup.closed; },
+        close() { w.__popup.closed = true; },
+        location: { set href(v: string) { w.__popup.href = v; }, get href() { return w.__popup.href ?? "about:blank"; } },
+      };
+    }) as typeof window.open;
+  });
+}
+export const popupState = (page: Page) => page.evaluate(() => (window as unknown as { __popup: { opened: number; closed: boolean; href: string | null } }).__popup);
