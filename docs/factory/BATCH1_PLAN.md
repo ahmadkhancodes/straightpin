@@ -41,7 +41,7 @@ Spec: `UNIVERSAL_KIT.md`. One Opus session, about half a day.
 - **When `kit-v1` is tagged:** each session copies the kit (attach `postslot` read-only, copy at the tag, rename), then builds milestones:
   - **M1:** landing, pricing, auth, billing, legal, deploy.
   - **M2–M4:** P0 features in workbook order.
-  - **M5:** QA (Playwright screenshots 375/1440 light+dark, Lighthouse 90+, design scorecard), launch checklist.
+  - **M5:** QA (Playwright screenshots 375/1440 light, Lighthouse 90+, design scorecard), launch checklist.
   - Postslot continues with its own product work after the kit.
 - **Orchestrator check-ins every ~2 h** (scheduled): read each repo's `docs/PROGRESS.md`, merge PRs, unblock, handle usage-limit resumes.
 

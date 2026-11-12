@@ -22,4 +22,4 @@ Part of the BufferSol "50 SaaS in 30 days" challenge. The orchestrator is the se
 `VERCEL_TOKEN_NEW_ACCOUNT` (set). Coming from the owner: `STRIPE_SECRET_KEY_TEST`, `RESEND_API_KEY`, `CLOUDFLARE_SAAS_TOKEN`, `CLOUDFLARE_SAAS_ACCOUNT_ID`. Connectors you may have: Stripe (test mode, account acct_1N578JBkP5VKCzMY), MongoDB Atlas (project "BufferSol SaaS" 6aeaf54cfcddba149e782d8d, cluster `buffersol-saas`; create DB `straightpin` + a DB user `straightpin-app` with readWrite on it only), Vercel. Stripe objects must carry `metadata.app=straightpin` and lookup_keys prefixed `straightpin_`. Never touch another app's objects.
 
 ## Definition of done per milestone
-lint + typecheck + tests + build green; deployed; Playwright screenshots (375/1440, light/dark) in docs/qa/; docs/PROGRESS.md updated; PR merged to main.
+lint + typecheck + tests + build green; deployed; Playwright screenshots (375/1440, light) in docs/qa/; docs/PROGRESS.md updated; PR merged to main.

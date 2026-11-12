@@ -33,7 +33,7 @@ The product must look like it belongs next to its best competitor, not like a te
 ## Definition of done (each SaaS)
 - Core flow works end to end in production: visitor -> sign up -> use the one core feature -> upgrade with a Stripe test card -> plan active.
 - `npm run build`, lint and typecheck pass. A small test set covers the core logic and the Stripe webhook.
-- Playwright screenshots of every page at 375 and 1440 px, light and dark, saved in `docs/qa/` and checked against `docs/DESIGN.md`. Lighthouse 90+ on performance, accessibility, SEO for the landing page.
+- Playwright screenshots of every page at 375 and 1440 px, light, saved in `docs/qa/` and checked against `docs/DESIGN.md`. Lighthouse 90+ on performance, accessibility, SEO for the landing page.
 - Deployed on the **SaaS Vercel account** (`$VERCEL_TOKEN_NEW_ACCOUNT`, never the old `VERCEL_TOKEN`), env vars set in Vercel, production URL recorded.
 - `README.md`, `docs/PROGRESS.md`, `docs/DECISIONS.md`, `docs/DESIGN.md` written and up to date.
 

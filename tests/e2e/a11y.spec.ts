@@ -42,13 +42,10 @@ test("axe: no serious or critical findings on the main pages at 375 px", async (
 
   const found: Record<string, string[]> = {};
   for (const path of ["/", "/paywall", "/quiz", matches, jobHref!, "/account", "/pricing"]) {
-    for (const theme of ["light", "dark"] as const) {
-      await page.goto(path);
-      await page.evaluate((t) => { document.documentElement.dataset.theme = t; }, theme);
-      await page.waitForTimeout(250);
-      const v = await serious(page);
-      if (v.length) found[`${path} [${theme}]`] = v;
-    }
+    await page.goto(path);
+    await page.waitForTimeout(250);
+    const v = await serious(page);
+    if (v.length) found[path] = v;
   }
   expect(found).toEqual({});
 });

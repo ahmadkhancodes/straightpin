@@ -41,7 +41,7 @@ Next.js (App Router, latest stable) · TypeScript strict · Tailwind CSS v4 (CSS
     - All of it follows `design-kit/DESIGN_PLAYBOOK.md` rules and has **no default palette**: the product sets tokens.
 11. **Ops:** `/api/health`, structured logger, error boundary, Vercel Web Analytics.
 12. **QA and deploy:**
-    - `scripts/screenshots.ts` (Playwright 375/1440, light/dark, every route) and Lighthouse CI.
+    - `scripts/screenshots.ts` (Playwright 375/1440, light, every route) and Lighthouse CI.
     - The design scorecard from the design kit.
     - `scripts/deploy.sh` (CLI deploy to the SaaS Vercel account, then `scripts/vercel-keep-latest-3.sh`).
     - GitHub Actions CI (lint, typecheck, test, build).

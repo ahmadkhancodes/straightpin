@@ -6,7 +6,6 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
-import { ThemeToggle } from "@/components/theme";
 import { cn } from "@/components/ui/cn";
 import { authClient } from "@/lib/auth/client";
 import { OrgSwitcher } from "./org-switcher";
@@ -72,7 +71,6 @@ function SidebarBody({ org, user, isAdmin, pathname, onNavigate }: { org: { id: 
             <p className="title-4 truncate text-text">{user.name || user.email}</p>
             {user.name ? <p className="caption-5 truncate text-text-muted">{user.email}</p> : null}
           </div>
-          <ThemeToggle />
         </div>
         <button
           type="button"

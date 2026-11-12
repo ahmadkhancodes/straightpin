@@ -7,13 +7,10 @@ const noOverflow = (page: Page) => page.evaluate(() => document.documentElement.
 async function shots(page: Page, name: string) {
   mkdirSync(OUT, { recursive: true });
   for (const [width, height] of [[375, 812], [1440, 900]] as const) {
-    for (const theme of ["light", "dark"] as const) {
-      await page.setViewportSize({ width, height });
-      await page.evaluate((t) => { document.documentElement.dataset.theme = t; }, theme);
-      await page.waitForTimeout(150);
-      expect(await noOverflow(page), `${name} ${width} ${theme}`).toBeLessThanOrEqual(0);
-      await page.screenshot({ path: `${OUT}/${name}-${width}-${theme}.png`, fullPage: true });
-    }
+    await page.setViewportSize({ width, height });
+    await page.waitForTimeout(150);
+    expect(await noOverflow(page), `${name} ${width}`).toBeLessThanOrEqual(0);
+    await page.screenshot({ path: `${OUT}/${name}-${width}-light.png`, fullPage: true });
   }
 }
 
