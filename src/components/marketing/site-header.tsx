@@ -7,10 +7,11 @@ import { buttonClass } from "@/components/ui/button";
 import { cn } from "@/components/ui/cn";
 
 const STAGGER_MS = 60;
+const STAGGER_CAP_MS = 400;
 const noSubscribe = () => () => {};
 const readSignedInHint = () => /(?:^|;\s*)sp_in=1(?:;|$)/.test(document.cookie);
 
-/** Floating bar, off the top edge. Mobile: full-height panel, staggered links (60ms, 24px rise, <= 400ms total). */
+/** Floating bar, off the top edge. Mobile: full height panel, staggered links (60ms, 24px rise, <= 400ms total). */
 export function SiteHeader() {
   const pathname = usePathname();
   // The menu counts as open only on the page it was opened on, so navigating closes it without an effect.
@@ -78,8 +79,9 @@ export function SiteHeader() {
   ];
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b-2 border-rule bg-surface">
-      <div className="relative z-50 mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-2 sm:px-6 lg:px-8">
+    <header className="fixed inset-x-0 top-0 z-50 px-2 pt-2 sm:px-4">
+      {/* Compact floating bar off the top edge: translucent newsprint with a blur, square ink edge (design brief radius 4px on controls). */}
+      <div className="relative z-50 mx-auto flex w-full max-w-7xl items-center justify-between gap-4 rounded-md border border-rule bg-surface/80 px-3 py-1 backdrop-blur-md sm:px-4">
         <Link href="/" className="inline-flex min-h-11 items-center rounded-md title-2 text-text focus-visible:focus-ring" aria-label={`${product.name} home`}>
           <span aria-hidden className="mr-2 inline-block size-3 bg-highlight outline outline-1 outline-rule" />
           <span className="heading-5">{product.name}</span>
@@ -105,8 +107,8 @@ export function SiteHeader() {
             className="inline-flex size-11 items-center justify-center rounded-md text-text transition-colors duration-300 ease-out-kit hover:bg-surface-sunken focus-visible:focus-ring md:hidden"
           >
             <span aria-hidden className="relative block size-6">
-              <span className={cn("absolute left-1 right-1 top-2 h-0.5 rounded-sm bg-current transition-transform duration-300 ease-out-kit", open && "translate-y-1 rotate-45")} />
-              <span className={cn("absolute bottom-2 left-1 right-1 h-0.5 rounded-sm bg-current transition-transform duration-300 ease-out-kit", open && "-translate-y-1 -rotate-45")} />
+              <span className={cn("absolute left-1 right-1 top-2 h-0.5 rounded-sm bg-current transition-transform duration-500 ease-out-kit", open && "translate-y-1 rotate-45")} />
+              <span className={cn("absolute bottom-2 left-1 right-1 h-0.5 rounded-sm bg-current transition-transform duration-500 ease-out-kit", open && "-translate-y-1 -rotate-45")} />
             </span>
           </button>
         </div>
@@ -120,7 +122,7 @@ export function SiteHeader() {
         aria-label="Menu"
         inert={!open}
         className={cn(
-          "fixed inset-0 z-40 flex flex-col bg-surface px-4 pt-20 transition-[opacity,visibility] duration-200 ease-out-kit md:hidden",
+          "fixed inset-0 z-40 flex h-dvh flex-col bg-surface px-4 pt-20 transition-[opacity,visibility] duration-300 ease-out-kit md:hidden",
           open ? "visible opacity-100" : "invisible opacity-0",
         )}
       >
@@ -130,9 +132,9 @@ export function SiteHeader() {
               key={item.label}
               href={item.href}
               onClick={() => setOpenFor(null)}
-              style={{ transitionDelay: open ? `${i * STAGGER_MS}ms` : "0ms" }}
+              style={{ transitionDelay: open ? `${Math.min(i * STAGGER_MS, STAGGER_CAP_MS)}ms` : "0ms" }}
               className={cn(
-                "transition-[opacity,transform] duration-200 ease-out-kit focus-visible:focus-ring",
+                "transition-[opacity,transform] duration-500 ease-out-kit focus-visible:focus-ring motion-reduce:translate-y-0",
                 open ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0",
                 item.kind === "cta"
                   ? cn(buttonClass("primary", "lg"), "mt-8")

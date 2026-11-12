@@ -101,7 +101,7 @@
   --color-signal: var(--highlight);
   --color-signal-hover: var(--signal-600);
   --color-on-highlight: #14201e; /* ink on the highlighter, both modes (DESIGN.md) */
-  --duration-tear: 160ms; /* tear off tab, transform only (DESIGN.md section 8) */
+  --duration-tear: 500ms; /* tear off tab, transform only: position moves use 500ms on the base curve */
 
   /* Spacing restricted to the playbook scale: 0 2 4 8 12 16 24 32 40 48 64 80 96 (+ layout widths). */
   --spacing-*: initial;
@@ -159,9 +159,9 @@
 @utility tear-open { transform: translateX(6px); }
 @utility lift-on-hover { &:hover { border-color: var(--rule); } }
 
-/* Counter digit flip: transform only, 240ms. Reduced motion turns it off below. */
+/* Counter digit flip: transform only, 500ms (position moves use 500ms). Reduced motion turns it off below. */
 @keyframes digit-flip { from { transform: perspective(200px) rotateX(-90deg); } to { transform: perspective(200px) rotateX(0deg); } }
-@utility digit-flip { animation: digit-flip 240ms var(--ease-out-kit) both; transform-origin: 50% 0; }
+@utility digit-flip { animation: digit-flip 500ms var(--ease-out-kit) both; transform-origin: 50% 0; }
 
 @utility focus-ring {
   outline: 3px solid var(--focus);
@@ -186,11 +186,11 @@
   code, kbd, pre, samp { font-family: var(--font-mono-family); }
 }
 
-/* Scroll reveal (rise 32px + fade, once). Reduced motion: opacity only. */
-.kit-reveal { opacity: 0; transform: translateY(32px); transition: opacity 700ms var(--ease-out-kit), transform 700ms var(--ease-out-kit); }
+/* Scroll reveal (rise 32px + fade, once). Position 500ms, opacity 500ms, base curve. Reduced motion: opacity only. */
+.kit-reveal { opacity: 0; transform: translateY(32px); transition: opacity 500ms var(--ease-out-kit), transform 500ms var(--ease-out-kit); }
 .kit-reveal[data-visible="true"] { opacity: 1; transform: none; }
-/* Words not read yet use the subtle text colour (contrast checked by axe), not a faded opacity. */
-.kit-word { color: var(--text-subtle); transition: color 500ms var(--ease-out-kit); }
+/* Tagline reveal (B11): words not read yet sit at 30% of the ink colour; the sentence is read once from sr-only copy. */
+.kit-word { color: color-mix(in srgb, var(--text) 30%, transparent); transition: color 500ms var(--ease-out-kit); }
 .kit-word[data-on="true"] { color: var(--text); }
 @media (prefers-reduced-motion: reduce) {
   .kit-reveal { transform: none; transition: opacity 300ms var(--ease-out-kit); }
@@ -207,7 +207,7 @@
       display: inline-block;
       min-height: 24px;
       line-height: 24px;
-      margin-block: -3px;
+      margin-block: -4px;
     }
   }
 }

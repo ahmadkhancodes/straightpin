@@ -12,7 +12,7 @@ import { NoticeCard } from "@/components/marketing/notice-card";
 import { FieldPicker } from "@/components/marketing/field-picker";
 import { comparisons } from "@/content/compare";
 import { jobsForField, sampleFields, sampleJobs } from "@/content/sample-jobs";
-import { cadence, freePlan, planById, product } from "@/config/product";
+import { cadence, planById, product } from "@/config/product";
 import { getCrawlStats, getFieldCounts, statsLine } from "@/lib/jobs/stats";
 
 export const revalidate = 300;
@@ -195,13 +195,6 @@ export default async function HomePage() {
                 </div>
               </li>
             ))}
-            <li className="grid grid-cols-[48px_1fr] gap-x-4 py-6">
-              <span aria-hidden className="figures heading-5 text-text">06</span>
-              <div>
-                <h3 className="title-1 font-semibold text-text">A real free tier</h3>
-                <p className="body-3 mt-1 text-text-subtle">{`${freePlan.limits.opens} free job opens a day, ${freePlan.limits.saves} saved jobs and a daily email. Paid plans add ${cadence.alertShort}. No card to start.`}</p>
-              </div>
-            </li>
           </ol>
         </div>
       </Section>
