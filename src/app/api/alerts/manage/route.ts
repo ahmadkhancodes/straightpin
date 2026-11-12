@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request) {
   try {
     assertSameOrigin(req);
-    const form = await req.formData();
+    const form = await req.formData().catch(() => new FormData());
     const e = String(form.get("e") ?? "");
     const t = String(form.get("t") ?? "");
     if (!(await verifyManageToken(e, t))) throw new HttpError(403, "invalid_link");

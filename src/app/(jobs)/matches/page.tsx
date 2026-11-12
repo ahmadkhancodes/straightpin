@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { cadence } from "@/config/product";
+import { cadence, product } from "@/config/product";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ShieldCheck } from "@phosphor-icons/react/dist/ssr";
@@ -54,7 +54,7 @@ export default async function MatchesPage({ searchParams }: { searchParams: Prom
       <h1 className="heading-3 text-text">Your matches</h1>
       <p className="body-4 mt-2 text-text-subtle" data-testid="match-count">
         <b className="tabular-nums text-text">{count.toLocaleString("en-US")}</b> direct {count === 1 ? "match" : "matches"} for {fieldLabel(answers.field)} in {answers.country === "UK" ? "the UK" : answers.country === "CA" ? "Canada" : "the US"}.
-        {opens ? ` ${Math.max(0, opens.limit - opens.used)} of ${opens.limit} job opens left today.` : " Free: 5 job opens a day."}
+        {opens ? ` ${Math.max(0, opens.limit - opens.used)} of ${opens.limit} job opens left today.` : ` Free: ${product.plans[0]!.limits.opens} job opens a day.`}
       </p>
 
       <form method="get" action="/matches" className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-6" aria-label="Filters">

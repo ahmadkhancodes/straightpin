@@ -32,7 +32,7 @@ export function SignInForm({ callbackURL, expiredLink }: { callbackURL: string; 
     });
     if (err) {
       setPhase("idle");
-      setError(authError(err, "We could not send the link. Check the address and try again."));
+      setError(authError(err, "That does not look like a valid email address. Check it and try again."));
       return;
     }
     setPhase("sent");

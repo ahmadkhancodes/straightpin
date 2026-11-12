@@ -20,6 +20,7 @@ const MESSAGES: Record<string, string> = {
   refund_failed: "The refund did not go through. Nothing was changed. Try again or email support.",
   account_suspended: "This account is suspended. Email support if you think this is a mistake.",
   not_found: "That item no longer exists.",
+  plan_not_on_sale: "That plan is not on sale yet. Pick another plan.",
 };
 
 export function humanError(code: string | undefined, fallback = "Something went wrong. Try again in a moment."): string {
@@ -55,6 +56,8 @@ export async function api<T = Record<string, unknown>>(path: string, init: { met
 export function authError(error: { message?: string; code?: string; status?: number } | null | undefined, fallback = "Something went wrong. Try again in a moment."): string | null {
   if (!error) return null;
   if (error.status === 429) return humanError("rate_limited");
+  // Validation errors read like "[body.email] Invalid email address": a developer message, not for people.
+  if (error.code === "VALIDATION_ERROR" || /^\[/.test(error.message ?? "")) return fallback;
   return error.message && error.message.length < 140 ? error.message : fallback;
 }
 

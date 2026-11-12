@@ -12,7 +12,7 @@ export default async function OnboardingPage({ searchParams }: { searchParams: S
   const sp = await searchParams;
   const next = safeNext(one(sp.next));
   const session = await getSession();
-  if (!session) redirect(`/sign-in?next=${encodeURIComponent("/onboarding")}`);
+  if (!session) redirect(`/sign-in?next=${encodeURIComponent(`/onboarding?next=${encodeURIComponent(next)}`)}`);
   const adding = one(sp.new) === "1";
   if (!adding && (await getOrgContext())) redirect(next);
   return (

@@ -49,12 +49,13 @@ export async function POST(req: Request) {
       return json({ ok: true, profile });
     }
     // Plain form post (works without JS): answers + optional settings, then back to the matches.
-    const form = await req.formData();
+    const form = await req.formData().catch(() => new FormData());
     const a = parseAnswers((k) => (form.get(k) as string | null) ?? undefined);
     if (!a) return Response.redirect(`${appUrl()}/quiz`, 303);
     const onoff = (k: string) => (form.get(k) === "on" ? true : form.get(k) === "off" ? false : undefined);
     await save(a, { digest: onoff("digest"), alerts: onoff("alerts") });
-    return Response.redirect(`${appUrl()}/matches?saved=1`, 303);
+    // The email settings form (it sends `digest`) goes back to its own page, so "Off" is never answered with "your email is on".
+    return Response.redirect(`${appUrl()}${form.has("digest") ? "/alerts?settings=saved" : "/matches?saved=1"}`, 303);
   } catch (e) {
     if (e instanceof HttpError && e.status === 401 && !type.includes("application/json")) return Response.redirect(`${appUrl()}/sign-in?next=${encodeURIComponent("/quiz")}`, 303);
     if (e instanceof HttpError) return json({ error: e.code }, e.status);

@@ -17,7 +17,7 @@ export async function POST(req: Request) {
   try {
     assertSameOrigin(req);
     const admin = await requireAdmin();
-    const f = Form.safeParse(Object.fromEntries(await req.formData()));
+    const f = Form.safeParse(Object.fromEntries(await req.formData().catch(() => new FormData())));
     if (!f.success) throw new HttpError(400, "invalid_input");
     const { orgId, email, action } = f.data;
     const db = await getDb();

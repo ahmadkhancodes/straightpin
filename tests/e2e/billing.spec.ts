@@ -88,7 +88,7 @@ test("/bot and /about/data are public and name the user agent and the way to sto
   await page.goto("/bot");
   await expect(page.getByText("StraightpinByBufferSolBot (+https://straightpin.buffersoltech.com/bot)")).toBeVisible();
   await expect(page.getByText("Disallow: /")).toBeVisible();
-  await expect(page.getByRole("link", { name: "support@buffersoltech.com" }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "contact@buffersoltech.com" }).first()).toBeVisible();
   expect(await noOverflow(page)).toBeLessThanOrEqual(0);
   await page.goto("/about/data");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("What we store");

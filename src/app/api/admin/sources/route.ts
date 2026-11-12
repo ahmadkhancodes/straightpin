@@ -13,7 +13,7 @@ export async function POST(req: Request) {
   try {
     assertSameOrigin(req);
     const admin = await requireAdmin();
-    const form = await req.formData();
+    const form = await req.formData().catch(() => new FormData());
     const id = String(form.get("employerId") ?? "");
     if (!id) throw new HttpError(400, "invalid_input");
     if (!(await reenableSource(await getDb(), id, new Date()))) throw new HttpError(404, "not_found");

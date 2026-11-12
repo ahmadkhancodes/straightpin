@@ -16,7 +16,7 @@ export async function POST(req: Request) {
   const wantsJson = (req.headers.get("content-type") ?? "").includes("application/json");
   try {
     assertSameOrigin(req);
-    const raw = wantsJson ? await req.json().catch(() => ({})) : Object.fromEntries((await req.formData()).entries());
+    const raw = wantsJson ? await req.json().catch(() => ({})) : Object.fromEntries((await req.formData().catch(() => new FormData())).entries());
     const body = schema.safeParse(raw);
     if (!body.success) throw new HttpError(400, "invalid_input");
     const { jobId, action } = body.data;

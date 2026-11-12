@@ -8,7 +8,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-col bg-surface">
       <header className="flex items-center justify-between px-4 py-4 sm:px-6 lg:px-10">
-        <Link href="/" className="heading-6 text-text focus-visible:focus-ring">{product.name}</Link>
+        <Link href="/" className="heading-6 inline-flex min-h-11 items-center text-text focus-visible:focus-ring">{product.name}</Link>
         <ThemeToggle />
       </header>
       <main id="main" className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:px-10">

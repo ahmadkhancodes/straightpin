@@ -142,7 +142,7 @@ export function BillingClient(p: Props) {
                 aria-pressed={interval === i}
                 onClick={() => setInterval(i)}
                 className={cn(
-                  "button-sm min-h-8 rounded-sm px-3 py-1 transition-colors duration-300 focus-visible:focus-ring",
+                  "button-sm min-h-11 rounded-sm px-3 py-1 transition-colors duration-300 focus-visible:focus-ring",
                   interval === i ? "bg-action text-action-text" : "text-text-subtle hover:text-text",
                 )}
               >
@@ -175,7 +175,12 @@ export function BillingClient(p: Props) {
                 <ul className="flex flex-1 flex-col gap-1">
                   {pl.highlights.map((h) => <li key={h} className="body-6 text-text-subtle">{h}</li>)}
                 </ul>
-                {pl.prices.length === 0 ? null : current ? (
+                {pl.prices.length === 0 ? null : !pl.onSale ? (
+                  <>
+                    <Button variant="secondary" disabled aria-describedby={`${pl.id}-not-on-sale`}>{pl.cta}</Button>
+                    <p id={`${pl.id}-not-on-sale`} className="caption-2 text-text-subtle">These features are still being built, so we do not take money for this plan yet.</p>
+                  </>
+                ) : current ? (
                   <Button variant="secondary" disabled>Current plan</Button>
                 ) : p.isPaid ? (
                   <Button variant="secondary" onClick={portal} loading={busy === "portal"} disabled={!p.canManage}>Change in billing portal</Button>

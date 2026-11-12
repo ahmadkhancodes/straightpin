@@ -66,7 +66,7 @@ export function PricingTable({ id = "pricing", title, compact = false }: { id?: 
       {compact && lifetime && lifetimePrice ? (
         <p className="body-3 mt-6 text-text">
           <b className="font-semibold">Lifetime {money(lifetimePrice.usd)} once.</b> Core plan forever. First {product.lifetimeCap.toLocaleString("en-US")} buyers.{" "}
-          <Link href="/pricing" className="text-action underline underline-offset-4 focus-visible:focus-ring">All plans</Link>
+          <Link href="/pricing" className="inline-flex min-h-11 items-center text-action underline underline-offset-4 focus-visible:focus-ring">All plans</Link>
         </p>
       ) : null}
       {!compact && lifetime && lifetimePrice && plus ? (

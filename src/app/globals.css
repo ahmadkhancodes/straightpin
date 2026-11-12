@@ -221,12 +221,14 @@
 
 /* Phones: inline body links get a hit area of at least 24px without changing the line layout. */
 @media (max-width: 767px) {
-  main p a,
-  main li a {
-    display: inline-block;
-    min-height: 24px;
-    line-height: 24px;
-    margin-block: -3px;
+  @layer base {
+    main p a,
+    main li a {
+      display: inline-block;
+      min-height: 24px;
+      line-height: 24px;
+      margin-block: -3px;
+    }
   }
 }
 
