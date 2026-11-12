@@ -59,3 +59,36 @@ Method: production build, memory driver, outbox mail, Playwright specs in `tests
 - **P2, unchanged from above:** intermittent hydration #418 on the first `/sign-in` load; job seekers must name an organization after first sign-in.
 - Not testable locally: real Stripe checkout return and portal, mail delivery, passkeys.
 6. **P2, `/jobs` showed the empty "first crawl" state after the seed in e2e (a flaky `seo.spec`)**: the programmatic-pages cache lived in a module variable, so the seed route could not clear the copy the page bundle held. It now lives on `globalThis` like the count cache, and the seed route clears it. The whole Playwright suite (65 tests) is green.
+
+# Usefulness pass: first ten minutes, working docs, billing path (12 Nov 2026)
+
+Method: production build, memory driver, outbox mail, three personas from docs/brief.md walked through a week in Playwright (exploration first, then kept as `tests/e2e/persona/week.spec.ts`). Docs walked step by step in `tests/e2e/persona/docs.spec.ts`. Not deployed.
+
+## Personas and what they hit
+- **Rhonda** (34, Ohio, ex call centre, phone only, wants remote support work). Day 1: home, field, five questions, matches, a job, Apply: asked to sign in (fine), then **asked to "Name your organization"** (confusing for one job seeker), then back on the job. Her quiz answers were **gone**: Alerts said "Answer the quiz first", the checklist said "Tell us your field". Signed out, **Back to matches sent her to question 1 again**. Day 7: five opens used, paywall said the count "resets at midnight UTC" (she lives in Eastern time; when is that?). Checkout in stub mode answered calmly.
+- **Pat** (38, Manchester, returning to work, admin roles). The pay question offered **"$15 an hour or more"** and a match said **"£24,500 a year · Pays up to $12 an hour"**: wrong currency, and the number looked like a bad hourly rate.
+- **Leo** (41, project coordinator, laptop). Day 2: signed up from "Create a free account" on his matches, landed back on matches and had to press "Save and email me" again, a second step for the thing the link had already promised. Day 7 billing: after Checkout `/account?checkout=success` said **"Thanks, your plan is on" while the plan still read Free** if the webhook was a few seconds late; a closed Checkout came back with **no message**.
+- Day 2 "invite a teammate" does not apply: invitations are off by design (D-057, one person per account). The second thing a seeker connects is the daily email or a saved alert, covered above.
+
+## Top five fixed
+1. **Answers kept.** Last full answers live in an essential `sp_q` cookie (D-059); Back to matches and bare `/matches` reuse them; first sign-in turns them into the profile.
+2. **No organization step.** First sign-in sets up the personal account and returns to where the person was (D-058). Daily email on only for sign-ups from the matches link that promises it.
+3. **Local currency.** £ / C$ / $ in quiz, filters, match reasons and the alert pay floor (which is also pre-filled from the quiz) (D-060).
+4. **Limit reset in words:** "You get them back in 7 hours (midnight UTC). Jobs you already opened stay open, and you can still save jobs." on the job page and paywall.
+5. **Checkout return.** Paid-but-not-yet-confirmed polls the page (10 x 3 s) under "Turning your plan on", then says to reload or email support; a closed Checkout says "Nothing was charged". No claim of a receipt email we do not send.
+
+Click budget (test enforced): home to "Apply at company" in at most 9 taps for a new visitor (1 start, 6 answers, 1 job, 1 Apply).
+
+## Docs
+- In-app help: every step of `/docs/getting-started`, `/docs/account`, `/docs/billing` is performed in `tests/e2e/persona/docs.spec.ts`. One disagreement fixed in the doc: it said matches were "newest first"; they are sorted by fit, newest first on ties. The sign-in step now matches the product (no extra form).
+- `docs/*.md`: every `npm run <x>` exists, every `scripts/` and `infra/` path exists, and `npm run stripe:setup` runs for real against a local Stripe stand-in (`STRIPE_API_BASE`): one price per plan with `straightpin_<plan>_<interval>`, amount, interval and `metadata.app`, idempotent, refuses another app's key (`tests/unit/docs-commands.test.ts`).
+- Pricing: highlights ("Up to 3 saved alerts", "5 job opens a day", "10 saved jobs") are checked against `alertLimit` and `limits`.
+
+## Billing path (`tests/unit/billing-journey.test.ts`, Stripe fake)
+For every plan on sale (Weekly, Monthly, Lifetime): starts at Free limits; Checkout creates one session with the right lookup-key price, `metadata.app=straightpin` (also on the subscription or payment intent), `/account?checkout=success&session_id={CHECKOUT_SESSION_ID}` and `/account?checkout=canceled`; the webhook turns the plan and its limits on; the portal opens for that customer and returns to `/account`; cancellation (subscription deleted, or Lifetime full refund) drops to Free limits. Plus stays refused. No bug found in `src/lib/billing`.
+
+## Still open
+- Real Stripe test-mode run with card entry (owner, REVIEW P1-8); real popup on Android Chrome.
+- `/matches` signed in shows the saved profile at a bare URL (not a shareable query string).
+- Free opens still reset at midnight UTC for everyone (a local reset needs the time zone at open time); the copy now says how many hours are left.
+- Closed from earlier lists: "job seekers must name an organization" (D-058).

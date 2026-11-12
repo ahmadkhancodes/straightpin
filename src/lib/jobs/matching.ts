@@ -45,6 +45,16 @@ export function parseAnswers(get: (k: string) => string | null | undefined): Qui
   const r = quizSchema.safeParse(Object.fromEntries(QUIZ_STEPS.map((s) => [s.key, get(s.key) ?? undefined])));
   return r.success ? r.data : undefined;
 }
+/** Cookie holding the last full set of quiz answers (only the six values, see the cookie policy). */
+export const ANSWERS_COOKIE = "sp_q";
+/** Answers as a /matches query string, in quiz order. */
+export const answersQuery = (a: QuizAnswers) => new URLSearchParams(QUIZ_STEPS.map((s) => [s.key, String(a[s.key as keyof QuizAnswers])])).toString();
+/** The remembered answers from the cookie value, or undefined when missing or invalid. */
+export const answersFromCookie = (value: string | undefined): QuizAnswers | undefined => {
+  if (!value || value.length > 300) return undefined;
+  const q = new URLSearchParams(value);
+  return parseAnswers((k) => q.get(k));
+};
 /** The leading answers that are present and valid, for the live count on each quiz screen. */
 export function partialAnswers(get: (k: string) => string | null | undefined): Partial<QuizAnswers> {
   const out: Record<string, unknown> = {};
@@ -56,8 +66,19 @@ export function partialAnswers(get: (k: string) => string | null | undefined): P
   return out as Partial<QuizAnswers>;
 }
 
+/** Currency sign people in each country expect. Pay floors and hourly equivalents are in the job's own currency. */
+export const PAY_SIGN: Record<QuizAnswers["country"], string> = { US: "$", CA: "C$", UK: "£" };
+const CURRENCY_SIGN: Record<string, string> = { USD: "$", CAD: "C$", GBP: "£", EUR: "€" };
+/** A quiz option label in the person's own currency ("£15 an hour or more" for the UK). Other options pass through. */
+export const optionLabel = (key: string, label: string, country: QuizAnswers["country"] | undefined) =>
+  key === "payFloor" && country ? label.replace("$", PAY_SIGN[country]) : label;
+
 const DAY = 86_400_000;
-const money = (j: JobDoc) => (j.payHourlyMax === null ? null : `pays up to $${Math.round(j.payHourlyMax)} an hour`);
+const money = (j: JobDoc) => {
+  if (j.payHourlyMax === null) return null;
+  const sign = (j.currency ? CURRENCY_SIGN[j.currency] : undefined) ?? PAY_SIGN[j.country as QuizAnswers["country"]] ?? "$";
+  return `pays up to ${sign}${Math.round(j.payHourlyMax)} an hour`;
+};
 
 /** Deterministic match score 0 to 100 with a one line reason. Same input, same order. */
 export function matchScore(j: JobDoc, a: QuizAnswers, now: Date): { score: number; reason: string } {

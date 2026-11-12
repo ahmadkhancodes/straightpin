@@ -103,7 +103,7 @@ export function fakeStripe(nowSec = () => 1_800_000_000) {
       },
     },
     billingPortal: {
-      sessions: { create: async (p: { customer: string }) => ({ url: `https://billing.stripe.test/${p.customer}` }) },
+      sessions: { create: async (p: { customer: string; return_url?: string }) => { calls.push({ method: "billingPortal.sessions.create", args: p }); return { url: `https://billing.stripe.test/${p.customer}` }; } },
     },
     webhooks: {
       constructEventAsync: async (body: string, sig: string) => {

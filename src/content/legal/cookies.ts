@@ -15,13 +15,14 @@ export const cookies: LegalDoc = {
       id: "essential",
       title: "Essential cookies",
       body: [
-        "These keep you signed in and keep the service secure. The service does not work without them.",
+        "These keep you signed in, keep the service secure and remember the answers you gave. The service does not work without them.",
         {
           table: {
             head: ["Purpose", "Lifetime"],
             rows: [
               ["Session cookie that keeps you signed in", "Up to 30 days, or until you sign out"],
               ["Security tokens for sign in and payments", "Short lived, minutes to hours"],
+              ["Your last quiz answers (field, country, workplace, pay floor, level, schedule), so Back to matches and a new account keep them. No name or email.", "30 days"],
             ],
           },
         },

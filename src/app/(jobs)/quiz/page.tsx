@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { Container } from "@/components/ui/layout";
 import { getDb } from "@/lib/db";
 import { fieldLabel } from "@/lib/jobs/fields";
-import { liveCount, partialAnswers, QUIZ_STEPS, queryFromAnswers } from "@/lib/jobs/matching";
+import { liveCount, optionLabel, partialAnswers, QUIZ_STEPS, queryFromAnswers } from "@/lib/jobs/matching";
 
 export const metadata: Metadata = { title: "Find your matches in six questions", alternates: { canonical: "/quiz" } };
 export const dynamic = "force-dynamic";
@@ -44,7 +44,7 @@ export default async function QuizPage({ searchParams }: { searchParams: Promise
             value={o.value}
             className="button-md min-h-12 rounded-md border border-border-strong bg-surface-raised px-4 py-3 text-left text-text transition-colors duration-300 ease-out-kit hover:border-rule hover:bg-brand-tint focus-visible:focus-ring"
           >
-            {o.label}
+            {optionLabel(step.key, o.label, answered.country)}
           </button>
         ))}
       </form>

@@ -36,3 +36,11 @@ export function checkedAgo(at: Date, now: Date): string {
   const h = Math.round(m / 60);
   return h < 48 ? `${h} h ago` : `${Math.round(h / 24)} days ago`;
 }
+
+/** When the free daily opens come back, in words a person can act on: "in 7 hours (midnight UTC)". */
+export function resetPhrase(now: Date = new Date()): string {
+  const next = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1);
+  const hours = Math.floor((next - now.getTime()) / 3_600_000);
+  const when = hours < 1 ? "in under an hour" : `in ${hours} ${hours === 1 ? "hour" : "hours"}`;
+  return `${when} (midnight UTC)`;
+}

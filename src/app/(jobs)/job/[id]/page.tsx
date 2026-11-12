@@ -14,7 +14,7 @@ import { ageDays, ghostSignals } from "@/lib/crawl/score/ghost";
 import { getDb } from "@/lib/db";
 import { jobPostingLd, ldScript } from "@/lib/jobs/jobPostingLd";
 import { pageMetadata } from "@/lib/seo";
-import { checkedAgo, formatPay, placeOf, postedInfo, repostText } from "@/lib/jobs/format";
+import { checkedAgo, formatPay, placeOf, postedInfo, repostText, resetPhrase } from "@/lib/jobs/format";
 
 const FREE = product.plans[0]!.limits;
 export const dynamic = "force-dynamic";
@@ -53,7 +53,7 @@ export default async function JobPage({ params, searchParams }: Props) {
       {ld ? <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldScript(ld) }} /> : null}
       <p><Link href="/matches" className="body-6 text-text-subtle underline underline-offset-4 focus-visible:focus-ring">Back to matches</Link></p>
       {sp.limit === "opens" ? (
-        <div className="mt-6"><Notice tone="warning" title="You have used today's free job opens">Free plans open {FREE.opens} jobs a day. It resets at midnight UTC. <Link href="/pricing" className="text-action underline underline-offset-4">See plans</Link></Notice></div>
+        <div className="mt-6"><Notice tone="warning" title="You have used today's free job opens">Free plans open {FREE.opens} jobs a day. You get them back {resetPhrase()}. Jobs you already opened stay open, and you can still save jobs. <Link href="/pricing" className="text-action underline underline-offset-4">See plans</Link></Notice></div>
       ) : null}
       {sp.limit === "saves" ? (
         <div className="mt-6"><Notice tone="warning" title="Your saved list is full">Free plans keep {FREE.saves} saved jobs. Remove one in <Link href="/saved" className="text-action underline underline-offset-4">Saved</Link> or <Link href="/pricing" className="text-action underline underline-offset-4">see plans</Link>.</Notice></div>

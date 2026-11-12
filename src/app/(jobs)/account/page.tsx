@@ -39,7 +39,7 @@ export default async function AccountPage({ searchParams }: { searchParams: SP }
         priceUsd={price?.usd ?? null}
         interval={ent?.interval ?? null}
         refund={refund ? { eligible: refund.eligible, reason: refund.reason, until: refund.until } : null}
-        justPaid={one(sp.checkout) === "success"}
+        checkout={one(sp.checkout) === "success" ? "success" : one(sp.checkout) === "canceled" ? "canceled" : null}
       />
     </Container>
   );

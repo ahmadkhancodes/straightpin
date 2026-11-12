@@ -109,7 +109,7 @@ test("sign-in form: empty, malformed, padded and hostile addresses", async ({ pa
   await expect(page.getByText(/Check your inbox at padded@studio.test|Check your inbox at Padded@Studio.Test/i)).toBeVisible();
 });
 
-test("onboarding: hostile and empty organization names", async ({ page, request }) => {
+test("onboarding: the first sign-in sets up a personal account without asking for an organization", async ({ page, request }) => {
   await ownIp(page);
   const email = `qa+org${Date.now()}@studio.test`;
   await page.goto("/sign-in");
@@ -118,15 +118,13 @@ test("onboarding: hostile and empty organization names", async ({ page, request 
   await expect(page.getByText(/Check your inbox/)).toBeVisible();
   const box = await (await request.get(`/api/dev/outbox?to=${encodeURIComponent(email)}`)).json();
   await page.goto(/https?:\/\/\S+magic-link\/verify\S+/.exec(box.messages.at(-1).text)![0]);
-  await expect(page).toHaveURL(/\/onboarding/);
-  await page.getByRole("button", { name: "Create organization" }).click();
-  await expect(page.getByText(/at least 2 characters/)).toBeVisible();
-  await page.getByLabel("Organization name").fill("<img src=x onerror=alert(1)> Ünï ✓ 日本語");
-  await page.getByRole("button", { name: "Create organization" }).click();
   await page.waitForURL((u) => !u.pathname.startsWith("/onboarding"));
+  await expect(page.getByText(/Organization name|Name your organization/)).toHaveCount(0);
   await page.goto("/app");
-  await expect(page.locator("body")).toContainText("Ünï");
-  expect(await page.locator("img[src='x']").count()).toBe(0);
+  await expect(page.locator("body")).toContainText("My job search");
+  // The fallback form never makes a second account for someone who has one (D-057).
+  await page.goto("/onboarding?manual=1&next=/saved");
+  await expect(page).toHaveURL(/\/saved$/);
 });
 
 test("another user cannot read or change my data; non-admins are kept out of /admin", async ({ browser, request }) => {
