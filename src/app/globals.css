@@ -9,27 +9,26 @@
   --font-sans-family: var(--font-kit-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono-family: var(--font-kit-mono), ui-monospace, monospace;
   --font-display-family: var(--font-kit-display), var(--font-kit-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-note-family: var(--font-kit-note), cursive;
 
-  /* raw ramp: warm paper neutrals (docs/DESIGN.md §4) */
-  --n-0: #fffdf9;
-  --n-50: #f6f1e9;
-  --n-100: #efe8dc;
-  --n-200: #ddd3c6;
-  --n-300: #c8bcad;
-  --n-400: #a3978a;
-  --n-500: #6f655d;
-  --n-600: #5c524b;
-  --n-700: #453d37;
-  --n-800: #2f2824;
-  --n-900: #1f1a17;
-  --n-1000: #14100d;
-  --accent-500: #b8381c; /* pushpin tomato */
-  --accent-600: #8f2b14;
+  /* raw ramp: newsprint and ink (docs/design-brief.md §5). No cream, no clay orange, no indigo. */
+  --n-0: #ffffff;
+  --n-50: #f3f3ef;
+  --n-100: #e8e8e2;
+  --n-200: #d3d4cd;
+  --n-300: #a9aca5;
+  --n-400: #8a8e95;
+  --n-500: #5f646c;
+  --n-600: #4a4f57;
+  --n-700: #33373e;
+  --n-800: #22252a;
+  --n-900: #121417;
+  --signal-500: #ffd43b; /* Help Wanted yellow: marks only, always with ink text */
+  --signal-100: #fff4c2;
+  --signal-600: #f2c200;
 
   /* role tokens (light only) */
-  --surface: var(--n-50); /* board */
-  --surface-raised: var(--n-0); /* paper */
+  --surface: var(--n-50); /* newsprint */
+  --surface-raised: var(--n-0); /* sheet */
   --surface-sunken: var(--n-100);
   --surface-inverse: var(--n-900);
   --text: var(--n-900);
@@ -37,24 +36,25 @@
   --text-muted: var(--n-500);
   --text-inverse: var(--n-50);
   --border: var(--n-200);
-  --border-strong: var(--n-300);
-  --action: var(--accent-500);
-  --action-hover: var(--accent-600);
+  --border-strong: var(--n-400);
+  --rule: var(--n-900); /* column and section rules */
+  --action: var(--n-900); /* ink buttons; links are ink + underline */
+  --action-hover: var(--n-700);
   --action-text: #ffffff;
-  --focus: var(--accent-500);
-  --success: #1e7b4f;
-  --success-surface: #e6f3ec;
-  --warning: #8a5a00;
-  --warning-surface: #fbf0d9;
+  --focus: var(--n-900);
+  --focus-halo: var(--signal-500);
+  --success: #0f6b3e;
+  --success-surface: #e3f1e8;
+  --warning: #8a4b00;
+  --warning-surface: #fdf0d8;
   --danger: #b42318;
   --danger-surface: #fbe9e6;
-  --brand-tint: #fbe7df;
-  --highlight: #ffe45c;
-  --marker: #2a4b9b; /* ballpoint blue: margin notes */
-  /* solid ink, no gradient on the hero heading (DESIGN.md §7) */
+  --brand-tint: var(--signal-100);
+  --highlight: var(--signal-500);
+  --marker: #1f3f99; /* agency and ghost notes */
   --hero-from: var(--n-900);
   --hero-to: var(--n-900);
-  --shadow-color: 20 15 12;
+  --shadow-color: 18 20 23;
   color-scheme: light;
 }
 
@@ -62,7 +62,12 @@
   --font-sans: var(--font-sans-family);
   --font-mono: var(--font-mono-family);
   --font-display: var(--font-display-family);
-  --font-note: var(--font-note-family);
+  /* Radius system: 0 on surfaces (rounded-sm), 4px on controls (rounded-md / rounded-lg). Nothing pill shaped except dots. */
+  --radius-sm: 0px;
+  --radius-md: 4px;
+  --radius-lg: 4px;
+  --radius-xl: 4px;
+  --radius-2xl: 4px;
 
   --color-*: initial;
   --color-transparent: transparent;
@@ -92,6 +97,9 @@
   --color-brand-tint: var(--brand-tint);
   --color-highlight: var(--highlight);
   --color-marker: var(--marker);
+  --color-rule: var(--rule);
+  --color-signal: var(--highlight);
+  --color-signal-hover: var(--signal-600);
   --color-on-highlight: #14201e; /* ink on the highlighter, both modes (DESIGN.md) */
   --duration-tear: 160ms; /* tear off tab, transform only (DESIGN.md section 8) */
 
@@ -120,8 +128,8 @@
 }
 
 /* ---- Named type styles (playbook §5). Use these, never loose size+weight pairs. ---- */
-@utility heading-1 { font-family: var(--font-display-family); font-size: 3.75rem; line-height: 1; font-weight: 600; letter-spacing: -0.02em; text-wrap: balance; }
-@utility heading-2 { font-family: var(--font-display-family); font-size: 3rem; line-height: 1; font-weight: 600; letter-spacing: -0.02em; text-wrap: balance; }
+@utility heading-1 { font-family: var(--font-display-family); font-size: 3.75rem; line-height: 1; font-weight: 600; letter-spacing: -0.015em; text-wrap: balance; }
+@utility heading-2 { font-family: var(--font-display-family); font-size: 3rem; line-height: 1; font-weight: 600; letter-spacing: -0.015em; text-wrap: balance; }
 @utility heading-3 { font-family: var(--font-display-family); font-size: 2.25rem; line-height: 2.5rem; font-weight: 600; letter-spacing: -0.015em; text-wrap: balance; }
 @utility heading-4 { font-family: var(--font-display-family); font-size: 1.875rem; line-height: 2.25rem; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
 @utility heading-5 { font-family: var(--font-display-family); font-size: 1.5rem; line-height: 2rem; font-weight: 600; text-wrap: balance; }
@@ -147,18 +155,22 @@
 @utility caption-4 { font-size: 0.75rem; line-height: 1rem; font-weight: 500; }
 @utility caption-5 { font-size: 0.75rem; line-height: 1rem; font-weight: 400; }
 
-/* The only gradient allowed (playbook §6): hero heading text, left to right. */
+/* Tear tab slide and hover state (no shadows: the rule darkens). */
 @utility tear-open { transform: translateX(6px); }
-@utility lift-on-hover { &:hover { box-shadow: 0 1px 0 var(--border), 0 6px 16px color-mix(in srgb, var(--text) 10%, transparent); } }
+@utility lift-on-hover { &:hover { border-color: var(--rule); } }
 
 /* Counter digit flip: transform only, 240ms. Reduced motion turns it off below. */
 @keyframes digit-flip { from { transform: perspective(200px) rotateX(-90deg); } to { transform: perspective(200px) rotateX(0deg); } }
 @utility digit-flip { animation: digit-flip 240ms var(--ease-out-kit) both; transform-origin: 50% 0; }
 
 @utility focus-ring {
-  outline: 2px solid var(--focus);
+  outline: 3px solid var(--focus);
   outline-offset: 2px;
+  box-shadow: 0 0 0 7px var(--focus-halo);
 }
+/* Small caps column head on a rule, like a broadsheet section head (Archivo, tracked caps). */
+@utility kicker { font-family: var(--font-sans-family); font-size: 0.75rem; line-height: 1rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+@utility figures { font-variant-numeric: tabular-nums lining-nums; }
 
 @layer base {
   html { -webkit-text-size-adjust: 100%; }
@@ -166,11 +178,11 @@
     background: var(--surface);
     color: var(--text);
     font-family: var(--font-sans-family);
-    font-feature-settings: "ss01", "cv11";
+    font-feature-settings: "kern";
     -webkit-font-smoothing: antialiased;
   }
-  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-  ::selection { background: var(--action); color: var(--action-text); }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; box-shadow: 0 0 0 7px var(--focus-halo); }
+  ::selection { background: var(--highlight); color: var(--text); }
   code, kbd, pre, samp { font-family: var(--font-mono-family); }
 }
 

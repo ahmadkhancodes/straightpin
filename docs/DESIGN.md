@@ -1,5 +1,7 @@
 # Straightpin by BufferSol: visual system (DESIGN.md)
 
+> **Superseded 12 Nov 2026 (D-053).** The visual system is now `docs/design-brief.md` ("the Help Wanted page": newsprint, ink, signal yellow; Newsreader + Archivo + JetBrains Mono; square surfaces). Sections 3 to 12 below (tomato on warm paper, Bricolage, Public Sans, Caveat, notice cards) are history. Positioning and the ICP card in §1 and §2 still hold.
+
 Owner direction: design is priority #1. Source: docs/brief.md "Design direction", docs/factory/DESIGN_PLAYBOOK.md, landing-page-design skill. Competitor audit: docs/design/COMPETITOR_NOTES.md. Proof: docs/design/mock.html (+ PNGs).
 
 ## 1. Positioning

@@ -11,7 +11,7 @@ function Counter({ value }: { value: number }) {
   return (
     <span aria-hidden className="inline-flex gap-0.5">
       {String(value).split("").map((d, i) => (
-        <span key={`${i}-${d}`} className="digit-flip heading-5 min-w-6 rounded-sm border border-border bg-surface-raised px-1 text-center tabular-nums text-text">{d}</span>
+        <span key={`${i}-${d}`} className="digit-flip heading-5 figures min-w-7 border border-rule bg-surface-raised px-1 text-center text-text">{d}</span>
       ))}
     </span>
   );
@@ -37,16 +37,16 @@ export function FieldPicker({ withList = false, headingId, real }: { withList?: 
             aria-pressed={field === f.id}
             onClick={() => setField(f.id)}
             className={cn(
-              "button-sm inline-flex min-h-12 items-center gap-2 rounded-full border px-4 py-2 transition-colors duration-300 ease-out-kit focus-visible:focus-ring",
-              field === f.id ? "border-action bg-brand-tint text-action" : "border-border bg-surface-raised text-text hover:border-action",
+              "button-sm inline-flex min-h-12 items-center gap-2 rounded-md border px-4 py-2 transition-colors duration-300 ease-out-kit focus-visible:focus-ring",
+              field === f.id ? "border-rule bg-highlight text-on-highlight" : "border-border-strong bg-surface-raised text-text hover:border-rule",
             )}
           >
             {f.label}
-            <span className="caption-3 tabular-nums text-text-subtle">{chipCount(f.id, f.count)}</span>
+            <span className={cn("caption-5 figures", field === f.id ? "text-on-highlight" : "text-text-subtle")}>{chipCount(f.id, f.count)}</span>
           </button>
         ))}
       </div>
-      <p className="mt-4 flex items-center gap-3 border-t-[1.5px] border-dashed border-border pt-4" aria-live="polite">
+      <p className="mt-6 flex items-center gap-3" aria-live="polite">
         <Counter value={current.count} />
         <span className="body-6 text-text">
           <b className="font-semibold">matches {real ? "right now" : "so far"}</b>{" "}
@@ -54,25 +54,25 @@ export function FieldPicker({ withList = false, headingId, real }: { withList?: 
         </span>
       </p>
       <p className="mt-3">
-        <Link href={`/quiz?field=${field}`} className="button-md inline-flex min-h-12 items-center text-action underline underline-offset-4 focus-visible:focus-ring">
+        <Link href={`/quiz?field=${field}`} className="button-md inline-flex min-h-12 items-center text-action underline decoration-2 underline-offset-4 focus-visible:focus-ring">
           Answer five more questions for your real count
         </Link>
       </p>
       {withList ? (
-        <div className="mt-8 grid grid-cols-1 gap-4 rounded-lg border border-border bg-surface p-4">
-          <p className="flex items-start gap-2 rounded-sm border border-dashed border-border bg-surface-raised p-3 body-6 text-text">
-            <ShieldCheck size={20} weight="regular" aria-hidden className="mt-0.5 shrink-0 text-action" />
+        <div className="mt-8 border-y border-rule bg-surface-raised">
+          <p className="flex items-start gap-2 border-b border-border px-4 py-3 body-6 text-text">
+            <ShieldCheck size={20} weight="bold" aria-hidden className="mt-0.5 shrink-0 text-marker" />
             <span>
-              <b className="font-semibold">We removed {current.agencyRemoved} staffing agency posts from this list.</b>{" "}
+              <span className="kicker mr-2 text-marker">Receipt</span><b className="font-semibold">We removed {current.agencyRemoved} staffing agency posts from this list.</b>{" "}
               <span className="text-text-subtle">{real ? "Illustration." : "Example."}</span>
             </span>
           </p>
-          <ul className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+          <ul className="grid grid-cols-1 divide-y divide-border lg:grid-cols-2 lg:divide-x lg:divide-y-0">
             {jobs.map((j, i) => (
-              <li key={j.id} className="min-w-0"><NoticeCard job={j} showTear={false} selected={i === 0} /></li>
+              <li key={j.id} className="min-w-0"><NoticeCard job={j} showTear={false} selected={i === 0} framed={false} /></li>
             ))}
           </ul>
-          <p className="caption-2 text-text-subtle">Free: 5 job opens a day. The notices below illustrate the layout; the companies are made up.</p>
+          <p className="caption-2 border-t border-border px-4 py-3 text-text-subtle">Free: 5 job opens a day. The notices below illustrate the layout; the companies are made up.</p>
         </div>
       ) : null}
     </div>

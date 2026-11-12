@@ -34,7 +34,7 @@ export default async function UsersPage({ searchParams }: { searchParams: SP }) 
       {done ? <div className="mb-6"><Notice tone="success" title="Done">Action recorded: {done}.</Notice></div> : null}
       {email && !user ? <Notice title="No account with that email" /> : null}
       {user ? (
-        <section aria-label="Account" className="flex flex-col gap-4 rounded-lg border border-border bg-surface p-6">
+        <section aria-label="Account" className="flex flex-col gap-4 border border-border bg-surface p-6">
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="title-2 text-text">{user.email}</h2>
             {suspended ? <Badge tone="danger">Suspended</Badge> : <Badge tone="success">In good standing</Badge>}

@@ -18,7 +18,7 @@ export default async function AdminPage() {
       <div className="flex flex-col gap-8">
         <dl className="grid gap-4 sm:grid-cols-3">
           {stats.map((s) => (
-            <div key={s.label} className="flex flex-col gap-1 rounded-lg border border-border bg-surface p-6">
+            <div key={s.label} className="flex flex-col gap-1 border border-border bg-surface p-6">
               <dt className="title-4 text-text-subtle">{s.label}</dt>
               <dd className="heading-4 tabular-nums text-text">{fmt(s.value)}</dd>
             </div>

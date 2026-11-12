@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BookmarkSimple } from "@phosphor-icons/react/dist/ssr";
 import { isDirect, OldPostingNote } from "@/components/jobs/job-card";
+import { DirectStamp } from "@/components/jobs/listing-parts";
 import { buttonClass } from "@/components/ui/button";
 import { Container } from "@/components/ui/layout";
 import { ApplyButton } from "./apply-button";
@@ -48,7 +49,7 @@ export default async function JobPage({ params, searchParams }: Props) {
   const closed = !!job.closedAt;
   const ld = jobPostingLd(job);
   return (
-    <Container className="max-w-3xl py-10 md:py-16">
+    <Container className="max-w-4xl py-8 md:py-12">
       {ld ? <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldScript(ld) }} /> : null}
       <p><Link href="/matches" className="body-6 text-text-subtle underline underline-offset-4 focus-visible:focus-ring">Back to matches</Link></p>
       {sp.limit === "opens" ? (
@@ -58,23 +59,24 @@ export default async function JobPage({ params, searchParams }: Props) {
         <div className="mt-6"><Notice tone="warning" title="Your saved list is full">Free plans keep {FREE.saves} saved jobs. Remove one in <Link href="/saved" className="text-action underline underline-offset-4">Saved</Link> or <Link href="/pricing" className="text-action underline underline-offset-4">see plans</Link>.</Notice></div>
       ) : null}
 
-      <article className="mt-6 rounded-sm border border-border bg-surface-raised">
-        <div className="p-6">
-          {isDirect(job) ? <span className="caption-3 inline-block rounded-sm bg-highlight px-1 text-on-highlight">Direct to company</span> : null}
-          <h1 className="heading-3 mt-2 text-text">{job.title}</h1>
-          <p className="body-4 mt-2 text-text-subtle">{[job.employerName, placeOf(job), pay].filter(Boolean).join(" · ")}</p>
+      <article className="mt-6 border border-border border-t-2 border-t-rule bg-surface-raised">
+        <div className="p-6 md:p-8">
+          {isDirect(job) ? <DirectStamp /> : null}
+          <h1 className="heading-3 md:heading-2 mt-3 text-text">{job.title}</h1>
+          <p className="title-2 mt-3 text-text">{job.employerName}<span className="text-text-subtle"> · {placeOf(job)}</span></p>
+          {pay ? <p className="heading-5 figures mt-2 text-text">{pay}</p> : null}
           {posted.old && posted.age !== null ? <div className="mt-4"><OldPostingNote days={posted.age} /></div> : null}
           {signals.filter((s) => s.code !== "old_posting").map((s) => <p key={s.code} className="body-6 mt-2 text-warning">{s.label}</p>)}
         </div>
-        <dl className="grid grid-cols-1 gap-4 border-t border-border p-6 sm:grid-cols-2">
-          <div><dt className="caption-1 text-text-subtle">First posted by the company</dt><dd className="body-4 text-text">{job.firstPublishedAt ? `${date(job.firstPublishedAt)} (${posted.label.replace("Posted ", "")})` : "Not shown by the company"}</dd></div>
-          <div><dt className="caption-1 text-text-subtle">Reposts in the last 90 days</dt><dd className="body-4 text-text">{repostText(job.repostCount90d)}</dd></div>
-          <div><dt className="caption-1 text-text-subtle">Last checked</dt><dd className="body-4 text-text">{checkedAgo(job.lastSeenAt, now)}</dd></div>
-          <div><dt className="caption-1 text-text-subtle">Source</dt><dd className="font-mono text-sm text-text">{job.sourceHost}</dd></div>
+        <dl className="grid grid-cols-1 gap-x-8 gap-y-4 border-t border-border p-6 sm:grid-cols-2 md:px-8">
+          <div><dt className="kicker text-text-subtle">First posted by the company</dt><dd className="body-4 text-text">{job.firstPublishedAt ? `${date(job.firstPublishedAt)} (${posted.label.replace("Posted ", "")})` : "Not shown by the company"}</dd></div>
+          <div><dt className="kicker text-text-subtle">Reposts in the last 90 days</dt><dd className="body-4 text-text">{repostText(job.repostCount90d)}</dd></div>
+          <div><dt className="kicker text-text-subtle">Last checked</dt><dd className="body-4 text-text">{checkedAgo(job.lastSeenAt, now)}</dd></div>
+          <div><dt className="kicker text-text-subtle">Source</dt><dd className="font-mono text-sm text-text">{job.sourceHost}</dd></div>
         </dl>
         {job.excerpt ? (
-          <div className="border-t border-border p-6">
-            <h2 className="title-4 text-text-subtle">From the posting</h2>
+          <div className="border-t border-border p-6 md:px-8">
+            <h2 className="kicker text-text-subtle">From the posting</h2>
             <p className="body-4 mt-2 text-text">{job.excerpt}{job.excerpt.length >= 590 ? "…" : ""}</p>
             <p className="caption-2 mt-2 text-text-subtle">Short excerpt. The full posting is on the company&apos;s own page.</p>
           </div>

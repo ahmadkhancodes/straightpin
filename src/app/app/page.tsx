@@ -26,9 +26,9 @@ export default async function OverviewPage() {
     <>
       <PageHeader title={ctx.org.name} description={`Signed in as ${ctx.user.email}.`} />
       <div className="grid gap-6 lg:grid-cols-3">
-        <section aria-labelledby="plan-h" className="flex flex-col gap-4 rounded-lg border border-border bg-surface p-6">
+        <section aria-labelledby="plan-h" className="flex flex-col gap-4 border border-border border-t-rule bg-surface-raised p-6">
           <div className="flex items-center justify-between gap-2">
-            <h2 id="plan-h" className="title-4 text-text-subtle">Current plan</h2>
+            <h2 id="plan-h" className="kicker text-text-subtle">Current plan</h2>
             {ent?.status === "past_due" ? <Badge tone="warning">Payment failed</Badge> : ent?.cancelAtPeriodEnd ? <Badge tone="warning">Ends soon</Badge> : <Badge tone="success">Active</Badge>}
           </div>
           <p className="heading-4 text-text">{plan.name}</p>
@@ -37,8 +37,8 @@ export default async function OverviewPage() {
             {plan.id === "free" ? "See plans" : "Manage plan"}
           </Link>
         </section>
-        <section aria-labelledby="usage-h" className="flex flex-col gap-4 rounded-lg border border-border bg-surface p-6 lg:col-span-2">
-          <h2 id="usage-h" className="title-4 text-text-subtle">Usage</h2>
+        <section aria-labelledby="usage-h" className="flex flex-col gap-4 border border-border border-t-rule bg-surface-raised p-6 lg:col-span-2">
+          <h2 id="usage-h" className="kicker text-text-subtle">Usage</h2>
           <div className="flex flex-col gap-6">
             {usage.map((u) => <Meter key={u.meter} state={u} />)}
           </div>

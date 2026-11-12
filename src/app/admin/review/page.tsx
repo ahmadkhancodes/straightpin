@@ -23,7 +23,7 @@ export default async function ReviewQueuePage() {
       {pending.length === 0 ? <p className="body-4 text-text-subtle">Nothing to review right now.</p> : null}
       <ul className="flex flex-col gap-4">
         {pending.map((j) => (
-          <li key={j.id} className="flex flex-col gap-3 rounded-lg border border-border bg-surface p-4">
+          <li key={j.id} className="flex flex-col gap-3 border border-border bg-surface p-4">
             <div>
               <p className="title-3 text-text">{j.title}</p>
               <p className="body-6 text-text-subtle">{j.employerName} · {j.sourceHost} · score {j.agencyScore.toFixed(2)}</p>

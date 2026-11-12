@@ -160,15 +160,15 @@ export function BillingClient(p: Props) {
               <article
                 key={pl.id}
                 aria-label={pl.name}
-                className={cn("flex flex-col gap-4 rounded-lg border bg-surface p-4", current || chosen ? "border-action" : "border-border")}
+                className={cn("flex flex-col gap-4 border p-4", pl.featured ? "bg-brand-tint" : "bg-surface-raised", current || chosen ? "border-rule" : "border-border")}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <h3 className="title-3 text-text">{pl.name}</h3>
+                  <h3 className="heading-6 text-text">{pl.name}</h3>
                   {current ? <Badge tone="success">Current</Badge> : null}
                 </div>
                 <p className="body-6 text-text-subtle">{pl.tagline}</p>
                 <p className="text-text">
-                  <span className="heading-5 tabular-nums">{price ? money(price.usd) : "$0"}</span>
+                  <span className="heading-5 figures">{price ? money(price.usd) : "$0"}</span>
                   <span className="caption-2 text-text-subtle"> {price ? intervalText(price.interval) : "forever"}</span>
                 </p>
                 {price && price.interval !== interval ? <p className="caption-2 text-text-muted">Billed {price.interval === "year" ? "yearly" : price.interval === "month" ? "monthly" : price.interval === "week" ? "weekly" : "once"} only.</p> : null}
@@ -185,7 +185,7 @@ export function BillingClient(p: Props) {
                 ) : p.isPaid ? (
                   <Button variant="secondary" onClick={portal} loading={busy === "portal"} disabled={!p.canManage}>Change in billing portal</Button>
                 ) : (
-                  <Button onClick={() => checkout(pl)} loading={busy === pl.id} disabled={!p.canManage || !!busy}>{pl.cta}</Button>
+                  <Button variant={pl.featured ? "primary" : "secondary"} onClick={() => checkout(pl)} loading={busy === pl.id} disabled={!p.canManage || !!busy}>{pl.cta}</Button>
                 )}
               </article>
             );

@@ -70,7 +70,7 @@ export function ProfileClient({ name: initial, email, verified }: { name: string
         </a>
       </Panel>
 
-      <section aria-labelledby="danger-h" className="flex flex-col gap-4 rounded-lg border border-danger p-6">
+      <section aria-labelledby="danger-h" className="flex flex-col gap-4 border border-danger p-6">
         <div className="flex flex-col gap-1">
           <h2 id="danger-h" className="title-2 text-danger">Delete account</h2>
           <p className="body-6 text-text-subtle">

@@ -26,7 +26,7 @@ export default async function CrawlHealthPage() {
       <PageHeader title="Crawl health" description="Per source success rate over the most recent crawl runs. Worst sources first. A source that fails 5 crawls in a row is disabled by the daily health check; enable it again here once the board is fixed. A source that fails 5 crawls in a row is disabled by the daily health check; enable it again here once the board is fixed." />
       <dl className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((s) => (
-          <div key={s.label} className="flex flex-col gap-1 rounded-lg border border-border bg-surface p-4">
+          <div key={s.label} className="flex flex-col gap-1 border border-border bg-surface p-4">
             <dt className="caption-3 text-text-subtle">{s.label}</dt>
             <dd className="title-2 text-text">{s.value}</dd>
           </div>

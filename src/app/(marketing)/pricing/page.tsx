@@ -28,12 +28,22 @@ const billingFaq = [
 export default function PricingPage() {
   return (
     <>
-      <Section labelledBy="pricing-title">
-        <h1 id="pricing-title" className="heading-3 md:heading-1 max-w-3xl text-text">What we charge, full stop.</h1>
-        <p className="body-3 md:title-1 mt-4 max-w-2xl text-text-subtle">The price is on this page before you sign up. Monthly is pre selected. Nothing is crossed out.</p>
+      <Section labelledBy="pricing-title" space="sm" head="Prices">
+        <div className="grid gap-8 lg:grid-cols-12 lg:items-end">
+          <div className="lg:col-span-8">
+            <h1 id="pricing-title" className="heading-3 md:heading-1 max-w-3xl text-text">What we charge, full stop.</h1>
+            <p className="body-3 md:title-1 mt-4 max-w-2xl text-text-subtle">The price is on this page before you sign up. Monthly is pre selected. Nothing is crossed out.</p>
+          </div>
+          <dl className="body-6 figures grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 border border-rule bg-surface-raised p-4 text-text lg:col-span-4" aria-label="Our billing promises">
+            <dt className="text-text-subtle">Price</dt><dd>shown before sign up</dd>
+            <dt className="text-text-subtle">Cancel</dt><dd>two taps, from Billing</dd>
+            <dt className="text-text-subtle">Refund</dt><dd>{product.refundDays} days from first payment</dd>
+            <dt className="text-text-subtle">Reminder</dt><dd>email before every renewal</dd>
+          </dl>
+        </div>
         <div className="mt-12"><PricingTable /></div>
       </Section>
-      <Faq title="Billing questions" items={billingFaq} />
+      <Faq title="Billing questions" items={billingFaq} head="Billing" />
     </>
   );
 }

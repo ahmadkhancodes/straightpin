@@ -42,12 +42,12 @@ export function ApplyButton({ jobId, host }: { jobId: string; host: string }) {
   }
 
   return (
-    <div className="border-t-[1.5px] border-dashed border-border">
-      <button type="button" onClick={go} aria-busy={busy} className="group flex min-h-12 w-full items-center justify-between gap-3 bg-brand-tint px-6 py-3 text-left text-action focus-visible:focus-ring">
-        <span className="button-md inline-flex items-center gap-2 whitespace-nowrap transition-transform duration-tear ease-out-kit motion-reduce:transition-none group-hover:translate-x-1"><ArrowRight size={20} weight="regular" aria-hidden />Apply at company</span>
-        <span className="hidden min-w-0 truncate font-mono text-xs text-text-subtle sm:block">{host}</span>
+    <div className="sticky bottom-0 z-10 border-t-[1.5px] border-dashed border-rule md:static">
+      <button type="button" onClick={go} aria-busy={busy} className="group flex min-h-14 w-full items-center justify-between gap-3 bg-highlight px-6 py-3 text-left text-on-highlight transition-colors duration-300 ease-out-kit hover:bg-signal-hover focus-visible:focus-ring">
+        <span className="button-md inline-flex items-center gap-2 whitespace-nowrap transition-transform duration-tear ease-out-kit motion-reduce:transition-none group-hover:translate-x-1"><ArrowRight size={20} weight="bold" aria-hidden />Apply at company</span>
+        <span className="hidden min-w-0 truncate font-mono text-xs text-on-highlight sm:block">{host}</span>
       </button>
-      {error ? <p role="alert" className="body-6 bg-brand-tint px-6 pb-4 text-text">{error}</p> : null}
+      {error ? <p role="alert" className="body-6 bg-brand-tint px-6 py-3 text-text">{error}</p> : null}
     </div>
   );
 }

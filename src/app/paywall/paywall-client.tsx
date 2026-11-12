@@ -75,7 +75,7 @@ export function PaywallClient(p: { title: string; body: string; from: string; si
           const disabled = o.interval === "once" && soldOut;
           const on = sel === o.key;
           return (
-            <label key={o.key} className={cn("flex min-h-14 cursor-pointer items-start gap-3 rounded-lg border p-4", on ? "border-action bg-surface-raised ring-2 ring-action" : "border-border bg-surface", disabled && "cursor-not-allowed opacity-60")}>
+            <label key={o.key} className={cn("flex min-h-14 cursor-pointer items-start gap-3 border p-4", on ? "border-action bg-surface-raised ring-2 ring-action" : "border-border bg-surface", disabled && "cursor-not-allowed opacity-60")}>
               <input type="radio" name="plan" value={o.key} checked={on} disabled={disabled} onChange={() => setSel(o.key)} className="mt-1 size-5 accent-current" />
               <span className="flex flex-1 flex-col gap-1">
                 <span className="flex flex-wrap items-baseline justify-between gap-x-3">

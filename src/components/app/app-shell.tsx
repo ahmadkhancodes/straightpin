@@ -36,7 +36,7 @@ function NavLink({ item, pathname, onNavigate }: { item: NavItem; pathname: stri
       aria-current={active ? "page" : undefined}
       className={cn(
         "flex min-h-11 items-center gap-3 rounded-md px-3 py-2 body-5 transition-colors duration-300 focus-visible:focus-ring",
-        active ? "bg-surface-sunken text-text" : "text-text-subtle hover:bg-surface-raised hover:text-text",
+        active ? "bg-highlight font-semibold text-on-highlight" : "text-text-subtle hover:bg-surface-sunken hover:text-text",
       )}
     >
       <Icon size={20} weight="regular" aria-hidden />
@@ -55,12 +55,12 @@ function SidebarBody({ org, user, isAdmin, pathname, onNavigate }: { org: { id: 
           {MAIN.map((i) => <NavLink key={i.href} item={i} pathname={pathname} onNavigate={onNavigate} />)}
         </div>
         <div className="flex flex-col gap-1">
-          <p className="px-3 pb-1 caption-3 text-text-muted">Settings</p>
+          <p className="kicker px-3 pb-1 text-text-subtle">Settings</p>
           {SETTINGS.map((i) => <NavLink key={i.href} item={i} pathname={pathname} onNavigate={onNavigate} />)}
         </div>
         {isAdmin ? (
           <div className="flex flex-col gap-1">
-            <p className="px-3 pb-1 caption-3 text-text-muted">Founder</p>
+            <p className="kicker px-3 pb-1 text-text-subtle">Founder</p>
             <NavLink item={{ href: "/admin", label: "Admin", icon: Gauge }} pathname={pathname} onNavigate={onNavigate} />
           </div>
         ) : null}
@@ -80,7 +80,7 @@ function SidebarBody({ org, user, isAdmin, pathname, onNavigate }: { org: { id: 
             await authClient.signOut();
             hardNavigate("/");
           }}
-          className="flex min-h-11 items-center gap-3 rounded-md px-3 py-2 body-5 text-text-subtle transition-colors duration-300 hover:bg-surface-raised hover:text-text focus-visible:focus-ring disabled:opacity-50"
+          className="flex min-h-11 items-center gap-3 rounded-md px-3 py-2 body-5 text-text-subtle transition-colors duration-300 hover:bg-surface-sunken hover:text-text focus-visible:focus-ring disabled:opacity-50"
         >
           <SignOut size={20} weight="regular" aria-hidden />
           {signingOut ? "Signing out" : "Sign out"}
@@ -115,16 +115,16 @@ export function AppShell({ org, user, isAdmin, productName, banners, children }:
 
   return (
     <div className="flex min-h-dvh flex-col bg-surface lg:flex-row">
-      <aside className="sticky top-0 hidden h-dvh w-full max-w-xs shrink-0 flex-col border-r border-border bg-surface-raised p-4 lg:flex lg:w-1/4 xl:w-1/5">
+      <aside className="sticky top-0 hidden h-dvh w-full max-w-xs shrink-0 flex-col border-r-2 border-rule bg-surface p-4 lg:flex lg:w-1/4 xl:w-1/5">
         <div className="mb-6 px-3 pt-2">
-          <Link href="/app" className="heading-6 inline-flex min-h-11 items-center text-text focus-visible:focus-ring">{productName}</Link>
+          <Link href="/app" className="heading-5 inline-flex min-h-11 items-center text-text focus-visible:focus-ring"><span aria-hidden className="mr-2 inline-block size-3 bg-highlight outline outline-1 outline-rule" />{productName}</Link>
         </div>
         <div className="min-h-0 flex-1">
           <SidebarBody org={org} user={user} isAdmin={isAdmin} pathname={pathname} />
         </div>
       </aside>
 
-      <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-surface px-4 py-2 lg:hidden">
+      <header className="sticky top-0 z-20 flex items-center justify-between border-b-2 border-rule bg-surface px-4 py-2 lg:hidden">
         <Link href="/app" className="heading-6 inline-flex min-h-11 items-center text-text focus-visible:focus-ring">{productName}</Link>
         <button
           type="button"
@@ -132,7 +132,7 @@ export function AppShell({ org, user, isAdmin, productName, banners, children }:
           aria-expanded={open}
           aria-controls="mobile-menu"
           onClick={() => setOpen(true)}
-          className="inline-flex size-11 items-center justify-center rounded-md text-text transition-colors duration-300 hover:bg-surface-raised focus-visible:focus-ring"
+          className="inline-flex size-11 items-center justify-center rounded-md text-text transition-colors duration-300 hover:bg-surface-sunken focus-visible:focus-ring"
         >
           <List size={24} weight="regular" aria-hidden />
         </button>
@@ -152,7 +152,7 @@ export function AppShell({ org, user, isAdmin, productName, banners, children }:
             type="button"
             aria-label="Close menu"
             onClick={() => setOpen(false)}
-            className="inline-flex size-11 items-center justify-center rounded-md text-text transition-colors duration-300 hover:bg-surface-raised focus-visible:focus-ring"
+            className="inline-flex size-11 items-center justify-center rounded-md text-text transition-colors duration-300 hover:bg-surface-sunken focus-visible:focus-ring"
           >
             <X size={24} weight="regular" aria-hidden />
           </button>
