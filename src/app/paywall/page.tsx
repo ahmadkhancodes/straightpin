@@ -1,3 +1,4 @@
+import { resetPhrase } from "@/lib/jobs/format";
 import type { Metadata } from "next";
 import { product } from "@/config/product";
 import { getOrgContext } from "@/lib/auth/session";
@@ -14,7 +15,7 @@ const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
 const FREE = product.plans[0]!.limits;
 const REASONS = {
-  opens: { title: `You have used today's ${FREE.opens} free opens`, body: `Free plans open ${FREE.opens} jobs a day. The count resets at midnight UTC. You can keep browsing every title and company for free.` },
+  opens: { title: `You have used today's ${FREE.opens} free opens`, get body() { return `Free plans open ${FREE.opens} jobs a day. You get them back ${resetPhrase()}. Jobs you already opened stay open, and you can keep browsing every title and company for free.`; } },
   saves: { title: "Your saved list is full", body: `Free plans keep ${FREE.saves} saved jobs. You can remove one, or pick a plan for unlimited saves.` },
   feature: { title: "That is part of a paid plan", body: "Everything you can see today stays free. This feature needs a plan." },
 } as const;

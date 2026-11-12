@@ -11,6 +11,8 @@ if (!KEY) {
   process.exit(1);
 }
 const APP = product.slug;
+/** Tests point this at a local stand-in of the Stripe API (tests/unit/docs-commands.test.ts). */
+const API = process.env.STRIPE_API_BASE ?? "https://api.stripe.com";
 type Dict = Record<string, unknown>;
 
 function form(obj: Dict, prefix = "", out = new URLSearchParams()): URLSearchParams {
@@ -25,7 +27,7 @@ function form(obj: Dict, prefix = "", out = new URLSearchParams()): URLSearchPar
 
 async function stripe(method: "GET" | "POST", path: string, params: Dict = {}): Promise<Dict> {
   const body = form(params);
-  const res = await fetch(`https://api.stripe.com/v1/${path}${method === "GET" ? `?${body}` : ""}`, {
+  const res = await fetch(`${API}/v1/${path}${method === "GET" ? `?${body}` : ""}`, {
     method,
     headers: { Authorization: `Bearer ${KEY}`, "Content-Type": "application/x-www-form-urlencoded" },
     body: method === "POST" ? body : undefined,

@@ -10,7 +10,7 @@ import { effectivePlan } from "@/lib/billing/entitlement";
 import { FIELDS, fieldLabel } from "@/lib/jobs/fields";
 import { ruleLabel } from "@/lib/jobs/alertRules";
 import { getDb } from "@/lib/db";
-import { QUIZ_STEPS, answersFromProfile, type QuizAnswers } from "@/lib/jobs/matching";
+import { PAY_SIGN, QUIZ_STEPS, answersFromProfile, type QuizAnswers } from "@/lib/jobs/matching";
 
 export const metadata: Metadata = { title: "Email alerts", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -76,8 +76,8 @@ export default async function AlertsPage({ searchParams }: Props) {
             <label className="caption-1 flex flex-col gap-1 text-text-subtle">City or region (optional)
               <input name="location" maxLength={60} placeholder="Toronto" className={field} />
             </label>
-            <label className="caption-1 flex flex-col gap-1 text-text-subtle">Pay floor per hour (optional)
-              <input name="payFloor" type="number" min={0} max={500} step="0.5" inputMode="decimal" placeholder="18" className={field} />
+            <label className="caption-1 flex flex-col gap-1 text-text-subtle">Pay floor, {PAY_SIGN[profile.country]} per hour (optional)
+              <input name="payFloor" type="number" min={0} max={500} step="0.5" inputMode="decimal" placeholder="18" defaultValue={profile.payFloor || undefined} className={field} />
             </label>
             <div className="sm:col-span-2"><button type="submit" className={buttonClass("primary")}>Save alert</button></div>
           </form>

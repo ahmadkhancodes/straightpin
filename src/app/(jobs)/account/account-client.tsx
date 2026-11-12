@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "@/components/app/api";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Notice } from "@/components/ui/states";
@@ -18,8 +18,13 @@ interface Props {
   priceUsd: number | null;
   interval: Interval | null;
   refund: { eligible: boolean; reason: "ok" | "used" | "window" | "none"; until: number | null } | null;
-  justPaid: boolean;
+  /** Back from Stripe Checkout: `success` or `canceled` (see /api/billing/checkout). */
+  checkout: "success" | "canceled" | null;
 }
+
+/** After Checkout the webhook usually lands within seconds; check this many times, every POLL_MS, before saying "we will email you". */
+export const POLL_TRIES = 10;
+export const POLL_MS = 3000;
 
 const money = (cents: number) => `$${(cents / 100).toFixed(cents % 100 === 0 ? 0 : 2)}`;
 const day = (ms: number) => new Intl.DateTimeFormat("en-US", { dateStyle: "long", timeZone: "UTC" }).format(new Date(ms));
@@ -32,6 +37,14 @@ export function AccountClient(p: Props) {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<"cancelled" | "refunded" | null>(null);
+  const [polls, setPolls] = useState(0);
+  const waiting = p.checkout === "success" && !p.isPaid;
+  // Paid but the webhook has not arrived yet: refresh the server data a few times instead of showing Free as if nothing happened.
+  useEffect(() => {
+    if (!waiting || polls >= POLL_TRIES) return;
+    const t = setTimeout(() => { setPolls((n) => n + 1); router.refresh(); }, POLL_MS);
+    return () => clearTimeout(t);
+  }, [waiting, polls, router]);
 
   async function call(kind: "cancel" | "refund" | "portal") {
     setBusy(kind);
@@ -79,7 +92,10 @@ export function AccountClient(p: Props) {
 
   return (
     <div className="mt-8 flex flex-col gap-6">
-      {p.justPaid && !ended ? <Notice tone="success" title="Thanks, your plan is on">It can take a few seconds to show here. A receipt is on its way by email.</Notice> : null}
+      {p.checkout === "success" && p.isPaid && !ended ? <Notice tone="success" title="Thanks, your plan is on">Every job opens now, and your saves have no limit.</Notice> : null}
+      {waiting && polls < POLL_TRIES ? <Notice title="Turning your plan on">Thanks for paying. Stripe is confirming the payment, which usually takes a few seconds. This page updates by itself.</Notice> : null}
+      {waiting && polls >= POLL_TRIES ? <Notice title="Your payment is still being confirmed">This is taking longer than usual. Reload this page in a few minutes. If you were charged and your plan is still Free after an hour, email {product.supportEmail} and we will sort it out.</Notice> : null}
+      {p.checkout === "canceled" && !p.isPaid ? <Notice title="Checkout closed">Nothing was charged and you are still on Free. <Link href="/paywall?reason=feature&from=%2Faccount" className="text-action underline underline-offset-4">Pick a plan</Link> whenever you like.</Notice> : null}
       {done === "cancelled" ? <Notice tone="success" title="Your plan will not renew">Nothing more will be charged. You keep your plan until the date below.</Notice> : null}
       {ended ? <Notice tone="success" title="Refund issued">Your plan is off and the money is on its way back. We sent you a confirmation email. Refunds usually reach your card in 5 to 10 business days.</Notice> : null}
       {error ? <Notice tone="danger" title="That did not go through">{error}</Notice> : null}

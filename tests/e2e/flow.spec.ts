@@ -23,9 +23,13 @@ test("magic link sign-in, org, billing state, api key, cron guard", async ({ pag
   const box2 = await (await request.get(`/api/dev/outbox?to=${encodeURIComponent(email)}`)).json();
   expect(box2.messages).toHaveLength(2);
 
-  const org = await page.request.post("/api/auth/organization/create", { data: { name: "Harbor Studio", slug: `harbor-${Date.now()}` }, headers: origin });
-  expect(org.ok()).toBeTruthy();
-  const orgId = (await org.json()).id;
+  // The first sign-in sets up the one personal account by itself (D-058); a second one is refused (D-057).
+  const orgs = await (await page.request.get("/api/auth/organization/list")).json();
+  expect(orgs).toHaveLength(1);
+  expect(orgs[0].name).toBe("My job search");
+  const orgId = orgs[0].id;
+  const second = await page.request.post("/api/auth/organization/create", { data: { name: "Harbor Studio", slug: `harbor-${Date.now()}` }, headers: origin });
+  expect(second.ok()).toBeFalsy();
   await page.request.post("/api/auth/organization/set-active", { data: { organizationId: orgId }, headers: origin });
 
   const ent = await (await page.request.get("/api/billing/entitlement")).json();

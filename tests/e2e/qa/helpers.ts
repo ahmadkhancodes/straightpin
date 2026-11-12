@@ -29,8 +29,8 @@ export async function firstJobId(page: Page, request: APIRequestContext) {
 export async function finishOnboarding(page: Page, name = "QA Studio") {
   await page.waitForLoadState("networkidle");
   if (!page.url().includes("/onboarding")) return;
-  await page.getByLabel("Organization name").fill(name);
-  await page.getByRole("button", { name: "Create organization" }).click();
+  await page.getByLabel("Account name").fill(name);
+  await page.getByRole("button", { name: "Continue" }).click();
   await page.waitForURL((u) => !u.pathname.startsWith("/onboarding"));
 }
 

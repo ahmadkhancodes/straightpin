@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { cadence, product } from "@/config/product";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { ShieldCheck } from "@phosphor-icons/react/dist/ssr";
 import { JobCard } from "@/components/jobs/job-card";
@@ -14,7 +15,7 @@ import { currentUsage } from "@/lib/billing/usage";
 import { agencyReceipt } from "@/lib/classify/classify";
 import { getDb } from "@/lib/db";
 import { fieldLabel } from "@/lib/jobs/fields";
-import { answersFromProfile, liveCount, parseAnswers, QUIZ_STEPS, queryFromAnswers, rankJobs, type QuizAnswers } from "@/lib/jobs/matching";
+import { ANSWERS_COOKIE, answersFromCookie, answersFromProfile, answersQuery, liveCount, optionLabel, parseAnswers, QUIZ_STEPS, queryFromAnswers, rankJobs, type QuizAnswers } from "@/lib/jobs/matching";
 
 export const metadata: Metadata = { title: "Your matches", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -34,7 +35,12 @@ export default async function MatchesPage({ searchParams }: { searchParams: Prom
   const profile = ctx ? await db.getProfile(ctx.org.id) : null;
   const fromUrl = parseAnswers(get);
   const answers: QuizAnswers | undefined = fromUrl ?? (profile ? answersFromProfile(profile) : undefined);
-  if (!answers) redirect("/quiz");
+  if (!answers) {
+    // "Back to matches" from a job, or a bare /matches: reuse the last answers instead of starting the quiz again.
+    const remembered = answersFromCookie((await cookies()).get(ANSWERS_COOKIE)?.value);
+    if (remembered) redirect(`/matches?${answersQuery(remembered)}`);
+    redirect("/quiz");
+  }
 
   const now = new Date();
   const q = queryFromAnswers(answers);
@@ -86,7 +92,7 @@ export default async function MatchesPage({ searchParams }: { searchParams: Prom
               <label key={key} className="caption-1 flex min-w-0 flex-col gap-1 text-text">
                 {label}
                 <select name={key} defaultValue={String(answers[key])} className={selectClass}>
-                  {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  {options.map((o) => <option key={o.value} value={o.value}>{optionLabel(key, o.label, answers.country)}</option>)}
                 </select>
               </label>
             ))}
