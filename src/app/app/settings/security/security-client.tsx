@@ -64,7 +64,7 @@ function Passkeys() {
         {list.loading ? <Skeleton className="h-16 w-full" /> : list.error ? (
           <ErrorState title="Passkeys did not load" body={list.error} action={<Button onClick={list.reload}>Try again</Button>} />
         ) : list.data && list.data.length > 0 ? (
-          <ul className="flex flex-col divide-y divide-border rounded-lg border border-border">
+          <ul className="flex flex-col divide-y divide-border border border-border">
             {list.data.map((p) => (
               <li key={p.id} className="flex items-center justify-between gap-4 p-3">
                 <div className="flex min-w-0 items-center gap-3">
@@ -167,7 +167,7 @@ function TwoFactor({ initiallyEnabled }: { initiallyEnabled: boolean }) {
     >
       <div className="flex flex-col gap-4">
         {codes ? (
-          <div role="status" className="flex flex-col gap-3 rounded-lg border border-success bg-success-surface p-4">
+          <div role="status" className="flex flex-col gap-3 border border-success bg-success-surface p-4">
             <p className="title-4 text-text">Two-factor is on. Save your backup codes.</p>
             <p className="body-6 text-text-subtle">Each code works once if you lose your phone. We show them only now.</p>
             <ul className="grid grid-cols-2 gap-2 sm:grid-cols-5">

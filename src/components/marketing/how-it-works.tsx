@@ -10,16 +10,16 @@ export interface Step {
   visual: ReactNode;
 }
 
-export function HowItWorks({ title, steps }: { title: ReactNode; steps: Step[] }) {
+export function HowItWorks({ title, steps, head }: { title: ReactNode; steps: Step[]; head?: ReactNode }) {
   return (
-    <Section labelledBy="how-title">
+    <Section labelledBy="how-title" space="lg" head={head}>
       <h2 id="how-title" className="heading-4 md:heading-2 max-w-2xl text-text">{title}</h2>
-      <ol className="mt-12 flex flex-col gap-16 md:mt-16 md:gap-24">
+      <ol className="mt-12 flex flex-col gap-12 md:mt-16 md:gap-20">
         {steps.map((step, i) => (
           <li key={step.title}>
             <Reveal className="grid items-center gap-6 lg:grid-cols-12 lg:gap-16">
               <div className={cn("flex flex-col gap-3 lg:col-span-5", i % 2 === 1 && "lg:order-2 lg:col-start-8")}>
-                <p aria-hidden className="heading-2 tabular-nums text-text-muted">{String(i + 1).padStart(2, "0")}</p>
+                <p aria-hidden className="figures heading-4 w-fit border-b-2 border-rule pb-1 text-text">{String(i + 1).padStart(2, "0")}</p>
                 <h3 className="heading-5 text-text"><span className="sr-only">Step {i + 1}: </span>{step.title}</h3>
                 <p className="body-3 text-text-subtle">{step.body}</p>
               </div>

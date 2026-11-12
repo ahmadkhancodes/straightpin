@@ -1,4 +1,40 @@
-# Design QA scorecard (M1-B, re-graded in M2, 5 Nov 2026)
+# Design QA scorecard
+
+## Redesign "the Help Wanted page" (12 Nov 2026, D-053)
+Method: DESIGN_PLAYBOOK §9. Production build (`npm run build && next start`, memory DB with seeded jobs), Playwright screenshots at 1440x900 and 375x812, light only, opened and graded by eye. Final images: `docs/qa/design/` (marketing, full page) and `docs/qa/design/app/` (signed in: quiz, job, saved, alerts, account, paywall, /app, billing, profile, security). Live competitor captures: `docs/design/refs/2026-11/`.
+
+### Iterations
+| Round | Hero | Core app screen (matches, job) | Pricing |
+|---|---|---|---|
+| 1 | Broadsheet hero worked, but mono everywhere read as a terminal (crawl line, pay, the big price) | Listing rows on one ruled sheet read well; signed-in header still said "Log in" | Three cards were replaced by a rate card; Lifetime said "Cancel in two taps" |
+| 2 | Mono limited to source hosts; price set in Newsreader with a yellow mark; crawl line was inheriting the condensed kicker | At 375 six filters pushed every job below the fold; job page Apply strip below the fold | Promise box text at 12px; heading order skipped a level |
+| 3 | Fixed crawl line; heading-order fix in the listing column; font files trimmed so LCP lands earlier | Filters fold behind one 44px "Refine this list" toggle; Apply strip sticks to the bottom on phones; stamp no longer wraps; header shows Account when signed in; billing has one primary button | Promise box at 14px; plans are h2 on /pricing; Lifetime says "One payment, nothing renews." |
+
+### Score (final)
+| # | Category | Score | Worst remaining problem |
+|---|---|---|---|
+| 1 | Message clarity | 5 | none found: H1, price, refund and one CTA are on the first screen at 375 and 1440 |
+| 2 | ICP fit | 5 | Differs from DirectRoles on palette, type, layout, radius, imagery and tone |
+| 3 | Hero and product proof | 4 | Hero listing uses labelled sample data until the live crawl has volume |
+| 4 | Structure and rhythm | 4 | Section heads on rules and three paddings vary the rhythm; FAQ and compare are still conventional blocks |
+| 5 | Typography | 4 | Newsreader + Archivo + mono for hosts only; kicker caps are tracked, not condensed (the width axis was dropped for LCP) |
+| 6 | Spacing and radius | 5 | 0 on surfaces, 4px on controls, enforced by theme overrides and a unit test |
+| 7 | Color and contrast | 5 | Ink on newsprint, one signal colour that is never text; axe and Lighthouse a11y 98 to 100 |
+| 8 | Motion and states | 4 | Hover, focus (ink outline + yellow halo), loading, empty with example row, error; counter flip and tear slide off under reduced motion |
+| 9 | Content honesty | 5 | No invented numbers; every example is labelled |
+| 10 | Responsive and ship | 4 | No overflow at 375; Monthly is third in the stacked rate card on phones |
+
+Total **45/50**, no category under 4, no hard fail.
+
+### Lighthouse (mobile preset, local production build, 12 Nov 2026)
+`/`: performance 95, accessibility 100, CLS 0, LCP 2.9 s. `/pricing`: performance 96, accessibility 98 before the heading-order fix (fixed afterwards, not re-measured), CLS 0, LCP 2.7 s.
+
+### Banned AI tells, checked page by page
+Centred hero over a blob: gone (asymmetric 7/5 with a column rule). Purple/indigo: none (unit test). Generic font: Newsreader + Archivo + mono. Three icon cards: replaced by a numbered "How to read a listing" legend and a rate card. Emoji or stock art: none. Glassmorphism: none. One radius everywhere: 0 / 4px system. Pill badges: none (test fails on `rounded-full` outside the spinner). Uniform rhythm: three section paddings plus section heads. Invented stat strips: none. Vague copy: none found with the playbook grep.
+
+---
+
+## History: M1-B to M2 (5 Nov 2026, old tomato direction)
 
 Method: DESIGN_PLAYBOOK §9. Screenshots in `docs/qa/` (`/`, `/pricing`, `/compare/directroles`, `/how-we-check`, `/sign-in`; 375 and 1440, light; from `npm run build && npm start`). Self graded. M2: I now also looked at `/pricing`, `/how-we-check`, `/quiz`, `/matches` and `/job/[id]` at 375 light by eye (screenshots regenerated in `docs/qa/`, now including quiz, matches and job). Fixed from that look: duplicated "Remote, Remote" in the place line, a truncated pay option in the filter, a job with no company date being called "posted today", and the apply tab wrapping beside the host on narrow screens.
 

@@ -60,9 +60,9 @@ export default async function JobsLandingPage({ params }: Props) {
       <div className="body-4 mt-4 flex flex-col gap-3 text-text-subtle">{intro.map((t) => <p key={t}>{t}</p>)}</div>
       <p className="mt-6"><Link href={`/quiz?field=${data.field}${data.location.country ? `&country=${data.location.country}` : ""}`} className={buttonClass("primary")}>Get matches for your answers</Link></p>
       <h2 className="heading-5 mt-12 text-text">Newest {fieldLabel(data.field).toLowerCase()} jobs {data.location.kind === "remote" ? "that are remote" : `in ${data.location.label}`}</h2>
-      <div className="mt-4 grid grid-cols-1 gap-3">
-        {data.jobs.map((j) => <JobCard key={j.id} job={j} now={now} />)}
-      </div>
+      <ul className="mt-4 divide-y divide-border border-y border-rule bg-surface-raised">
+        {data.jobs.map((j) => <li key={j.id}><JobCard job={j} now={now} /></li>)}
+      </ul>
       {data.total > data.jobs.length ? <p className="body-6 mt-4 text-text-subtle">Showing the newest {data.jobs.length} of {data.total.toLocaleString("en-US")}. The quiz narrows the rest to your pay floor, level and schedule.</p> : null}
       <p className="body-6 mt-8 text-text-subtle">Every job links to the employer&apos;s own page. We removed staffing agency posts from this list. <Link href="/how-we-check" className="text-action underline underline-offset-4">How we check</Link></p>
     </Container>

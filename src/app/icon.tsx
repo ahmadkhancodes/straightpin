@@ -14,11 +14,11 @@ export default function Icon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#B8381C",
-          color: "#ffffff",
+          background: "#FFD43B",
+          color: "#121417",
           fontSize: 22,
           fontWeight: 700,
-          borderRadius: 6,
+          borderRadius: 0,
         }}
       >
         {product.name.charAt(0)}

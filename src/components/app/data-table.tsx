@@ -6,7 +6,7 @@ export interface Column { key: string; label: string; align?: "left" | "right"; 
 /** Table with a sticky header and tabular numerals. Wraps in a scroll container so phones never overflow the page. */
 export function DataTable({ caption, columns, children, maxHeight = false }: { caption: string; columns: Column[]; children: ReactNode; maxHeight?: boolean }) {
   return (
-    <div className={cn("w-full overflow-auto rounded-lg border border-border bg-surface", maxHeight && "max-h-dvh")}>
+    <div className={cn("w-full overflow-auto border border-border bg-surface", maxHeight && "max-h-dvh")}>
       <table className="w-full border-collapse text-left tabular-nums">
         <caption className="sr-only">{caption}</caption>
         <thead>

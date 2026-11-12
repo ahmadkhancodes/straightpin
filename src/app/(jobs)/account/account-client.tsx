@@ -85,7 +85,7 @@ export function AccountClient(p: Props) {
       {error ? <Notice tone="danger" title="That did not go through">{error}</Notice> : null}
       {!p.canManage ? <Notice title="Read only">Only the account owner can change the plan or payment method.</Notice> : null}
 
-      <section aria-labelledby="plan-h" className="rounded-lg border border-border bg-surface p-4 sm:p-6">
+      <section aria-labelledby="plan-h" className="border border-border bg-surface p-4 sm:p-6">
         <h2 id="plan-h" className="caption-3 text-text-subtle">Your plan</h2>
         <p className="heading-4 mt-1 text-text" data-testid="plan-name">{ended ? "Free" : p.planName}</p>
         {!ended && renewText ? <p className="body-5 mt-2 text-text-subtle" data-testid="renew-text">{renewText}</p> : null}
@@ -95,7 +95,7 @@ export function AccountClient(p: Props) {
       </section>
 
       {p.isPaid && !ended && p.canManage ? (
-        <section aria-labelledby="manage-h" className="flex flex-col gap-4 rounded-lg border border-border bg-surface p-4 sm:p-6">
+        <section aria-labelledby="manage-h" className="flex flex-col gap-4 border border-border bg-surface p-4 sm:p-6">
           <h2 id="manage-h" className="title-2 text-text">Manage</h2>
 
           {!p.lifetime ? (
@@ -139,7 +139,7 @@ export function AccountClient(p: Props) {
         </section>
       ) : null}
 
-      <section aria-labelledby="data-h" className="flex flex-col gap-4 rounded-lg border border-border bg-surface p-4 sm:p-6">
+      <section aria-labelledby="data-h" className="flex flex-col gap-4 border border-border bg-surface p-4 sm:p-6">
         <h2 id="data-h" className="title-2 text-text">Your data</h2>
         <p className="body-6 text-text-subtle">Download everything we hold about you as one JSON file: your answers, saved jobs, alerts and billing records. Or delete your account. Deleting cancels any paid plan, removes your answers, saved jobs and alerts, and cannot be undone. Billing records we must keep for tax stay with our payment provider.</p>
         <div className="flex flex-col gap-3">

@@ -1,12 +1,14 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { product } from "@/config/product";
 import { buttonClass } from "@/components/ui/button";
 import { cn } from "@/components/ui/cn";
 
 const STAGGER_MS = 60;
+const noSubscribe = () => () => {};
+const readSignedInHint = () => /(?:^|;\s*)sp_in=1(?:;|$)/.test(document.cookie);
 
 /** Floating bar, off the top edge. Mobile: full-height panel, staggered links (60ms, 24px rise, <= 400ms total). */
 export function SiteHeader() {
@@ -16,6 +18,10 @@ export function SiteHeader() {
   const open = openFor === pathname;
   const toggleRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+
+  // Signed in? The proxy keeps a readable presence hint cookie in step with the session cookie, so the header
+  // shows "Account" without calling the (rate limited) session endpoint on every page view.
+  const signedIn = useSyncExternalStore(noSubscribe, readSignedInHint, () => false);
 
   const close = useCallback(() => {
     setOpenFor(null);
@@ -62,8 +68,8 @@ export function SiteHeader() {
   const isCurrent = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
   const linkClass = (href: string) =>
     cn(
-      "inline-flex min-h-11 items-center rounded-md px-3 button-sm transition-colors duration-300 ease-out-kit hover:bg-surface-raised hover:text-text focus-visible:focus-ring",
-      isCurrent(href) ? "text-text" : "text-text-subtle",
+      "inline-flex min-h-11 items-center rounded-md px-3 button-sm decoration-2 underline-offset-8 transition-colors duration-300 ease-out-kit hover:text-text hover:underline focus-visible:focus-ring",
+      isCurrent(href) ? "text-text underline" : "text-text-subtle",
     );
 
   const panelItems = [
@@ -72,11 +78,12 @@ export function SiteHeader() {
   ];
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-surface-raised">
+    <header className="fixed inset-x-0 top-0 z-50 border-b-2 border-rule bg-surface">
       <div className="relative z-50 mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-2 sm:px-6 lg:px-8">
         <Link href="/" className="inline-flex min-h-11 items-center rounded-md title-2 text-text focus-visible:focus-ring" aria-label={`${product.name} home`}>
+          <span aria-hidden className="mr-2 inline-block size-3 bg-highlight outline outline-1 outline-rule" />
           <span className="heading-5">{product.name}</span>
-          <span className="caption-4 ml-2 mt-1 hidden text-text-subtle min-[480px]:inline">by BufferSol</span>
+          <span className="kicker ml-2 mt-1 hidden text-text-subtle min-[480px]:inline">by BufferSol</span>
         </Link>
         <nav aria-label="Primary" className="hidden items-center gap-1 md:flex">
           {product.nav.map((n) => (
@@ -86,7 +93,7 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="flex items-center gap-1">
-          <Link href="/sign-in" className={buttonClass("secondary", "md")}>Log in</Link>
+          {signedIn ? <Link href="/account" className={buttonClass("secondary", "md")}>Account</Link> : <Link href="/sign-in" className={buttonClass("secondary", "md")}>Log in</Link>}
           <span className="hidden md:block"><Link href="/quiz" className={buttonClass("primary", "md")}>See my matches</Link></span>
           <button
             ref={toggleRef}
@@ -95,7 +102,7 @@ export function SiteHeader() {
             aria-controls="mobile-menu"
             aria-label={open ? "Close menu" : "Open menu"}
             onClick={() => (open ? close() : setOpenFor(pathname))}
-            className="inline-flex size-11 items-center justify-center rounded-md text-text transition-colors duration-300 ease-out-kit hover:bg-surface-raised focus-visible:focus-ring md:hidden"
+            className="inline-flex size-11 items-center justify-center rounded-md text-text transition-colors duration-300 ease-out-kit hover:bg-surface-sunken focus-visible:focus-ring md:hidden"
           >
             <span aria-hidden className="relative block size-6">
               <span className={cn("absolute left-1 right-1 top-2 h-0.5 rounded-sm bg-current transition-transform duration-300 ease-out-kit", open && "translate-y-1 rotate-45")} />

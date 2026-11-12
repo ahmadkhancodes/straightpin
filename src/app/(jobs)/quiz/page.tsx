@@ -29,11 +29,11 @@ export default async function QuizPage({ searchParams }: { searchParams: Promise
   const relax = count === 0 && done > 1 ? back : null;
   return (
     <Container className="max-w-2xl py-10 md:py-16">
-      <p className="caption-1 text-text-subtle">Question {done + 1} of {QUIZ_STEPS.length}</p>
-      <div className="mt-2 h-1 rounded-full bg-surface-sunken" role="progressbar" aria-valuemin={0} aria-valuemax={QUIZ_STEPS.length} aria-valuenow={done} aria-label="Quiz progress">
-        <div className="h-1 rounded-full bg-action" style={{ width: `${(done / QUIZ_STEPS.length) * 100}%` }} />
+      <p className="kicker text-text-subtle">Question <span className="figures">{done + 1}</span> of {QUIZ_STEPS.length}</p>
+      <div className="mt-3 h-1 bg-border" role="progressbar" aria-valuemin={0} aria-valuemax={QUIZ_STEPS.length} aria-valuenow={done} aria-label="Quiz progress">
+        <div className="h-1 bg-rule" style={{ width: `${(done / QUIZ_STEPS.length) * 100}%` }} />
       </div>
-      <h1 className="heading-3 mt-8 text-text">{step.title}</h1>
+      <h1 className="heading-3 md:heading-2 mt-8 text-text">{step.title}</h1>
       <form method="get" action="/quiz" className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
         {prior.map(([k, v]) => <input key={k} type="hidden" name={k} value={v} />)}
         {step.options.map((o) => (
@@ -42,14 +42,14 @@ export default async function QuizPage({ searchParams }: { searchParams: Promise
             type="submit"
             name={step.key}
             value={o.value}
-            className="button-md min-h-12 rounded-sm border border-border bg-surface-raised px-4 py-3 text-left text-text transition-colors duration-300 ease-out-kit hover:border-action hover:bg-brand-tint focus-visible:focus-ring"
+            className="button-md min-h-12 rounded-md border border-border-strong bg-surface-raised px-4 py-3 text-left text-text transition-colors duration-300 ease-out-kit hover:border-rule hover:bg-brand-tint focus-visible:focus-ring"
           >
             {o.label}
           </button>
         ))}
       </form>
-      <p className="mt-8 border-t-[1.5px] border-dashed border-border pt-4 body-6 text-text-subtle" aria-live="polite" data-testid="live-count">
-        <b className="heading-5 tabular-nums text-text">{count.toLocaleString("en-US")}</b>{" "}
+      <p className="mt-8 border-t-2 border-rule pt-4 body-6 text-text-subtle" aria-live="polite" data-testid="live-count">
+        <b className="heading-4 figures text-text">{count.toLocaleString("en-US")}</b>{" "}
         {count === 1 ? "direct match" : "direct matches"} so far{done > 0 ? ` for ${fieldLabel(answered.field!)}` : ""}.
         {agencyHidden > 0 ? ` ${agencyHidden} staffing agency ${agencyHidden === 1 ? "post" : "posts"} removed.` : ""}
       </p>

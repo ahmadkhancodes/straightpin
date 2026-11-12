@@ -35,7 +35,7 @@ export function CopyButton({ value, label = "Copy", size = "sm" }: { value: stri
 /** A value shown once (API key, webhook secret) with a copy button and a plain warning. */
 export function SecretReveal({ title, value, onDismiss }: { title: string; value: string; onDismiss: () => void }) {
   return (
-    <div role="status" className="flex flex-col gap-3 rounded-lg border border-success bg-success-surface p-4">
+    <div role="status" className="flex flex-col gap-3 border border-success bg-success-surface p-4">
       <p className="title-4 text-text">{title}</p>
       <p className="body-6 text-text-subtle">Copy it now. For your security we cannot show it again.</p>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
