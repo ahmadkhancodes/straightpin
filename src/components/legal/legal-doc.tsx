@@ -40,7 +40,7 @@ function Block({ block }: { block: LegalBlock }) {
   }
   const { head, rows } = block.table;
   return (
-    <div className="overflow-x-auto rounded-md border border-border">
+    <div className="relative overflow-x-auto rounded-md border border-border">
       <table className="body-6 w-full border-collapse text-left">
         <thead className="bg-surface-raised text-text">
           <tr>

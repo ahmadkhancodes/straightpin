@@ -6,10 +6,10 @@ const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&
 
 function layout(title: string, bodyHtml: string, footer = `${product.fullName} · ${product.company}`) {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${esc(title)}</title></head>
-<body style="margin:0;padding:24px;background:#f7f7f7;font-family:ui-sans-serif,system-ui,sans-serif;color:#181818">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto;background:#ffffff;border:1px solid #e2e2e2;border-radius:8px">
+<body style="margin:0;padding:24px;background:#F3F3EF;font-family:ui-sans-serif,system-ui,sans-serif;color:#121417">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto;background:#ffffff;border:1px solid #D3D4CD;border-top:2px solid #121417;border-radius:0">
 <tr><td style="padding:32px">
-<p style="margin:0 0 24px;font-size:14px;font-weight:600">${esc(product.name)}</p>
+<p style="margin:0 0 24px;font-family:Georgia,serif;font-size:18px;font-weight:700">${esc(product.name)}</p>
 ${bodyHtml}
 </td></tr></table>
 <p style="max-width:520px;margin:16px auto 0;font-size:12px;color:#767676">${esc(footer)}</p>
@@ -17,7 +17,7 @@ ${bodyHtml}
 }
 
 const button = (href: string, label: string) =>
-  `<p style="margin:24px 0"><a href="${esc(href)}" style="display:inline-block;padding:12px 16px;background:#181818;color:#ffffff;border-radius:6px;text-decoration:none;font-weight:600">${esc(label)}</a></p>`;
+  `<p style="margin:24px 0"><a href="${esc(href)}" style="display:inline-block;padding:12px 16px;background:#121417;color:#ffffff;border-radius:4px;text-decoration:none;font-weight:600">${esc(label)}</a></p>`;
 
 export function magicLinkEmail(url: string) {
   // Not "Sign in to <name>": that exact subject never reached the inbox in testing (any other subject did).
@@ -80,7 +80,7 @@ export function digestEmail(opts: { kind: "digest" | "alerts"; total: number; jo
     `Unsubscribe in one click: ${opts.unsubscribeUrl}`,
   ].filter((l, i, a) => l !== "" || a[i - 1] !== "").join("\n");
   const items = opts.jobs
-    .map((j) => `<li style="margin:0 0 16px"><a href="${esc(j.url)}" style="font-weight:600;color:#181818">${esc(j.title)}</a><br><span style="font-size:14px;color:#404040">${esc(j.company)} · ${esc(j.place)}</span><br><span style="font-size:13px;color:#767676">${esc(j.line)}</span></li>`)
+    .map((j) => `<li style="margin:0 0 16px"><a href="${esc(j.url)}" style="font-weight:600;color:#121417">${esc(j.title)}</a><br><span style="font-size:14px;color:#404040">${esc(j.company)} · ${esc(j.place)}</span><br><span style="font-size:13px;color:#767676">${esc(j.line)}</span></li>`)
     .join("");
   const html = layout(
     subject,
@@ -100,7 +100,7 @@ export function refundEmail(opts: { amountText: string; planName: string }) {
   const text = `We refunded ${opts.amountText} for your ${opts.planName} plan and turned the plan off. Refunds usually reach your card in 5 to 10 business days.\n\nYour free account stays open. Questions: ${product.supportEmail}`;
   const html = layout(subject, `<h1 style="margin:0 0 8px;font-size:20px">Refund issued</h1>
 <p style="margin:0 0 12px;font-size:14px;line-height:20px;color:#404040">We refunded ${esc(opts.amountText)} for your ${esc(opts.planName)} plan and turned the plan off. Refunds usually reach your card in 5 to 10 business days.</p>
-<p style="margin:0;font-size:14px;line-height:20px;color:#404040">Your free account stays open. Questions: <a href="mailto:${esc(product.supportEmail)}" style="color:#181818">${esc(product.supportEmail)}</a></p>`);
+<p style="margin:0;font-size:14px;line-height:20px;color:#404040">Your free account stays open. Questions: <a href="mailto:${esc(product.supportEmail)}" style="color:#121417">${esc(product.supportEmail)}</a></p>`);
   return { subject, text, html };
 }
 

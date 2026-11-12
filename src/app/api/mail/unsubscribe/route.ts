@@ -54,7 +54,7 @@ export async function GET(req: Request) {
   const p = valid(url);
   if (!p || !safeEqual(p.t, await unsubscribeToken(p.e, p.s))) return page(BAD, 400);
   return page(
-    `<h1>Unsubscribe from these emails?</h1><p>${esc(p.e)} will stop getting them. Sign-in emails still arrive.</p><form method="post" action="${esc(url.pathname + url.search)}"><input type="hidden" name="confirm" value="1"><button type="submit" style="min-height:44px;padding:0 20px;font:inherit;font-weight:600;background:#b3260e;color:#fff;border:0;border-radius:8px;cursor:pointer">Yes, unsubscribe</button></form>`,
+    `<h1>Unsubscribe from these emails?</h1><p>${esc(p.e)} will stop getting them. Sign-in emails still arrive.</p><form method="post" action="${esc(url.pathname + url.search)}"><input type="hidden" name="confirm" value="1"><button type="submit" style="min-height:44px;padding:0 20px;font:inherit;font-weight:600;background:#121417;color:#fff;border:0;border-radius:4px;cursor:pointer">Yes, unsubscribe</button></form>`,
     200,
   );
 }

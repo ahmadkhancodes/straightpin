@@ -2,6 +2,7 @@ import { getDb } from "@/lib/db";
 import { fixtureJobs, pageFixtureJobs } from "@/lib/jobs/fixtures";
 import { json } from "@/lib/http";
 import { clearCountCache } from "@/lib/jobs/matching";
+import { clearPagesCache } from "@/lib/jobs/seoPages";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,5 +15,6 @@ export async function POST(req: Request) {
   const extra = new URL(req.url).searchParams.get("pages") === "1" ? pageFixtureJobs(now) : [];
   const r = await (await getDb()).upsertJobs([...fixtureJobs(now), ...extra], now);
   clearCountCache();
+  clearPagesCache();
   return json({ ok: true, ...r });
 }

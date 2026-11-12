@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { firstJobId, ORIGIN, ownIp, signInViaUi, finishOnboarding } from "./helpers";
+import { firstJobId, ORIGIN, ownIp, signInViaUi, finishOnboarding, stubPopup, popupState } from "./helpers";
 
 const MATCHES = "/matches?field=support&country=US&remote=any&payFloor=0&level=any&schedule=any";
 
@@ -13,6 +13,7 @@ test("new visitor: save a job signed out is sent to sign in and returns to the j
 });
 
 test("signed out: Apply sends the visitor to sign in and keeps the job", async ({ page, request }) => {
+  await stubPopup(page);
   const id = await firstJobId(page, request);
   await page.goto(`/job/${id}`);
   await page.getByRole("button", { name: /Apply at company/ }).click();
@@ -57,6 +58,7 @@ test("free user: save, see it in Saved, remove it; the save limit explains itsel
 
 test("free user: the 6th open of the day goes to a paywall that says why", async ({ page, request }) => {
   await page.context().route(/^https:\/\/(?!localhost).*/, (r) => r.fulfill({ status: 200, contentType: "text/html", body: "ok" }));
+  await stubPopup(page);
   await signInViaUi(page, request);
   await request.post("/api/dev/seed-jobs?pages=1");
   await page.goto(MATCHES);
@@ -73,9 +75,8 @@ test("free user: the 6th open of the day goes to a paywall that says why", async
   await expect(page.getByRole("heading", { level: 1 })).toContainText("5 free opens");
   // re-opening a job already opened today is free
   await page.goto(`/job/${more[0]}`);
-  const popup = page.waitForEvent("popup");
   await page.getByRole("button", { name: /Apply at company/ }).click();
-  await popup;
+  await expect.poll(async () => (await popupState(page)).href).toMatch(/^https:\/\//);
 });
 
 test("expired or reused magic link lands on sign-in with a clear notice", async ({ page, request }) => {
