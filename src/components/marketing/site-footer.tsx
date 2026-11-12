@@ -58,7 +58,7 @@ export function SiteFooter() {
         </div>
         <div className="mt-12 flex flex-col gap-2 border-t border-border pt-6">
           <p className="body-6 max-w-2xl text-text-subtle">
-            Example notices use made-up companies. Real companies listed are not affiliated with Straightpin. We are not a recruiter and never take a cut of your pay.
+            Example notices use made up companies. Real companies listed are not affiliated with Straightpin. We are not a recruiter and never take a cut of your pay.
           </p>
           <p className="caption-2 text-text-subtle">A BufferSol product. &copy; {new Date().getFullYear()} {product.company}</p>
         </div>

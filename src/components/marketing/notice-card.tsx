@@ -11,7 +11,7 @@ const repostText = (n: number) => (n === 0 ? "Never reposted" : n === 1 ? "Repos
 
 /**
  * A sample job as one listing in a classifieds column (labelled sample data). The tear off tab is the signature
- * move: a perforated strip that slides 6px (transform only, 160ms); in the real app the employer page opens.
+ * move: a perforated strip that slides 6px (transform only, 500ms); in the real app the employer page opens.
  */
 export function NoticeCard({ job, selected, showTear = true, framed = true }: { job: SampleJob; selected?: boolean; showTear?: boolean; framed?: boolean }) {
   const [torn, setTorn] = useState(false);
@@ -48,7 +48,7 @@ export function NoticeCard({ job, selected, showTear = true, framed = true }: { 
         >
           <span
             className={cn(
-              "button-sm inline-flex items-center gap-2 whitespace-nowrap underline-offset-4 transition-transform duration-tear ease-out-kit group-hover:translate-x-1 group-hover:underline motion-reduce:transition-none",
+              "button-sm inline-flex items-center gap-2 whitespace-nowrap underline-offset-4 transition-transform duration-500 ease-out-kit group-hover:translate-x-1 group-hover:underline motion-reduce:transition-none",
               torn && "tear-open",
             )}
           >
