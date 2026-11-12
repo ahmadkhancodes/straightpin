@@ -83,9 +83,15 @@ export interface JobDraft {
   validThrough?: Date | null;
 }
 
+function protocolOf(u: string): string {
+  try { return new URL(u).protocol.toLowerCase(); } catch { return ''; }
+}
+
 /** Returns null when the draft is malformed or its country is not US/CA/UK. */
 export function buildJob(d: JobDraft): NormalizedJob | null {
   if (!d.externalId || !d.title || !d.applyUrl || !d.country) return null;
+  // Board data is third party: `javascript://host/%0A...` has a host too, so require http(s) before storing it.
+  if (!/^https?:$/.test(protocolOf(d.applyUrl))) return null;
   const host = hostOf(d.applyUrl);
   if (!host) return null;
   const remoteType = d.remoteType && d.remoteType !== 'unknown' ? d.remoteType : detectRemoteType(d.location, d.title, ...(d.remoteHints ?? []));

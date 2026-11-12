@@ -1,7 +1,6 @@
 "use client";
 import { hardNavigate } from "./api";
-import { CaretUpDown, Check, Plus } from "@phosphor-icons/react";
-import Link from "next/link";
+import { CaretUpDown, Check } from "@phosphor-icons/react";
 import { useEffect, useId, useRef, useState } from "react";
 import { authClient } from "@/lib/auth/client";
 import { cn } from "@/components/ui/cn";
@@ -70,11 +69,6 @@ export function OrgSwitcher({ activeId, activeName }: { activeId: string; active
               {o.id === activeId ? <Check size={16} weight="regular" aria-hidden /> : null}
             </button>
           ))}
-          <div className="h-px bg-border" aria-hidden />
-          <Link href="/onboarding?new=1" className="flex min-h-11 items-center gap-2 rounded-sm px-2 py-2 body-5 text-text transition-colors duration-300 hover:bg-surface-raised focus-visible:focus-ring">
-            <Plus size={16} weight="regular" aria-hidden />
-            Create organization
-          </Link>
           {error ? <p role="alert" className="px-2 pb-2 caption-2 text-danger">{error}</p> : null}
         </div>
       ) : null}

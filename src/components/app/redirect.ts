@@ -1,10 +1,10 @@
 import type { Interval } from "@/config/product";
 import { planById } from "@/config/product";
+import { isSafePath } from "@/lib/security/safe-url";
 
-/** Same-origin paths only. Anything else (absolute URLs, //host, backslashes) falls back. */
+/** Same-origin paths only. Anything else (absolute URLs, //host, backslashes, tabs or newlines) falls back. */
 export function safeNext(next: string | null | undefined, fallback = "/app"): string {
-  if (!next || !next.startsWith("/") || next.startsWith("//") || next.includes("\\")) return fallback;
-  return next;
+  return isSafePath(next) ? next : fallback;
 }
 
 /** Where to go after sign-in: pricing hand-off (?plan&interval) wins, then ?next, then /app. */

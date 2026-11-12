@@ -14,7 +14,8 @@ function isPrivateIPv4(h: string): boolean {
   if (!m) return false;
   const [a, b] = [Number(m[1]), Number(m[2])];
   return a === 0 || a === 10 || a === 127 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) ||
-    (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127);
+    (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127) || (a === 192 && b === 0) || (a === 198 && (b === 18 || b === 19)) ||
+    a >= 224;
 }
 
 function isPrivateIPv6(h: string): boolean {
@@ -25,6 +26,11 @@ function isPrivateIPv6(h: string): boolean {
   const mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/.exec(s);
   if (mapped) return isPrivateIPv4(mapped[1] ?? "");
   return /^::ffff:/.test(s); // hex-form mapped addresses: refuse
+}
+
+/** True for loopback, private, link-local, CGNAT, multicast and reserved addresses (v4 and v6). */
+export function isPrivateAddress(ip: string): boolean {
+  return isPrivateIPv4(ip) || isPrivateIPv6(ip);
 }
 
 export function assertAllowedHost(url: string): URL {

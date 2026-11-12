@@ -2,6 +2,7 @@ import { HttpError, json } from "@/lib/http";
 import { appUrl } from "@/lib/env";
 import { log } from "@/lib/logger";
 import { enforceRateLimit, type Rule } from "./ratelimit";
+import { isSafePath } from "./safe-url";
 
 /** Caller address as the platform reports it (first hop of x-forwarded-for). Bounded, never trusted for access. */
 export function clientIp(req: Request): string {
@@ -37,7 +38,7 @@ export const PROBLEMS: Record<string, { title: string; body: string }> = {
 
 /** Send a failed plain-form post to a readable page instead of showing JSON. Only same-site `back` paths are kept. */
 export function problemRedirect(code: string, back?: string): Response {
-  const safeBack = back && /^\/[^/\\]/.test(back) ? back : "/";
+  const safeBack = isSafePath(back) ? back : "/";
   const key = code in PROBLEMS ? code : "server_error";
   return Response.redirect(`${appUrl()}/problem?${new URLSearchParams({ code: key, back: safeBack })}`, 303);
 }

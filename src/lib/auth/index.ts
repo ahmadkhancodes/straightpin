@@ -1,4 +1,5 @@
 import { betterAuth, type BetterAuthOptions } from "better-auth";
+import { APIError } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
 import { magicLink, organization, twoFactor } from "better-auth/plugins";
 import { memoryAdapter } from "better-auth/adapters/memory";
@@ -21,8 +22,11 @@ const COOKIE_NAMES = ["session_token", "session_data", "account_data", "dont_rem
 /** `__Host-` needs Secure + Path=/ + no Domain. Better Auth only auto-prefixes `__Secure-`, so we name them ourselves. */
 function cookieConfig(secure: boolean): NonNullable<BetterAuthOptions["advanced"]> {
   const app = appName();
-  if (!secure) return { cookiePrefix: app, useSecureCookies: false };
+  // disableOriginCheck pinned to false: Better Auth turns the callbackURL/origin check off when NODE_ENV=test,
+  // which would let tests pass an open redirect that production refuses. Same rules in every environment.
+  if (!secure) return { cookiePrefix: app, useSecureCookies: false, disableOriginCheck: false };
   return {
+    disableOriginCheck: false,
     useSecureCookies: false,
     cookiePrefix: app,
     defaultCookieAttributes: { secure: true, httpOnly: true, sameSite: "lax", path: "/" },
@@ -133,6 +137,16 @@ export function createAuth(db: BetterAuthOptions["database"]) {
         creatorRole: "owner",
         allowUserToCreateOrganization: true,
         invitationExpiresIn: 60 * 60 * 24 * 7,
+        // One person, one organization (D-057). The plan and the free limits belong to the organization, so a second
+        // organization would reset the free limits and a second member would share a paid plan (seats are v2+).
+        // Invitations are off too: the invite email carried a sender-chosen organization name from our domain.
+        organizationLimit: 1,
+        membershipLimit: 1,
+        organizationHooks: {
+          beforeCreateInvitation: async () => {
+            throw new APIError("FORBIDDEN", { message: "Invitations are not available.", code: "INVITATIONS_DISABLED" });
+          },
+        },
         sendInvitationEmail: async (data) => {
           if (!(await mayMail("invite-from", data.inviter.user.id, RULES.invite)) || !(await mayMail("invite-to", data.email, RULES.authEmail))) {
             log.warn("invite_throttled", { route: "auth" });

@@ -51,3 +51,9 @@ export function envFlags(e: Pick<Env, "APP_FLAGS"> = env()): Record<string, stri
 
 export const adminEmails = (e: Env = env()) =>
   (e.ADMIN_EMAILS ?? "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+
+/**
+ * E2E-only routes (/api/dev/*) hand out sign-in links from the outbox. They need E2E_OUTBOX=1 and are refused on
+ * Vercel whatever the env says, so one wrong variable on a deployment cannot leak every sign-in link.
+ */
+export const devRoutesEnabled = () => process.env.E2E_OUTBOX === "1" && !process.env.VERCEL && !process.env.VERCEL_ENV;
