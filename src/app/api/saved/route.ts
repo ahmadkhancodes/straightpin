@@ -3,6 +3,8 @@ import { getOrgContext } from "@/lib/auth/session";
 import { getDb } from "@/lib/db";
 import { appUrl } from "@/lib/env";
 import { assertSameOrigin, HttpError, json } from "@/lib/http";
+import { failure, limitRequest } from "@/lib/security/guard";
+import { RULES } from "@/lib/security/ratelimit";
 import { saveJobFor, unsaveJobFor } from "@/lib/jobs/meters";
 
 export const runtime = "nodejs";
@@ -26,6 +28,7 @@ export async function POST(req: Request) {
       if (wantsJson) throw new HttpError(401, "unauthorized");
       return Response.redirect(`${appUrl()}/sign-in?next=${encodeURIComponent(back)}`, 303);
     }
+    await limitRequest(req, "saved", RULES.userAction, ctx.org.id);
     const db = await getDb();
     if (action === "unsave") {
       await unsaveJobFor(db, ctx.org.id, jobId);
@@ -36,7 +39,6 @@ export async function POST(req: Request) {
     if (!r.ok) return wantsJson ? json({ error: "save_limit", used: r.state.used, limit: r.state.limit }, 402) : Response.redirect(`${appUrl()}${back}${back.includes("?") ? "&" : "?"}limit=saves`, 303);
     return wantsJson ? json({ ok: true, created: r.created, used: r.state.used, limit: r.state.limit }) : Response.redirect(`${appUrl()}${back}`, 303);
   } catch (e) {
-    if (e instanceof HttpError) return json({ error: e.code }, e.status);
-    throw e;
+    return failure(e, { wantsJson, back: "/saved", route: "/api/saved" });
   }
 }

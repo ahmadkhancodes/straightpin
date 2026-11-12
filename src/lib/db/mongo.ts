@@ -587,5 +587,15 @@ async function createIndexes(d: IndexDb) {
   await d.collection("member").createIndex({ organizationId: 1, userId: 1 }, { unique: true });
   await d.collection("organization").createIndex({ slug: 1 }, { unique: true });
   await d.collection("apikey").createIndex({ key: 1 });
+  // Lookups by user or e-mail on the hot paths (session -> organisations, sign-in, invites) and the cleanup sweeps.
+  await d.collection("member").createIndex({ userId: 1 });
+  await d.collection("account").createIndex({ userId: 1 });
+  await d.collection("session").createIndex({ userId: 1 });
+  await d.collection("invitation").createIndex({ email: 1 });
+  await d.collection("invitation").createIndex({ organizationId: 1 });
+  await d.collection("twoFactor").createIndex({ userId: 1 });
+  await d.collection("passkey").createIndex({ userId: 1 });
+  await d.collection("saved_jobs").createIndex({ app: 1, jobId: 1 });
+  await d.collection("job_opens").createIndex({ app: 1, orgId: 1 });
   return DELIVERY_TTL_DAYS;
 }

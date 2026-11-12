@@ -9,6 +9,7 @@ import { effectivePlan } from "@/lib/billing/entitlement";
 import { currentUsage } from "@/lib/billing/usage";
 import { getDb } from "@/lib/db";
 import { fieldLabel } from "@/lib/jobs/fields";
+import { firstRunSteps } from "@/lib/jobs/checklist";
 import { answersFromProfile, liveCount, queryFromAnswers } from "@/lib/jobs/matching";
 
 export const metadata = { title: "Overview" };
@@ -21,6 +22,8 @@ export default async function OverviewPage() {
   const usage = await currentUsage(db, ctx.org.id, METERS_SHOWN);
   const profile = await db.getProfile(ctx.org.id);
   const saved = await db.listSaved(ctx.org.id);
+  const alertRules = await db.listAlertRules(ctx.org.id);
+  const steps = firstRunSteps({ hasProfile: !!profile, saved: saved.length, digestOn: !!profile?.digest, alertRules: alertRules.length, opensToday: usage.find((u) => u.meter === "opens")?.used ?? 0 });
   const count = profile ? (await liveCount(db, queryFromAnswers(answersFromProfile(profile)))).count : 0;
   return (
     <>
@@ -44,6 +47,18 @@ export default async function OverviewPage() {
           </div>
         </section>
       </div>
+      {steps.some((x) => !x.done) ? (
+        <Panel title="Get started" description={`${steps.filter((x) => x.done).length} of ${steps.length} done. It takes about two minutes.`}>
+          <ol className="flex flex-col divide-y divide-border border-y border-border">
+            {steps.map((x) => (
+              <li key={x.id} className="flex min-h-11 items-center gap-3 py-2">
+                <span aria-hidden className={x.done ? "text-success" : "text-text-subtle"}>{x.done ? "✓" : "○"}</span>
+                {x.done ? <span className="body-6 text-text-subtle line-through">{x.label}<span className="sr-only"> (done)</span></span> : <Link href={x.href} className="body-6 text-action underline underline-offset-4">{x.label}</Link>}
+              </li>
+            ))}
+          </ol>
+        </Panel>
+      ) : null}
       <Panel title="Your matches" description="Direct jobs for the field you pick.">
         {profile ? (
           <EmptyState

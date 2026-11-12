@@ -4,9 +4,14 @@ type Fields = { code?: string; route?: string; userId?: string; orgId?: string; 
 
 const SECRETISH = /(token|secret|password|authorization|cookie|email|code)$/i;
 
+/** Strips e-mail addresses and long token-like strings out of free text before it is logged. */
+export function scrubText(v: string): string {
+  return v.replace(/[^\s@<>"']+@[^\s@<>"']+\.[a-z]{2,}/gi, "[email]").replace(/\b[A-Za-z0-9_-]{32,}\b/g, "[token]").slice(0, 500);
+}
+
 export function scrub(fields: Fields): Fields {
   const out: Fields = {};
-  for (const [k, v] of Object.entries(fields)) out[k] = SECRETISH.test(k) && k !== "code" ? "[redacted]" : v;
+  for (const [k, v] of Object.entries(fields)) out[k] = SECRETISH.test(k) && k !== "code" ? "[redacted]" : typeof v === "string" ? scrubText(v) : v;
   return out;
 }
 

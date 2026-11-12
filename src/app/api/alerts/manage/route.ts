@@ -1,6 +1,8 @@
 import { getDb } from "@/lib/db";
 import { appUrl } from "@/lib/env";
-import { assertSameOrigin, HttpError, json } from "@/lib/http";
+import { assertSameOrigin, HttpError } from "@/lib/http";
+import { failure, limitRequest } from "@/lib/security/guard";
+import { RULES } from "@/lib/security/ratelimit";
 import { verifyManageToken } from "@/lib/jobs/alertRules";
 
 export const runtime = "nodejs";
@@ -10,6 +12,7 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request) {
   try {
     assertSameOrigin(req);
+    await limitRequest(req, "manage", RULES.publicSigned);
     const form = await req.formData().catch(() => new FormData());
     const e = String(form.get("e") ?? "");
     const t = String(form.get("t") ?? "");
@@ -27,7 +30,6 @@ export async function POST(req: Request) {
     } else throw new HttpError(400, "invalid_input");
     return Response.redirect(here, 303);
   } catch (err) {
-    if (err instanceof HttpError) return json({ error: err.code }, err.status);
-    throw err;
+    return failure(err, { wantsJson: false, back: "/", route: "/api/alerts/manage" });
   }
 }
