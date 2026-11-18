@@ -3,7 +3,7 @@ import { appUrl, env, isProd } from "@/lib/env";
 import { getDb } from "@/lib/db";
 import { hmacSha256Hex } from "@/lib/ids";
 import { log } from "@/lib/logger";
-import { addressDomain, consoleTransport, MailSendError, scrubValue, misconfiguredTransport, resendTransport, smtpTransport } from "./transports";
+import { addressDomain, consoleTransport, gatewayTransport, MailSendError, scrubValue, misconfiguredTransport, resendTransport, smtpTransport } from "./transports";
 import type { MailMessage, MailTransport, SendResult } from "./types";
 
 export type { MailMessage, MailTransport, SendResult } from "./types";
@@ -16,6 +16,12 @@ export { MailSendError } from "./transports";
  */
 export function transportFromEnv(): MailTransport {
   const e = env();
+  // The BufferSol mail gateway wins whenever its URL is set. A URL without a key is a hard error, never a silent Resend fallback.
+  const gwUrl = e.MAIL_GATEWAY_URL?.trim();
+  if (gwUrl) {
+    const gwKey = e.MAIL_GATEWAY_KEY?.trim();
+    return gwKey ? gatewayTransport(gwUrl, gwKey) : misconfiguredTransport("gateway", "mail_gateway_key_missing");
+  }
   const key = e.RESEND_API_KEY?.trim(); // a pasted newline would make the Authorization header invalid
   const p = e.MAIL_PROVIDER ?? (key ? "resend" : "console");
   if (p === "resend") {
@@ -91,7 +97,9 @@ export async function sendMail(msg: MailMessage, transport: MailTransport = tran
   const from = msg.from ?? env().MAIL_FROM ?? product.mailFrom;
   // TODO(remove): temporary delivery diagnostic, see docs/PROGRESS.md.
   log.info("mail_from_resolved", { fromName: scrubValue(from.replace(/\s*<[^>]*>\s*$/, "")), fromDomain: addressDomain(from), source: fromSource });
-  const res = await transport.send({ ...msg, headers, from });
+  // Transactional mail answers to the product address.
+  const replyTo = msg.replyTo ?? (category === "transactional" ? product.supportEmail : undefined);
+  const res = await transport.send({ ...msg, headers, from, replyTo });
   // Production must never "send" into the in-memory outbox and call it done. The documented stub mode
   // (MAIL_PROVIDER=console + MAIL_CONSOLE_PRINT=1) still works but logs every mail at error; the e2e server
   // (`next start`, E2E_OUTBOX=1, never set on Vercel) reads the outbox on purpose.

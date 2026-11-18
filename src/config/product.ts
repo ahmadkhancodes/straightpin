@@ -84,7 +84,7 @@ export const product = {
   companyUrl: "https://buffersoltech.com",
   host: "straightpin.buffersoltech.com",
   url: process.env.NEXT_PUBLIC_APP_URL ?? "https://straightpin.buffersoltech.com",
-  supportEmail: "contact@buffersoltech.com",
+  supportEmail: "straightpin@buffersoltech.com",
   legalEmail: "contact@buffersoltech.com",
   mailFrom: "Straightpin <hello@straightpin.buffersoltech.com>",
   description:

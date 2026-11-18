@@ -31,9 +31,9 @@ export const PROBLEMS: Record<string, { title: string; body: string }> = {
   not_found: { title: "That item is gone", body: "It was removed or never existed. Go back and refresh the page." },
   bad_origin: { title: "That request came from another site", body: "For your safety we only accept forms sent from this site. Open the page here and try again." },
   invalid_link: { title: "This link no longer works", body: "Use the link in your most recent email, or sign in and change the setting there." },
-  account_suspended: { title: "This account is paused", body: "Write to contact@buffersoltech.com and we will look at it with you." },
+  account_suspended: { title: "This account is paused", body: "Write to straightpin@buffersoltech.com and we will look at it with you." },
   body_too_large: { title: "That was too much text", body: "Shorten it and send it again." },
-  server_error: { title: "Something broke on our side", body: "Your data is safe. Wait a moment and try again. If it keeps happening, write to contact@buffersoltech.com." },
+  server_error: { title: "Something broke on our side", body: "Your data is safe. Wait a moment and try again. If it keeps happening, write to straightpin@buffersoltech.com." },
 };
 
 /** Send a failed plain-form post to a readable page instead of showing JSON. Only same-site `back` paths are kept. */

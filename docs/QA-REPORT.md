@@ -25,7 +25,7 @@ Method: real production build (`next start`, memory driver, e-mail outbox, conso
 7. Tap targets under 44px on mobile: logo link (app shell, sign-in), Monthly/Yearly toggle, small buttons ("Sign out other sessions"), "All plans". Also the 24px rule for in-text links no longer overrides `min-h-11` (it was unlayered CSS beating Tailwind utilities, which made "The full comparison" 24px).
 8. Broken percent escapes in a URL (`/job/%E0%A4%A`) gave a 500 on every dynamic route; now a plain 400 (proxy).
 9. Empty or non-form POST to `/api/saved`, `/api/profile`, `/api/alerts`, admin routes threw a 500; treated as empty input.
-10. Two stale tests fixed (support address is now contact@buffersoltech.com; the landing tap-target test was failing on main).
+10. Two stale tests fixed (support address is now straightpin@buffersoltech.com; the landing tap-target test was failing on main).
 
 ## Battle hardening round (12 Nov 2026)
 Added: saved jobs CSV download (formula-safe, no apply links), first-run "Get started" checklist on `/app`, `/problem` page for failed form posts, rate limits and per-inbox mail caps, Apply link page without JavaScript, health route with no details, extra indexes. Tests: `tests/unit/battle.test.ts` (tenant isolation across saved, alerts, manage links, opens and export; guessed ids; rate limits; database down; huge and hostile input; double submit; concurrent Apply; CSV; log scrubbing; health), `tests/unit/csp-audit.test.ts` (CSP vs every origin in the source, secrets grep of `.next/static`), `tests/e2e/qa/hardening.spec.ts` (CSP violation sweep, CSV, checklist, problem page, no-JS Apply, headers, stale session). Closed from the list below: the 400-character e-mail and raw JSON on failed form posts.
